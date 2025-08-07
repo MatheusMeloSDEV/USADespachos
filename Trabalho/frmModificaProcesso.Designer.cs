@@ -94,7 +94,7 @@
             groupBox4 = new GroupBox();
             button3 = new Button();
             flpLis = new FlowLayoutPanel();
-            textBox1 = new TextBox();
+            txtTerminal = new TextBox();
             label4 = new Label();
             label20 = new Label();
             label22 = new Label();
@@ -843,15 +843,15 @@
             flpLis.Size = new Size(522, 339);
             flpLis.TabIndex = 380;
             // 
-            // textBox1
+            // txtTerminal
             // 
-            textBox1.Anchor = AnchorStyles.None;
-            textBox1.Cursor = Cursors.IBeam;
-            textBox1.DataBindings.Add(new Binding("Text", bsModificaProcesso, "Produto", true));
-            textBox1.Location = new Point(693, 24);
-            textBox1.Name = "textBox1";
-            textBox1.Size = new Size(243, 23);
-            textBox1.TabIndex = 392;
+            txtTerminal.Anchor = AnchorStyles.None;
+            txtTerminal.Cursor = Cursors.IBeam;
+            txtTerminal.DataBindings.Add(new Binding("Text", bsModificaProcesso, "Terminal", true));
+            txtTerminal.Location = new Point(693, 24);
+            txtTerminal.Name = "txtTerminal";
+            txtTerminal.Size = new Size(243, 23);
+            txtTerminal.TabIndex = 392;
             // 
             // label4
             // 
@@ -1038,7 +1038,7 @@
             Controls.Add(groupBox3);
             Controls.Add(label27);
             Controls.Add(label4);
-            Controls.Add(textBox1);
+            Controls.Add(txtTerminal);
             Controls.Add(groupBox4);
             Controls.Add(TXTnr);
             Controls.Add(label25);
@@ -1170,7 +1170,7 @@
         private GroupBox groupBox4;
         private Button button3;
         private FlowLayoutPanel flpLis;
-        private TextBox textBox1;
+        private TextBox txtTerminal;
         private Label label4;
         private Label label18;
         private DateTimePicker dtpDataMinuta;

@@ -1,8 +1,4 @@
 ﻿using CLUSA;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Windows.Forms;
 
 namespace Trabalho
 {
@@ -52,7 +48,7 @@ namespace Trabalho
             // Filtra as LIs que possuem o órgão atual na lista de órgãos anuentes
             listaLis = entidade.LI?
                 .Where(li => li.OrgaosAnuentes != null &&
-                             li.OrgaosAnuentes.Any(orgao => 
+                             li.OrgaosAnuentes.Any(orgao =>
                                  string.Equals(orgao, nomeOrgao, StringComparison.OrdinalIgnoreCase)))
                 .ToList() ?? new List<LiInfo>();
 

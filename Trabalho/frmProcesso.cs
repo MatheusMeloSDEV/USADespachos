@@ -11,58 +11,36 @@ namespace Trabalho
         public FrmProcesso()
         {
             InitializeComponent();
-            _repositorio = new RepositorioProcesso(); // Inicialização direta
-            try
-            {
-                try
-                {
-                    ConectarProcesso();
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show($"Erro ao carregar o formulário: {ex.Message}", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                }
-                ConfigurarInterface();
-                PopularToolStripComboBox();
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Erro ao carregar os dados: {ex.Message}", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
+            _repositorio = new RepositorioProcesso();
         }
-        private static Image? CarregarImagemDoRecurso(string caminhoRecurso)
+        private static System.Drawing.Image? CarregarImagemDoRecurso(System.Reflection.Assembly assembly, string resourcePath)
+        {
+            using var stream = assembly.GetManifestResourceStream(resourcePath);
+            return stream != null ? System.Drawing.Image.FromStream(stream) : null;
+        }
+        private void ImagensBotoes()
         {
             var assembly = System.Reflection.Assembly.GetExecutingAssembly();
-            using var stream = assembly.GetManifestResourceStream(caminhoRecurso);
-            return stream != null ? Image.FromStream(stream) : null;
-        }
-        private void ConectarProcesso()
-        {
-            try
+            var resources = assembly.GetManifestResourceNames();
+            foreach (var r in resources)
             {
-                ConfigurarColunasDataGridViewProcesso();
-
-                // Recupera os registros do repositório
-                var registros = _repositorio.FindAll(); 
-                if (registros.Count > 0)
-                {
-                    // Configura o BindingSource e o DataGridView
-                    BsProcesso = new BindingSource
-                    {
-                        DataSource = registros
-                    };
-
-                    DataGridView1.DataSource = BsProcesso;
-                }
-                else
-                {
-                    MessageBox.Show("Nenhum registro foi encontrado para carregar no DataGridView.", "Aviso", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                }
+                Console.WriteLine(r);
             }
-            catch (Exception ex)
+
+            var recursos = new (string CaminhoRecurso, ToolStripButton Botao)[]
             {
-                // Captura e exibe erros
-                MessageBox.Show($"Erro ao carregar o DataGridView: {ex.Message}", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                ("Trabalho.Imagens.botao-adicionar.png", BtnAdicionar),
+                ("Trabalho.Imagens.botao-editar.png", BtnEditar),
+                ("Trabalho.Imagens.excluir.png", BtnRemover),
+                ("Trabalho.Imagens.exportar.png", BtnExportar),
+                ("Trabalho.Imagens.cancelar.png", BtnCancelar),
+                ("Trabalho.Imagens.lupa-de-pesquisa.png", BtnPesquisar),
+                ("Trabalho.Imagens.recarregar.png", BtnReload)
+            };
+
+            foreach (var (caminho, botao) in recursos)
+            {
+                botao.Image = CarregarImagemDoRecurso(assembly, caminho);
             }
         }
         private void ConfigurarColunasDataGridViewProcesso()
@@ -166,30 +144,52 @@ namespace Trabalho
 
         private void FrmProcesso_Load(object sender, EventArgs e)
         {
-            BsProcesso.DataSource = _repositorio.FindAll();
-            DataGridView1.DataSource = BsProcesso;
-            this.Icon = Icon.ExtractAssociatedIcon(Application.ExecutablePath);
+            try
+            {
+                // 1. Configura as colunas do Grid
+                ConfigurarColunasDataGridViewProcesso();
 
-            if (FrmLogin.Instance.Escuro)
-                AplicarModoEscuro();
+                // 2. Carrega os dados e popula o Grid
+                var registros = _repositorio.FindAll();
+                if (registros.Any())
+                {
+                    BsProcesso.DataSource = registros;
+                    DataGridView1.DataSource = BsProcesso;
+                }
+                else
+                {
+                    MessageBox.Show(
+                        "Operação concluída com sucesso.",
+                        "Sucesso",
+                        MessageBoxButtons.OK,      
+                        MessageBoxIcon.Information  
+                    );
+                }
 
-            PopularToolStripComboBox();
+                ImagensBotoes();
+                this.Icon = Icon.ExtractAssociatedIcon(Application.ExecutablePath);
+                PopularComboBoxDePesquisa();
+
+                // Defina o índice aqui e depois configure o autocomplete
+                if (CmbPesquisar.Items.Count > 0)
+                {
+                    CmbPesquisar.SelectedIndex = 0;
+                }
+                ConfigurarAutoCompletarParaPesquisa();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Erro ao carregar os dados: {ex.Message}", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
 
-        private void AplicarModoEscuro()
-        {
-            BackColor = SystemColors.ControlDark;
-            ToolStrip1.BackColor = SystemColors.ControlDark;
-            DataGridView1.BackgroundColor = SystemColors.ControlDarkDark;
-        }
-
-        private void PopularToolStripComboBox()
+        private void PopularComboBoxDePesquisa()
         {
             var camposIgnorados = new HashSet<string>
-        {
-            "Id", "TDecex", "TAnvisa", "TMapa", "TImetro", "TIbama",
-            "PossuiEmbarque", "VencimentoFreeTime", "VencimentoFMA"
-        };
+            {
+                "Id", "TDecex", "TAnvisa", "TMapa", "TImetro", "TIbama",
+                "PossuiEmbarque", "VencimentoFreeTime", "VencimentoFMA"
+            };
 
             CmbPesquisar.Items.Clear();
 
@@ -202,22 +202,16 @@ namespace Trabalho
                 }
             }
 
-            if (CmbPesquisar.Items.Count > 0)
-                CmbPesquisar.SelectedIndex = 0;
-        }
+            // "Desligue" o evento antes de definir o índice
+            CmbPesquisar.SelectedIndexChanged -= CmbPesquisar_SelectedIndexChanged;
 
-        private void ConfigurarInterface()
-        {
-            if (FrmLogin.Instance.Escuro)
+            if (CmbPesquisar.Items.Count > 0)
             {
-                ToolStrip1.BackColor = SystemColors.ControlDark;
-                this.BackColor = SystemColors.ControlDark;
-                CmbPesquisar.BackColor = SystemColors.ControlDarkDark;
-                TxtPesquisar.BackColor = SystemColors.ControlDarkDark;
-                DataGridView1.DefaultCellStyle.BackColor = SystemColors.ControlDark;
-                DataGridView1.AlternatingRowsDefaultCellStyle.BackColor = SystemColors.ControlDarkDark;
-                DataGridView1.BackgroundColor = SystemColors.ControlDark;
+                CmbPesquisar.SelectedIndex = 0;
             }
+
+            // "Religue" o evento para que funcione para o usuário
+            CmbPesquisar.SelectedIndexChanged += CmbPesquisar_SelectedIndexChanged;
         }
 
         private void ConfigurarAutoCompletarParaPesquisa()
@@ -225,23 +219,17 @@ namespace Trabalho
             if (CmbPesquisar.SelectedItem is DisplayItem campoSelecionado)
             {
                 var valores = _repositorio.ObterValoresUnicos(campoSelecionado.DataPropertyName);
-                ConfigurarAutoCompletar(TxtPesquisar, valores);
+                TxtPesquisar.AutoCompleteMode = AutoCompleteMode.SuggestAppend;
+                TxtPesquisar.AutoCompleteSource = AutoCompleteSource.CustomSource;
+                var collection = new AutoCompleteStringCollection();
+                collection.AddRange(valores.ToArray());
+                TxtPesquisar.AutoCompleteCustomSource = collection;
             }
             else
             {
                 MessageBox.Show("Selecione um campo para configurar o autocompletar.",
                     "Erro", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }
-        }
-
-        private static void ConfigurarAutoCompletar(ToolStripTextBox textBox, IEnumerable<string> valores)
-        {
-            var autoCompleteCollection = new AutoCompleteStringCollection();
-            autoCompleteCollection.AddRange(valores.ToArray());
-
-            textBox.AutoCompleteCustomSource = autoCompleteCollection;
-            textBox.AutoCompleteMode = AutoCompleteMode.SuggestAppend;
-            textBox.AutoCompleteSource = AutoCompleteSource.CustomSource;
         }
         private async void BtnAdicionar_Click(object sender, EventArgs e)
         {
@@ -282,6 +270,15 @@ namespace Trabalho
                 }
             }
         }
+        private void BtnReload_Click(object sender, EventArgs e)
+        {
+            var registros = _repositorio.FindAll();
+            if (registros.Any())
+            {
+                BsProcesso.DataSource = registros;
+                DataGridView1.DataSource = BsProcesso;
+            }
+        }
         private async void BtnExcluir_Click(object sender, EventArgs e)
         {
             if (BsProcesso.Current is not Processo processoSelecionado)
@@ -310,7 +307,7 @@ namespace Trabalho
                 return;
             }
 
-            using var frm = new FrmModificaProcesso { processo = processoSelecionado, Modo = "Editar", Visualização = false};
+            using var frm = new FrmModificaProcesso { processo = processoSelecionado, Modo = "Editar", Visualização = false };
             frm.ShowDialog();
 
             if (frm.DialogResult == DialogResult.OK)
@@ -356,6 +353,7 @@ namespace Trabalho
             }
         }
 
+
         private void DataGridView1_CellDoubleClick(object sender, DataGridViewCellEventArgs e)
         {
             if (BsProcesso.Current is not Processo processoSelecionado)
@@ -364,7 +362,7 @@ namespace Trabalho
                 return;
             }
 
-            using var frm = new FrmModificaProcesso { processo = processoSelecionado , Visualização = true, Modo = "Visualizar"};
+            using var frm = new FrmModificaProcesso { processo = processoSelecionado, Visualização = true, Modo = "Visualizar" };
             frm.ShowDialog();
 
             if (frm.DialogResult == DialogResult.OK)
@@ -425,12 +423,17 @@ namespace Trabalho
 
                         if (resp == DialogResult.Yes && File.Exists(pdfPath))
                         {
-                            Process.Start(new ProcessStartInfo
+                            try
                             {
-                                FileName = pdfPath,
-                                UseShellExecute = true
-                            });
+                                // Abre o PDF com o aplicativo padrão, usando o Explorer
+                                Process.Start("explorer.exe", pdfPath);
+                            }
+                            catch (Exception ex)
+                            {
+                                MessageBox.Show($"Erro ao tentar abrir o PDF: {ex.Message}", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                            }
                         }
+
                     }));
                 });
             }
@@ -452,11 +455,12 @@ namespace Trabalho
         {
             if (e.KeyCode == Keys.Enter)
             {
-                BtnPesquisar.PerformClick();
+                TxtPesquisar.PerformClick();
                 e.Handled = true;
                 e.SuppressKeyPress = true;
             }
         }
+
 
         public class DisplayItem
         {

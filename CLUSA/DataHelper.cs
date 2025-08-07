@@ -1,6 +1,4 @@
-﻿using System.Globalization;
-
-public class DataHelper
+﻿public class DataHelper
 {
     public static DateTime CalcularVencimento(DateTime? dataBase, int dias)
     {

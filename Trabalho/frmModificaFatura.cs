@@ -1,11 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using CLUSA;
 using System.Diagnostics;
-using System.Drawing;
 using System.Globalization;
-using System.Linq;
-using System.Windows.Forms;
-using CLUSA;
 
 namespace Trabalho
 {

@@ -5,5 +5,6 @@ namespace CLUSA
         public static string MongoConnectionString =>
             "mongodb+srv://dev:dev@cluster0.cn10nzt.mongodb.net/";
 
-        public static string MongoDatabaseName => "Trabalho";    }
+        public static string MongoDatabaseName => "Trabalho";
+    }
 }

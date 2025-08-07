@@ -4,22 +4,11 @@
     <TargetFramework>net6.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <Platforms>AnyCPU;x86</Platforms>
   </PropertyGroup>
 
   <ItemGroup>
     <Compile Remove="Agencias.cs" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <COMReference Include="VBIDE">
-      <WrapperTool>tlbimp</WrapperTool>
-      <VersionMinor>3</VersionMinor>
-      <VersionMajor>5</VersionMajor>
-      <Guid>0002e157-0000-0000-c000-000000000046</Guid>
-      <Lcid>0</Lcid>
-      <Isolated>false</Isolated>
-      <EmbedInteropTypes>true</EmbedInteropTypes>
-    </COMReference>
   </ItemGroup>
 
   <ItemGroup>

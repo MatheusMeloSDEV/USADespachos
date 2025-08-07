@@ -1,6 +1,5 @@
 ﻿using CLUSA;
 using System.Diagnostics;
-using System.Windows.Forms;
 
 namespace Trabalho
 {
@@ -371,6 +370,7 @@ namespace Trabalho
             processo.PortoDestino = TXTportodedestino.Text;
             processo.Origem = txtOrigem.Text;
             processo.FLO = TXTflo.Text;
+            processo.Terminal = txtTerminal.Text;
             processo.FreeTime = int.Parse(NUMfreetime.Text);
             processo.VencimentoFreeTime = DataHelper.CalcularVencimento(DTPdatadeatracacao.Value, int.Parse(NUMfreetime.Text));
             processo.VencimentoFMA = DataHelper.CalcularVencimento(DTPdatadeatracacao.Value, 85);

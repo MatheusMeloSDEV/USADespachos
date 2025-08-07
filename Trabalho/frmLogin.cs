@@ -1,5 +1,5 @@
-﻿using CLUSA;
-using AutoUpdaterDotNET;
+﻿using AutoUpdaterDotNET;
+using CLUSA;
 
 namespace Trabalho
 {
@@ -17,13 +17,66 @@ namespace Trabalho
             _repositorio = new RepositorioUsers();
         }
 
-        private void FrmLogin_Load(object sender, EventArgs e)
+        private async void FrmLogin_Load(object sender, EventArgs e)
         {
             Icon = Icon.ExtractAssociatedIcon(Application.ExecutablePath);
             AutoUpdater.Start("https://raw.githubusercontent.com/SEU_USUARIO/SEU_REPOSITORIO/main/update.xml");
             _repositorio = new RepositorioUsers();
+            await VerificarAtualizacoes();
         }
 
+        // Dentro da classe FrmLogin
+        private async Task VerificarAtualizacoes()
+        {
+            var atualizador = new AtualizadorGithub(
+                "https://api.github.com/repos/MatheusMeloSDEV/UsaDespachos",
+                ".exe", ".msi"
+            );
+
+            bool atualizarAgora = false;
+
+            atualizador.AtualizacaoDisponivel += (nova, atual) =>
+            {
+                var result = MessageBox.Show(
+                    $"Versão atual: {atual}\nNova versão disponível: {nova}\nDeseja atualizar agora?",
+                    "Atualização disponível",
+                    MessageBoxButtons.YesNo,
+                    MessageBoxIcon.Question);
+
+                if (result == DialogResult.Yes)
+                {
+                    atualizarAgora = true;
+                }
+            };
+
+            atualizador.DownloadConcluido += path =>
+            {
+                MessageBox.Show($"Download concluído: {path}");
+                // Fecha a aplicação para o instalador poder rodar.
+                Application.Exit();
+            };
+
+            atualizador.Erro += msg => MessageBox.Show($"Erro: {msg}");
+
+            try
+            {
+                if (AtualizadorGithub.TemConexaoInternet())
+                {
+                    await atualizador.VerificarAtualizacaoAsync();
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Erro ao verificar atualizações: {ex.Message}");
+            }
+
+            if (atualizarAgora)
+            {
+                // Desabilita o form de login para o usuário não interagir
+                this.Enabled = false;
+                await atualizador.BaixarEInstalarAsync();
+            }
+        }
         private void BtnLogin_Click(object sender, EventArgs e)
         {
             var user = new Users

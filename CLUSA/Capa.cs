@@ -1,5 +1,3 @@
-using System;
-
 namespace CLUSA
 {
     public class Capa

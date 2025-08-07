@@ -6,23 +6,18 @@ namespace Trabalho
     {
         private System.ComponentModel.IContainer components = null;
 
-        // ToolStrip e controles
-        private ToolStrip ToolStrip1;
+        private ToolStrip toolStrip1;
         private ToolStripButton BtnAdicionar;
-        private ToolStripButton BtnEditar;
-        private ToolStripButton BtnExcluir;
+        private ToolStripButton BtnRemover;
         private ToolStripButton BtnExportar;
-        private ToolStripButton BtnPesquisar;
+        private ToolStripButton BtnEditar;
         private ToolStripButton BtnCancelar;
+        private ToolStripButton BtnPesquisar;
+        private ToolStripButton BtnReload;
         private ToolStripTextBox TxtPesquisar;
         private ToolStripComboBox CmbPesquisar;
-
-        // DataGridView
         private DataGridView DataGridView1;
-
-        // BindingSource
         private BindingSource BsProcesso;
-
         /// <summary>
         /// Liberar recursos utilizados.
         /// </summary>
@@ -36,129 +31,144 @@ namespace Trabalho
             base.Dispose(disposing);
         }
 
+
         private void InitializeComponent()
         {
-            components = new System.ComponentModel.Container();
+            var components = new System.ComponentModel.Container();
             BsProcesso = new BindingSource(components);
 
-            #region ToolStrip Configuração
+            #region ToolStrip Config
 
-            ToolStrip1 = new ToolStrip
+            toolStrip1 = new ToolStrip
             {
                 GripStyle = ToolStripGripStyle.Hidden,
-                RenderMode = ToolStripRenderMode.System,
+                RenderMode = ToolStripRenderMode.Professional,
                 BackColor = Color.WhiteSmoke,
                 AutoSize = false,
                 Height = 40,
-                Padding = new Padding(5, 5, 5, 5)
+                Padding = new Padding(5, 5, 5, 5),
             };
 
-            // Fonte padrão para botões
-            var defaultFont = new Font("Segoe UI", 10);
+            // Definir uma fonte padrão
+            Font defaultFont = new Font("Segoe UI", 10, FontStyle.Regular);
 
-            // Botão Adicionar
             BtnAdicionar = new ToolStripButton
             {
                 Text = "Adicionar",
                 Font = defaultFont,
-                Image = CarregarImagemDoRecurso("Trabalho.Imagens.botao-adicionar.png"),
+                Margin = Margin = new Padding(0, 0, 5, 0),
                 DisplayStyle = ToolStripItemDisplayStyle.ImageAndText,
-                TextImageRelation = TextImageRelation.ImageBeforeText,
+                ImageScaling = ToolStripItemImageScaling.SizeToFit
             };
             BtnAdicionar.Click += BtnAdicionar_Click;
 
-            // Botão Editar
             BtnEditar = new ToolStripButton
             {
                 Text = "Editar",
                 Font = defaultFont,
-                Image = CarregarImagemDoRecurso("Trabalho.Imagens.botao-editar.png"),
+                Margin = Margin = new Padding(0, 0, 5, 0),
                 DisplayStyle = ToolStripItemDisplayStyle.ImageAndText,
-                TextImageRelation = TextImageRelation.ImageBeforeText
+                ImageScaling = ToolStripItemImageScaling.SizeToFit
             };
             BtnEditar.Click += BtnEditar_Click;
 
-            // Botão Excluir
-            BtnExcluir = new ToolStripButton
+            BtnRemover = new ToolStripButton
             {
                 Text = "Excluir",
                 Font = defaultFont,
-                Image = CarregarImagemDoRecurso("Trabalho.Imagens.excluir.png"),
+                Margin = Margin = new Padding(0, 0, 5, 0),
                 DisplayStyle = ToolStripItemDisplayStyle.ImageAndText,
-                TextImageRelation = TextImageRelation.ImageBeforeText,
+                ImageScaling = ToolStripItemImageScaling.SizeToFit
             };
-            BtnExcluir.Click += BtnExcluir_Click;
+            BtnRemover.Click += BtnExcluir_Click;
 
-            // Botão Exportar
             BtnExportar = new ToolStripButton
             {
                 Text = "Exportar",
                 Font = defaultFont,
-                Image = CarregarImagemDoRecurso("Trabalho.Imagens.exportar.png"),
+                Margin = Margin = new Padding(0, 0, 5, 0),
                 DisplayStyle = ToolStripItemDisplayStyle.ImageAndText,
-                TextImageRelation = TextImageRelation.ImageBeforeText,
+                ImageScaling = ToolStripItemImageScaling.SizeToFit
             };
             BtnExportar.Click += BtnExportar_Click;
 
-            // Botão Pesquisar
-            BtnPesquisar = new ToolStripButton
-            {
-                Text = "Pesquisar",
-                Font = defaultFont,
-                Image = CarregarImagemDoRecurso("Trabalho.Imagens.lupa-de-pesquisa.png"),
-                DisplayStyle = ToolStripItemDisplayStyle.ImageAndText,
-                TextImageRelation = TextImageRelation.ImageBeforeText,
-                Alignment = ToolStripItemAlignment.Right
-            };
-            BtnPesquisar.Click += BtnPesquisar_Click;
+            new ToolStripSeparator();
 
-            // Botão Cancelar
             BtnCancelar = new ToolStripButton
             {
+                Alignment = ToolStripItemAlignment.Right,
                 Text = "Cancelar",
                 Font = defaultFont,
-                Image = CarregarImagemDoRecurso("Trabalho.Imagens.cancelar.png"),
+                Margin = Margin = new Padding(5, 0, 0, 0),
                 DisplayStyle = ToolStripItemDisplayStyle.ImageAndText,
-                TextImageRelation = TextImageRelation.ImageBeforeText,
-                Alignment = ToolStripItemAlignment.Right
+                ImageScaling = ToolStripItemImageScaling.SizeToFit
             };
             BtnCancelar.Click += BtnCancelar_Click;
 
-            // Campo de Texto para Pesquisar
-            TxtPesquisar = new ToolStripTextBox
+            BtnReload = new ToolStripButton
             {
+                Alignment = ToolStripItemAlignment.Right,
+                Text = "Recarregar",
                 Font = defaultFont,
-                Size = new Size(200, 25),
-                Alignment = ToolStripItemAlignment.Right
+                Margin = Margin = new Padding(5, 0, 0, 0),
+                DisplayStyle = ToolStripItemDisplayStyle.ImageAndText,
+                ImageScaling = ToolStripItemImageScaling.SizeToFit
             };
+            BtnReload.Click += BtnReload_Click;
 
-            // ComboBox para Seleção de Campo
+            new ToolStripSeparator();
+
+            BtnPesquisar = new ToolStripButton
+            {
+                Alignment = ToolStripItemAlignment.Right,
+                Text = "Pesquisar",
+                Font = defaultFont,
+                Margin = Margin = new Padding(5, 0, 0, 0),
+                DisplayStyle = ToolStripItemDisplayStyle.ImageAndText,
+                ImageScaling = ToolStripItemImageScaling.SizeToFit
+            };
+            BtnPesquisar.Click += BtnPesquisar_Click;
+
             CmbPesquisar = new ToolStripComboBox
             {
-                Font = defaultFont,
-                Size = new Size(150, 25),
                 Alignment = ToolStripItemAlignment.Right,
+                Font = defaultFont,
+                Margin = Margin = new Padding(5, 0, 5, 0),
+                Size = new Size(150, 25),
                 DropDownStyle = ComboBoxStyle.DropDownList
             };
             CmbPesquisar.SelectedIndexChanged += CmbPesquisar_SelectedIndexChanged;
 
-            // Adicionar itens ao ToolStrip
-            ToolStrip1.Items.AddRange(new ToolStripItem[]
+            TxtPesquisar = new ToolStripTextBox
             {
-                BtnAdicionar,
-                new ToolStripSeparator(),
-                BtnEditar,
-                new ToolStripSeparator(),
-                BtnExcluir,
-                new ToolStripSeparator(),
-                BtnExportar,
-                new ToolStripSeparator(),
-                BtnCancelar,
-                new ToolStripSeparator { Alignment = ToolStripItemAlignment.Right },
-                BtnPesquisar,
-                CmbPesquisar,
-                TxtPesquisar
-            });
+                Alignment = ToolStripItemAlignment.Right,
+                Font = defaultFont,
+                Margin = Margin = new Padding(0, 0, 5, 0),
+                Size = new Size(200, 25),
+                BorderStyle = BorderStyle.FixedSingle
+            };
+
+            // Agora adicione na ordem inversa desejada para itens à direita:
+            ToolStripSeparator ToolStripRight = new ToolStripSeparator
+            {
+                Alignment = ToolStripItemAlignment.Right,
+            };
+            ToolStripSeparator ToolStripRight1 = new ToolStripSeparator
+            {
+                Alignment = ToolStripItemAlignment.Right,
+            };
+
+            toolStrip1.Items.Add(BtnAdicionar);
+            toolStrip1.Items.Add(BtnEditar);
+            toolStrip1.Items.Add(BtnRemover);
+            toolStrip1.Items.Add(BtnExportar);
+            toolStrip1.Items.Add(BtnCancelar);
+            toolStrip1.Items.Add(ToolStripRight1);
+            toolStrip1.Items.Add(BtnReload);
+            toolStrip1.Items.Add(ToolStripRight);
+            toolStrip1.Items.Add(BtnPesquisar);
+            toolStrip1.Items.Add(CmbPesquisar);
+            toolStrip1.Items.Add(TxtPesquisar);
 
             #endregion
 
@@ -173,7 +183,7 @@ namespace Trabalho
                 Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right,
                 EnableHeadersVisualStyles = false,
                 Location = new Point(12, 50),
-                Name = "DataGridView1",
+                Name = "dataGridView1",
                 ReadOnly = true,
                 RowHeadersVisible = false,
                 RowTemplate = { Height = 25 },
@@ -184,7 +194,6 @@ namespace Trabalho
 
             DataGridView1.CellDoubleClick += DataGridView1_CellDoubleClick;
 
-            // Estilo do cabeçalho
             DataGridView1.ColumnHeadersDefaultCellStyle = new DataGridViewCellStyle
             {
                 BackColor = Color.FromArgb(50, 50, 50),
@@ -194,7 +203,6 @@ namespace Trabalho
                 WrapMode = DataGridViewTriState.True
             };
 
-            // Estilo das células
             DataGridView1.DefaultCellStyle = new DataGridViewCellStyle
             {
                 Font = new Font("Segoe UI", 10),
@@ -205,10 +213,8 @@ namespace Trabalho
                 Alignment = DataGridViewContentAlignment.MiddleLeft
             };
 
-            // Ajuste automático das colunas
             DataGridView1.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
 
-            // Estilo alternado nas linhas
             DataGridView1.AlternatingRowsDefaultCellStyle = new DataGridViewCellStyle
             {
                 BackColor = Color.WhiteSmoke
@@ -222,7 +228,7 @@ namespace Trabalho
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(800, 450);
             Controls.Add(DataGridView1);
-            Controls.Add(ToolStrip1);
+            Controls.Add(toolStrip1);
             Text = "Gerenciamento de Processos";
             WindowState = FormWindowState.Maximized;
             ControlBox = false;
@@ -231,5 +237,6 @@ namespace Trabalho
 
             #endregion
         }
+
     }
 }

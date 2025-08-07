@@ -1,12 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Drawing;
-using System.Linq;
-using System.Threading.Tasks;
-using System.Windows.Forms;            // Timer vem daqui
-using CLUSA;
+﻿using CLUSA;
 using MongoDB.Bson;
 using MongoDB.Driver;
+using System.Diagnostics;
 
 namespace Trabalho
 {
@@ -379,6 +374,7 @@ namespace Trabalho
         private T ShowSingleFormOfType<T>() where T : Form, new()
         {
             TCabas.Visible = false;
+
             foreach (var kvp in _forms.ToList())
             {
                 if (kvp.Key != typeof(T))
@@ -388,19 +384,34 @@ namespace Trabalho
                 }
             }
 
-            if (_forms.TryGetValue(typeof(T), out var form) && !form.IsDisposed)
+            if (_forms.TryGetValue(typeof(T), out var form) && form != null && !form.IsDisposed)
             {
                 form.WindowState = FormWindowState.Maximized;
-                form.Show();
+                if (!form.Visible)
+                    form.Show();
                 form.BringToFront();
                 return (T)form;
             }
 
-            var novo = new T { MdiParent = this };
-            novo.Show();
-            _forms[typeof(T)] = novo;
-            return novo;
+
+            try
+            {
+                Debug.WriteLine($"Tentando criar o formulário {typeof(T).Name}...");
+                var novo = new T();
+                Debug.WriteLine($"Formulário {typeof(T).Name} criado com sucesso.");
+                novo.MdiParent = this;
+                novo.Show();        
+                _forms[typeof(T)] = novo;
+                return novo;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Erro ao abrir o formulário {typeof(T).Name}:\n{ex}", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return null;
+            }
+
         }
+
         private void MenuItemMaximize_Click(object sender, EventArgs e)
             => this.WindowState = FormWindowState.Maximized;
         private void MenuItemMinimize_Click(Object sender, EventArgs e)

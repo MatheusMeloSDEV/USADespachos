@@ -1,8 +1,4 @@
-﻿using Aspose.Cells.Charts;
-using Aspose.Cells.Drawing;
-using CLUSA;
-using System.Text.RegularExpressions;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement;
+﻿using CLUSA;
 
 namespace Trabalho
 {
@@ -20,8 +16,8 @@ namespace Trabalho
             CarregarDateTimePickers(Li);
         }
 
-        public frmLi(string numeroLi,List<string> orgaos, string ncm, string lpco, DateTime? dataregistroLI, bool checkdataregistroLI,
-                    DateTime? dataRegistro,bool checkDataRegistro,DateTime? dataDeferimento,bool checkDataDeferimento,string parametrizacao,
+        public frmLi(string numeroLi, List<string> orgaos, string ncm, string lpco, DateTime? dataregistroLI, bool checkdataregistroLI,
+                    DateTime? dataRegistro, bool checkDataRegistro, DateTime? dataDeferimento, bool checkDataDeferimento, string parametrizacao,
                     bool somenteVisualizacao = false)
                     : this()
         {
@@ -211,7 +207,7 @@ namespace Trabalho
             if (cbInmetro.Checked) orgaosSelecionados.Add("INMETRO");
 
             var ncm = TxtNCM.Text.Trim();
-            var lpco = TXTlilpco.Text.Trim(); 
+            var lpco = TXTlilpco.Text.Trim();
             var dataReg = DTPdataderegistrolilpco.Checked ? DTPdataderegistrolilpco.Value : (DateTime?)null;
             var chkReg = DTPdataderegistrolilpco.Checked;
             var dataDef = DTPdatadedeferimentolilpco.Checked ? DTPdatadedeferimentolilpco.Value : (DateTime?)null;
