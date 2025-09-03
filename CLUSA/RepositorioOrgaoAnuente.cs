@@ -51,8 +51,7 @@ namespace CLUSA
             var propriedades = new[]
             {
                 "Ref_USA", "Importador", "SR", "Exportador", "Veiculo", "Produto", "Origem",
-                "Li", "InspecaoIbama", "CheckInspecaoIbama", "InspecaoMapa", "CheckInspecaoMapa",
-                "DataDeAtracacao", "CheckDataDeAtracacao", "DataEmbarque", "CheckDataEmbarque",
+                "Li", "Inspecao","CheckInspecaoS", "DataDeAtracacao", "CheckDataDeAtracacao", "DataEmbarque", "CheckDataEmbarque",
                 "Amostra", "Pendencia", "StatusDoProcesso"
             };
 
@@ -101,8 +100,8 @@ namespace CLUSA
                 var propriedades = new[]
                 {
                     "Ref_USA", "Importador", "SR", "Exportador", "Veiculo", "Produto", "Origem",
-                    "LI", "CheckInspecaoMapa", "DataDeAtracacao", "CheckDataDeAtracacao", "DataEmbarque",
-                    "CheckDataEmbarque", "Amostra", "Pendencia", "StatusDoProcesso"
+                    "Li", "Inspecao","CheckInspecaoS", "DataDeAtracacao", "CheckDataDeAtracacao", "DataEmbarque", "CheckDataEmbarque",
+                    "Amostra", "Pendencia", "StatusDoProcesso"
                 };
 
                 foreach (var prop in propriedades)

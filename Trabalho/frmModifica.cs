@@ -6,27 +6,28 @@ namespace Trabalho
     {
         private readonly RepositorioOrgaoAnuente<T> _repositorio;
         private readonly string _nomeColecao;
+        public bool VisualizacaoCheck;
         public T Entidade { get; set; }
         private UCOrgaoAnuente uc; // nosso UserControl
 
-        public FrmModifica(string nomeColecao, T? entidade = null)
+        public FrmModifica(string nomeColecao, T? entidade = null, bool visualizacao = false) // Adicione o parâmetro aqui
         {
             _nomeColecao = nomeColecao;
             _repositorio = new RepositorioOrgaoAnuente<T>(_nomeColecao);
             Entidade = entidade ?? new T();
+            VisualizacaoCheck = visualizacao; 
 
             uc = new UCOrgaoAnuente
             {
                 Dock = DockStyle.Fill,
-                Visualizacao = false
+                Visualizacao = this.VisualizacaoCheck 
             };
             this.Controls.Clear();
             this.Controls.Add(uc);
 
-            this.Width = 960;   // ajuste conforme necessário
-            this.Height = 630;   // ajuste conforme necessário
+            this.Width = 960;  
+            this.Height = 630; 
 
-            // Associa o evento Load ao método de carregamento
             this.Load += FrmModifica_Load;
 
             uc.OnConfirmar += Uc_OnConfirmar;
@@ -49,7 +50,13 @@ namespace Trabalho
         // Quando o usuário clicar em “Salvar” no UserControl:
         private async void Uc_OnConfirmar(object sender, EventArgs e)
         {
-            // Extrai valores do UserControl para a entidade
+            if (VisualizacaoCheck)
+            {
+                this.DialogResult = DialogResult.Cancel; // Ou OK, dependendo do que preferir
+                this.Close();
+                return;
+            }
+
             uc.ExtrairParaEntidade(Entidade);
 
             // Salva no repositório

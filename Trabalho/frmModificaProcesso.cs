@@ -19,8 +19,10 @@ namespace Trabalho
         {
             this.Icon = Icon.ExtractAssociatedIcon(Application.ExecutablePath);
 
+
             SelecionarItemCheckedListBox(checkedListBox2, processo.FormaRecOriginais);
             SelecionarItensCheckedListBox(checkedListBox1, processo.DocRecebidos);
+
             if (Modo == "Editar") { TXTnr.Enabled = false; }
 
             if (Modo == "Adicionar")
@@ -63,7 +65,11 @@ namespace Trabalho
                 { DTPdatadeinspecao,          (p.Inspecao,              p.CheckInspecao) },
                 { DTPdatadeatracacao,         (p.DataDeAtracacao,       p.CheckDataDeAtracacao) },
                 { DTPdatadeembarque,          (p.DataEmbarque,          p.CheckDataEmbarque) },
-                { DTPDataRecOriginais,        (p.DataRecebOriginais,    p.CheckDataRecebOriginais) }
+                { DTPDataRecOriginais,        (p.DataRecebOriginais,    p.CheckDataRecebOriginais) },
+                { dtpDataMinuta,              (p.DataMinutaDI,          p.CheckDataMinutaDI) },
+                { dtpVencimentoFMA,           (p.VencimentoFMA,         p.VencimentoFMA.HasValue) },
+                { dtpVencimentoFreeTime,      (p.VencimentoFreeTime,    p.VencimentoFreeTime.HasValue) },
+                { dtpVencimentoLI_LPCO,       (p.VencimentoLI_LPCO,     p.VencimentoLI_LPCO.HasValue) }
             };
 
             foreach (var kv in mapeamento)
@@ -94,6 +100,7 @@ namespace Trabalho
 
         private void SetCamposSomenteLeitura(Control parent)
         {
+            button3.Enabled = false;
             foreach (Control control in parent.Controls)
             {
                 switch (control)
@@ -110,7 +117,7 @@ namespace Trabalho
                         control.Enabled = false;
                         break;
                 }
-
+                
                 // Recursivamente trata controles compostos (GroupBox, Panel, etc.)
                 if (control.HasChildren)
                 {
@@ -220,20 +227,14 @@ namespace Trabalho
 
         public void AtualizarLi(string numeroLi, LiInfo liAtualizada)
         {
-            var existente = listaLis.FirstOrDefault(li => li.Numero == numeroLi);
-            if (existente != null)
-            {
-                existente.OrgaosAnuentes = liAtualizada.OrgaosAnuentes;
-                existente.NCM = liAtualizada.NCM;
-                existente.DataRegistroLI = liAtualizada.DataRegistroLI;
-                existente.CheckDataRegistroLI = liAtualizada.CheckDataRegistroLI;
-                existente.LPCO = liAtualizada.LPCO;
-                existente.DataRegistroLPCO = liAtualizada.DataRegistroLPCO;
-                existente.CheckDataRegistroLPCO = liAtualizada.CheckDataRegistroLPCO;
-                existente.DataDeferimentoLPCO = liAtualizada.DataDeferimentoLPCO;
-                existente.CheckDataDeferimentoLPCO = liAtualizada.CheckDataDeferimentoLPCO;
-                existente.ParametrizacaoLPCO = liAtualizada.ParametrizacaoLPCO;
+            // Encontra o índice (a posição) do item antigo na lista
+            int index = listaLis.FindIndex(li => li.Numero == numeroLi);
 
+            // Se o item foi encontrado...
+            if (index != -1)
+            {
+                // ...substitui o objeto inteiro naquela posição pelo novo.
+                listaLis[index] = liAtualizada;
                 AtualizarPainelLi();
             }
         }
@@ -259,6 +260,7 @@ namespace Trabalho
 
             foreach (var li in listaLis)
             {
+
                 var panel = new Panel
                 {
                     Size = new Size(panelWidth, panelHeight),
@@ -284,14 +286,7 @@ namespace Trabalho
 
                 btnVisualizar.Click += (s, e) =>
                 {
-                    var frm = new frmLi(
-                        li.Numero, li.OrgaosAnuentes, li.NCM, li.LPCO,
-                        li.DataRegistroLI, li.CheckDataRegistroLI,
-                        li.DataRegistroLPCO, li.CheckDataRegistroLPCO,
-                        li.DataDeferimentoLPCO, li.CheckDataDeferimentoLPCO,
-                        li.ParametrizacaoLPCO,
-                        somenteVisualizacao
-                    );
+                    var frm = new frmLi(li, somenteVisualizacao);
                     frm.Owner = this;
                     frm.ShowDialog(this);
                 };
@@ -303,7 +298,7 @@ namespace Trabalho
         }
         private void btnAdicionarLi_Click(object sender, EventArgs e)
         {
-            var frm = new frmLi();
+            var frm = new frmLi(null, false);
             frm.Owner = this;
             frm.ShowDialog();
         }

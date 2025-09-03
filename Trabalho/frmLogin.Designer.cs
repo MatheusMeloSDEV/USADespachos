@@ -53,7 +53,7 @@
             lblError.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             lblError.AutoSize = true;
             lblError.BackColor = Color.Transparent;
-            lblError.Font = new Font("Segoe UI", 10F, FontStyle.Regular, GraphicsUnit.Point);
+            lblError.Font = new Font("Segoe UI", 10F);
             lblError.ForeColor = Color.Red;
             lblError.Location = new Point(263, 141);
             lblError.Name = "lblError";
@@ -103,7 +103,7 @@
             lblPassword.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             lblPassword.AutoSize = true;
             lblPassword.BackColor = Color.Transparent;
-            lblPassword.Location = new Point(274, 241);
+            lblPassword.Location = new Point(268, 240);
             lblPassword.Name = "lblPassword";
             lblPassword.Size = new Size(57, 15);
             lblPassword.TabIndex = 21;
@@ -114,7 +114,7 @@
             lblUsername.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             lblUsername.AutoSize = true;
             lblUsername.BackColor = Color.Transparent;
-            lblUsername.Location = new Point(271, 189);
+            lblUsername.Location = new Point(268, 187);
             lblUsername.Name = "lblUsername";
             lblUsername.Size = new Size(60, 15);
             lblUsername.TabIndex = 20;
@@ -144,7 +144,6 @@
             // tLogado
             // 
             tLogado.Tick += TimerLogado_Tick;
-            // 
             // 
             // btnFechar
             // 
@@ -184,7 +183,7 @@
             ftSol.Visible = false;
             ftSol.Click += FtSol_Click;
             // 
-            // frmLogin
+            // FrmLogin
             // 
             AcceptButton = btnLogin;
             AutoScaleDimensions = new SizeF(7F, 15F);
@@ -205,7 +204,7 @@
             Controls.Add(txtUsername);
             FormBorderStyle = FormBorderStyle.FixedDialog;
             MaximizeBox = false;
-            Name = "frmLogin";
+            Name = "FrmLogin";
             StartPosition = FormStartPosition.CenterScreen;
             Text = "   Login";
             TransparencyKey = Color.Transparent;

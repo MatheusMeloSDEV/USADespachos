@@ -1,11 +1,10 @@
 ﻿using CLUSA;
-using static Trabalho.FrmProcesso;
+using static Trabalho.frmSantos;
 
 namespace Trabalho
 {
     public partial class FrmMapa : Form
     {
-        // Use o tipo correto: MAPA
         private readonly RepositorioOrgaoAnuente<MAPA> _repositorio;
 
         public FrmMapa()
@@ -44,10 +43,13 @@ namespace Trabalho
                 ConfigurarColunasDataGridView();
 
                 var registros = _repositorio.ListarTodos();
+                var registrosOrdenados = registros
+                    .OrderBy(m => ExtrairAnoNumero(m.Ref_USA))
+                    .ToList();
 
-                if (registros.Count > 0)
+                if (registrosOrdenados.Count > 0)
                 {
-                    BSmapa.DataSource = registros;
+                    BSmapa.DataSource = registrosOrdenados;
                     dataGridView1.DataSource = BSmapa;
                 }
                 else
@@ -59,6 +61,19 @@ namespace Trabalho
             {
                 MessageBox.Show($"Erro ao carregar o DataGridView: {ex.Message}", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
+        }
+
+        private (int ano, int numero) ExtrairAnoNumero(string refUsa)
+        {
+            if (string.IsNullOrWhiteSpace(refUsa)) return (0, 0);
+            var partes = refUsa.Split('/');
+            int numero = 0, ano = 0;
+            if (partes.Length == 2)
+            {
+                int.TryParse(partes[0], out numero);
+                int.TryParse(partes[1], out ano);
+            }
+            return (ano, numero);
         }
 
         private void ConfigurarColunasDataGridView()
@@ -250,7 +265,11 @@ namespace Trabalho
         {
             try
             {
-                BSmapa.DataSource = _repositorio.ListarTodos();
+                var registros = _repositorio.ListarTodos();
+                var registrosOrdenados = registros
+                    .OrderBy(m => ExtrairAnoNumero(m.Ref_USA))
+                    .ToList();
+                BSmapa.DataSource = registrosOrdenados;
                 BSmapa.ResetBindings(false);
             }
             catch (Exception ex)
@@ -261,7 +280,12 @@ namespace Trabalho
 
         private void BtnReload_Click(object sender, EventArgs e)
         {
-            BSmapa.DataSource = _repositorio.ListarTodos();
+            var registros = _repositorio.ListarTodos();
+            var registrosOrdenados = registros
+                .OrderBy(m => ExtrairAnoNumero(m.Ref_USA))
+                .ToList();
+            BSmapa.DataSource = registrosOrdenados;
+            dataGridView1.DataSource = BSmapa;
         }
 
         private void BtnPesquisar_Click(object sender, EventArgs e)
@@ -299,16 +323,35 @@ namespace Trabalho
             if (entidade != null)
             {
                 using var frm = new FrmModifica<MAPA>("MAPA", entidade);
-                // frm.Visualizacao = false; // Removido, pois não existe na classe genérica
                 if (frm.ShowDialog() == DialogResult.OK)
                 {
-                    BSmapa.DataSource = await _repositorio.ListarTodosAsync();
-                    BSmapa.ResetBindings(false);
+                    await RecarregarEOrdenarDadosAsync();
                 }
             }
         }
+        private async Task RecarregarEOrdenarDadosAsync()
+        {
+            try
+            {
+                // 1. Busca os dados mais recentes de forma assíncrona.
+                var registros = await _repositorio.ListarTodosAsync();
 
-        private void DataGridView1_CellDoubleClick(object sender, DataGridViewCellEventArgs e)
+                // 2. Ordena os dados usando sua lógica customizada.
+                var registrosOrdenados = registros
+                    .OrderBy(m => ExtrairAnoNumero(m.Ref_USA))
+                    .ToList();
+
+                // 3. Atualiza a fonte de dados do DataGridView.
+                BSmapa.DataSource = registrosOrdenados;
+                BSmapa.ResetBindings(false); // Garante que a interface reflita a mudança.
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Erro ao recarregar os dados: {ex.Message}", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private async void DataGridView1_CellDoubleClick(object sender, DataGridViewCellEventArgs e)
         {
             if (BSmapa.Current is not MAPA mapaSelecionado)
             {
@@ -316,16 +359,10 @@ namespace Trabalho
                 return;
             }
 
-            using var frm = new FrmModifica<MAPA>("MAPA", mapaSelecionado);
-            // frm.Visualizacao = true; // Removido, pois não existe na classe genérica
+            using var frm = new FrmModifica<MAPA>("MAPA", mapaSelecionado, true);
             frm.ShowDialog();
 
-            if (frm.DialogResult == DialogResult.OK)
-            {
-                BSmapa.ResetBindings(false);
-            }
-
-            BSmapa.DataSource = _repositorio.ListarTodos();
+            await RecarregarEOrdenarDadosAsync();
         }
 
         private void CmbPesquisar_SelectedIndexChanged(object sender, EventArgs e)

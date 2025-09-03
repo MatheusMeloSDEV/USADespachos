@@ -3,31 +3,21 @@
     public class LiInfo
     {
         public string Numero { get; set; } = string.Empty;
-        public List<string> OrgaosAnuentes { get; set; } = new List<string>();
         public string NCM { get; set; } = string.Empty;
-        public string LPCO { get; set; } = string.Empty;
-        public DateTime? DataRegistroLI { get; set; } = (DateTime?)null;
-        public bool CheckDataRegistroLI { get; set; } = false;
-        public DateTime? DataRegistroLPCO { get; set; } = (DateTime?)null;
-        public bool CheckDataRegistroLPCO { get; set; } = false;
-        public DateTime? DataDeferimentoLPCO { get; set; } = (DateTime?)null;
-        public bool CheckDataDeferimentoLPCO { get; set; } = false;
-        public string ParametrizacaoLPCO { get; set; } = string.Empty;
+        public DateTime? DataRegistroLI { get; set; }
+        public bool CheckDataRegistroLI { get; set; }
 
-        public LiInfo(string numero, List<string> orgaos, string ncm, string lpco, DateTime? dataRegistroLI, bool checkDataRegistroLI, DateTime? dataRegistro, bool checkDataRegistro, DateTime? dataDeferimento, bool checkDataDeferimento, string parametrizacao)
+        public List<LpcoInfo> LpcosPorOrgao { get; set; } = new List<LpcoInfo>();
+
+        public LiInfo() { }
+
+        public LiInfo(string numero, string ncm, DateTime? dataRegistroLI, bool checkDataRegistroLI, List<LpcoInfo> lpcos)
         {
             Numero = numero;
-            OrgaosAnuentes = orgaos;
             NCM = ncm;
-            LPCO = lpco;
             DataRegistroLI = dataRegistroLI;
             CheckDataRegistroLI = checkDataRegistroLI;
-            DataRegistroLPCO = dataRegistro;
-            CheckDataRegistroLPCO = checkDataRegistro;
-            DataDeferimentoLPCO = dataDeferimento;
-            CheckDataDeferimentoLPCO = checkDataDeferimento;
-            ParametrizacaoLPCO = parametrizacao;
+            LpcosPorOrgao = lpcos ?? new List<LpcoInfo>();
         }
-        public LiInfo() { }
     }
 }

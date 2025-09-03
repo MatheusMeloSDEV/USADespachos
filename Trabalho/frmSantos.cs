@@ -4,11 +4,13 @@ using System.Diagnostics;
 
 namespace Trabalho
 {
-    public partial class FrmProcesso : Form
+    public partial class frmSantos : Form
     {
         private readonly RepositorioProcesso _repositorio;
+        private int _estadoOrdenacaoRefUsa = 0; // 0 = original, 1 = asc, 2 = desc
+        private List<Processo> _listaOriginal = new List<Processo>();
 
-        public FrmProcesso()
+        public frmSantos()
         {
             InitializeComponent();
             _repositorio = new RepositorioProcesso();
@@ -146,14 +148,16 @@ namespace Trabalho
         {
             try
             {
-                // 1. Configura as colunas do Grid
                 ConfigurarColunasDataGridViewProcesso();
 
-                // 2. Carrega os dados e popula o Grid
                 var registros = _repositorio.FindAll();
-                if (registros.Any())
+                // Ordena sempre do menor para o maior
+                var registrosOrdenados = registros.OrderBy(p => ExtrairAnoNumero(p.Ref_USA)).ToList();
+                _listaOriginal = registrosOrdenados;
+
+                if (registrosOrdenados.Any())
                 {
-                    BsProcesso.DataSource = registros;
+                    BsProcesso.DataSource = registrosOrdenados;
                     DataGridView1.DataSource = BsProcesso;
                 }
                 else
@@ -161,8 +165,8 @@ namespace Trabalho
                     MessageBox.Show(
                         "Operação concluída com sucesso.",
                         "Sucesso",
-                        MessageBoxButtons.OK,      
-                        MessageBoxIcon.Information  
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Information
                     );
                 }
 
@@ -170,7 +174,6 @@ namespace Trabalho
                 this.Icon = Icon.ExtractAssociatedIcon(Application.ExecutablePath);
                 PopularComboBoxDePesquisa();
 
-                // Defina o índice aqui e depois configure o autocomplete
                 if (CmbPesquisar.Items.Count > 0)
                 {
                     CmbPesquisar.SelectedIndex = 0;
@@ -273,11 +276,10 @@ namespace Trabalho
         private void BtnReload_Click(object sender, EventArgs e)
         {
             var registros = _repositorio.FindAll();
-            if (registros.Any())
-            {
-                BsProcesso.DataSource = registros;
-                DataGridView1.DataSource = BsProcesso;
-            }
+            var registrosOrdenados = registros.OrderBy(p => ExtrairAnoNumero(p.Ref_USA)).ToList();
+            _listaOriginal = registrosOrdenados;
+            BsProcesso.DataSource = registrosOrdenados;
+            DataGridView1.DataSource = BsProcesso;
         }
         private async void BtnExcluir_Click(object sender, EventArgs e)
         {
@@ -365,12 +367,12 @@ namespace Trabalho
             using var frm = new FrmModificaProcesso { processo = processoSelecionado, Visualização = true, Modo = "Visualizar" };
             frm.ShowDialog();
 
-            if (frm.DialogResult == DialogResult.OK)
-            {
-                BsProcesso.ResetBindings(false);
-            }
-
-            BsProcesso.DataSource = _repositorio.FindAll();
+            // Sempre recarrega e ordena após fechar o diálogo
+            var registros = _repositorio.FindAll();
+            var registrosOrdenados = registros.OrderBy(p => ExtrairAnoNumero(p.Ref_USA)).ToList();
+            _listaOriginal = registrosOrdenados;
+            BsProcesso.DataSource = registrosOrdenados;
+            DataGridView1.DataSource = BsProcesso;
         }
 
         private void BtnExportar_Click(object sender, EventArgs e)
@@ -474,6 +476,52 @@ namespace Trabalho
             }
 
             public override string ToString() => HeaderText;
+        }
+        private void DataGridView1_ColumnHeaderMouseClick(object sender, DataGridViewCellMouseEventArgs e)
+        {
+            var coluna = DataGridView1.Columns[e.ColumnIndex];
+            if (coluna.Name == "ColunaRefUSA")
+            {
+                var lista = BsProcesso.DataSource as List<Processo>;
+                if (lista == null) return;
+
+                _estadoOrdenacaoRefUsa = (_estadoOrdenacaoRefUsa + 1) % 3;
+
+                List<Processo> listaOrdenada;
+                string header = "Ref. USA";
+                switch (_estadoOrdenacaoRefUsa)
+                {
+                    case 1: // Ascendente
+                        listaOrdenada = _listaOriginal.OrderBy(p => ExtrairAnoNumero(p.Ref_USA)).ToList();
+                        header += "  ↓";
+                        break;
+                    case 2: // Descendente
+                        listaOrdenada = _listaOriginal.OrderByDescending(p => ExtrairAnoNumero(p.Ref_USA)).ToList();
+                        header += "  ↑";
+                        break;
+                    default: // Original
+                        listaOrdenada = new List<Processo>(_listaOriginal);
+                        break;
+                }
+
+                BsProcesso.DataSource = listaOrdenada;
+                DataGridView1.DataSource = BsProcesso;
+                DataGridView1.Columns[0].HeaderText = header;
+            }
+        }
+
+        // Função auxiliar para extrair ano e número do formato 0000/0000
+        private (int ano, int numero) ExtrairAnoNumero(string refUsa)
+        {
+            if (string.IsNullOrWhiteSpace(refUsa)) return (0, 0);
+            var partes = refUsa.Split('/');
+            int numero = 0, ano = 0;
+            if (partes.Length == 2)
+            {
+                int.TryParse(partes[0], out numero);
+                int.TryParse(partes[1], out ano);
+            }
+            return (ano, numero);
         }
     }
 }

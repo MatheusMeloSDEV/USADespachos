@@ -95,7 +95,7 @@ namespace Trabalho
             groupBox1.SuspendLayout();
             SuspendLayout();
             // 
-            // TErro
+            // tErro
             // 
             tErro.Tick += TErro_Tick;
             // 
@@ -140,6 +140,7 @@ namespace Trabalho
             DTPdatadeinspecao.Name = "DTPdatadeinspecao";
             DTPdatadeinspecao.Size = new Size(135, 23);
             DTPdatadeinspecao.TabIndex = 296;
+            DTPdatadeinspecao.ValueChanged += DateTimePicker_OnValueChanged;
             // 
             // CBamostra
             // 
@@ -201,6 +202,7 @@ namespace Trabalho
             DTPdatadeatracacao.Name = "DTPdatadeatracacao";
             DTPdatadeatracacao.Size = new Size(135, 23);
             DTPdatadeatracacao.TabIndex = 290;
+            DTPdatadeatracacao.ValueChanged += DateTimePicker_OnValueChanged;
             // 
             // DTPdatadeembarque
             // 
@@ -210,6 +212,7 @@ namespace Trabalho
             DTPdatadeembarque.Name = "DTPdatadeembarque";
             DTPdatadeembarque.Size = new Size(135, 23);
             DTPdatadeembarque.TabIndex = 289;
+            DTPdatadeembarque.ValueChanged += DateTimePicker_OnValueChanged;
             // 
             // Label11
             // 
@@ -229,7 +232,7 @@ namespace Trabalho
             Label9.Font = new Font("Segoe UI", 12F);
             Label9.Location = new Point(254, 12);
             Label9.Name = "Label9";
-            Label9.Size = new Size(66, 21);
+            Label9.Size = new Size(70, 21);
             Label9.TabIndex = 287;
             Label9.Text = "Ref. USA";
             // 
@@ -389,7 +392,7 @@ namespace Trabalho
             flpLis.Size = new Size(905, 147);
             flpLis.TabIndex = 380;
             // 
-            // UcModifica
+            // UCOrgaoAnuente
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
@@ -421,8 +424,9 @@ namespace Trabalho
             Controls.Add(TXTpendencia);
             Controls.Add(Exportador);
             Controls.Add(TXTexportador);
-            Name = "UcModifica";
+            Name = "UCOrgaoAnuente";
             Size = new Size(941, 582);
+            Load += UCOrgaoAnuente_Load;
             ((ISupportInitialize)BsModifica).EndInit();
             groupBox1.ResumeLayout(false);
             ResumeLayout(false);

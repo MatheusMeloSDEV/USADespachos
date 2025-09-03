@@ -1,5 +1,5 @@
 ﻿using CLUSA;
-using static Trabalho.FrmProcesso;
+using static Trabalho.frmSantos;
 
 namespace Trabalho
 {
@@ -321,7 +321,7 @@ namespace Trabalho
                 return;
             }
 
-            using var frm = new FrmModifica<IBAMA>("IBAMA", ibamaSelecionado);
+            using var frm = new FrmModifica<IBAMA>("IBAMA", ibamaSelecionado, true);
             frm.ShowDialog();
 
             if (frm.DialogResult == DialogResult.OK)

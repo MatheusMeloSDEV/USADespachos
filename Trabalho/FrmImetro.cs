@@ -1,5 +1,5 @@
 ﻿using CLUSA;
-using static Trabalho.FrmProcesso;
+using static Trabalho.frmSantos;
 
 namespace Trabalho
 {
@@ -323,7 +323,7 @@ namespace Trabalho
                 return;
             }
 
-            using var frm = new FrmModifica<INMETRO>("INMETRO", inmetroSelecionado);
+            using var frm = new FrmModifica<INMETRO>("INMETRO", inmetroSelecionado, true);
             // Se quiser modo visualização, adicione uma propriedade Visualizacao no FrmModifica e passe aqui
             frm.ShowDialog();
 

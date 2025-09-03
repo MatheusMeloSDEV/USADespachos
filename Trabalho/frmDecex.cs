@@ -1,5 +1,5 @@
 ﻿using CLUSA;
-using static Trabalho.FrmProcesso;
+using static Trabalho.frmSantos;
 
 namespace Trabalho
 {
@@ -310,7 +310,7 @@ namespace Trabalho
                 return;
             }
 
-            using var frm = new FrmModifica<DECEX>("DECEX", decexSelecionado);
+            using var frm = new FrmModifica<DECEX>("DECEX", decexSelecionado, true);
             frm.ShowDialog();
 
             if (frm.DialogResult == DialogResult.OK)

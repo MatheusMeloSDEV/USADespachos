@@ -52,19 +52,19 @@ namespace CLUSA
                 switch (colecao)
                 {
                     case "MAPA":
-                        _MAPA.InsertOne(new MAPA()); // Adapte o construtor se necessário
+                        _MAPA.InsertOne(new MAPA(processo));
                         break;
                     case "Anvisa":
-                        _Anvisa.InsertOne(new ANVISA());
+                        _Anvisa.InsertOne(new ANVISA(processo));
                         break;
                     case "Decex":
-                        _Decex.InsertOne(new DECEX());
+                        _Decex.InsertOne(new DECEX(processo));
                         break;
                     case "IBAMA":
-                        _Ibama.InsertOne(new IBAMA());
+                        _Ibama.InsertOne(new IBAMA(processo));
                         break;
                     case "IMETRO":
-                        _Inmetro.InsertOne(new INMETRO());
+                        _Inmetro.InsertOne(new INMETRO(processo));
                         break;
                     default:
                         _Processo.InsertOne(processo);

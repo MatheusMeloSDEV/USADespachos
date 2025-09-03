@@ -2,7 +2,7 @@
 
 namespace Trabalho
 {
-    partial class FrmProcesso
+    partial class frmSantos
     {
         private System.ComponentModel.IContainer components = null;
 
@@ -193,6 +193,7 @@ namespace Trabalho
             };
 
             DataGridView1.CellDoubleClick += DataGridView1_CellDoubleClick;
+            DataGridView1.ColumnHeaderMouseClick += DataGridView1_ColumnHeaderMouseClick;
 
             DataGridView1.ColumnHeadersDefaultCellStyle = new DataGridViewCellStyle
             {

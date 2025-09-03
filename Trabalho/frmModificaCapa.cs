@@ -28,10 +28,21 @@ namespace Trabalho
             cbSigvig.SelectedItem = capa.Sigvig ?? "Selecionado";
             DTPSigvig.Value = capa.SigvigData ?? DateTime.Today;
             TxtIncoterm.Text = capa.Incoterm ?? "";
-            cbNumerario.SelectedItem = capa.Numerario ?? "";
             txtDTA.Text = capa.DTA ?? "";
             txtMarinha.Text = capa.Marinha ?? "";
             txtCE.Text = capa.CE ?? "";
+            cbArmazenagem.Checked = capa.Armazenagem; 
+            cbArmFaturado.Checked = capa.Faturado;
+
+            if (capa.Numerario != null)
+            {
+                foreach (var item in capa.Numerario)
+                {
+                    int idx = cbNumerario.Items.IndexOf(item);
+                    if (idx >= 0)
+                        Impostos.SetItemChecked(idx, true);
+                }
+            }
 
             if (capa.Imposto != null)
             {
@@ -50,8 +61,6 @@ namespace Trabalho
             ItensAdicionais.SetItemChecked(ItensAdicionais.Items.IndexOf("Consulta SEFAZ"), capa.ConsultaSEFAZ);
             ItensAdicionais.SetItemChecked(ItensAdicionais.Items.IndexOf("DAT & LI Deferida"), capa.DAT_IIDeferida);
             ItensAdicionais.SetItemChecked(ItensAdicionais.Items.IndexOf("DANFE"), capa.DANFE);
-            ItensAdicionais.SetItemChecked(ItensAdicionais.Items.IndexOf("Armazenagem"), capa.Armazenagem);
-            ItensAdicionais.SetItemChecked(ItensAdicionais.Items.IndexOf("Faturado"), capa.Faturado);
 
             // Datas
             DTPAverbar.Value = capa.AverbarData ?? DateTime.Today;
@@ -102,39 +111,62 @@ namespace Trabalho
 
         private void btnExportar_Click(object sender, EventArgs e)
         {
-
-            // 1) Cria sem using
+            // 1) Cria e exibe o formulário de progresso
             var progressForm = new ProgressForm();
-            progressForm.Show(this);       // exibe modeless, com o próprio Form como owner
+            progressForm.Show(this);
 
             Task.Run(() =>
             {
-                string pdfPath = "";
+                string pdfPath = null;
                 string mensagemErro = null;
 
                 try
                 {
-                    pdfPath = PythonRunner.ExecutarCapa(ref_usa).Trim();
+                    // 1. Executa o script e armazena a saída (que pode ser um caminho ou um erro)
+                    string resultadoPython = PythonRunner.ExecutarCapa(ref_usa);
+
+                    // 2. CORREÇÃO: VERIFICA O RESULTADO
+                    // Se a string retornada termina com .pdf E o arquivo realmente existe, é sucesso.
+                    if (!string.IsNullOrWhiteSpace(resultadoPython) &&
+                        resultadoPython.Trim().EndsWith(".pdf", StringComparison.OrdinalIgnoreCase) &&
+                        File.Exists(resultadoPython.Trim()))
+                    {
+                        // SUCESSO: O resultado é um caminho de PDF válido.
+                        pdfPath = resultadoPython.Trim();
+                    }
+                    else
+                    {
+                        // FALHA: O resultado não é um PDF válido, então consideramos que é a mensagem de erro.
+                        mensagemErro = resultadoPython;
+                        if (string.IsNullOrWhiteSpace(mensagemErro))
+                        {
+                            mensagemErro = "Ocorreu um erro desconhecido durante a execução do script. A saída estava vazia.";
+                        }
+                    }
                 }
                 catch (Exception ex)
                 {
-                    mensagemErro = $"Erro durante exportação: {ex.Message}";
+                    // Este catch agora pega erros da própria lógica C# (ex: permissões, etc.)
+                    mensagemErro = $"Erro inesperado na aplicação: {ex.Message}";
                 }
 
+                // 3. Atualiza a interface do usuário com o resultado
                 Invoke(new Action(() =>
                 {
                     progressForm.Close();
                     progressForm.Dispose();
 
+                    // Agora, se mensagemErro não for nula, ela contém o erro do Python
                     if (mensagemErro != null)
                     {
-                        MessageBox.Show(mensagemErro, "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        MessageBox.Show(mensagemErro, "Erro na Exportação", MessageBoxButtons.OK, MessageBoxIcon.Error);
                         return;
                     }
 
+                    // O resto do código de sucesso permanece o mesmo
                     var resp = MessageBox.Show(
                         "Exportação concluída. Deseja abrir o PDF?",
-                        "Resultado",
+                        "Sucesso",
                         MessageBoxButtons.YesNo,
                         MessageBoxIcon.Question
                     );
@@ -147,9 +179,8 @@ namespace Trabalho
                             UseShellExecute = true
                         });
                     }
-                    DialogResult = DialogResult.OK;
+                    DialogResult = DialogResult.OK; 
                 }));
-
             });
         }
 
@@ -161,7 +192,7 @@ namespace Trabalho
             capa.Sigvig = cbSigvig.SelectedItem?.ToString();
             capa.SigvigData = (capa.Sigvig == "Liberado") ? DTPSigvig.Value : null;
             capa.Incoterm = TxtIncoterm.Text;
-            capa.Numerario = cbNumerario.SelectedItem?.ToString();
+            capa.Numerario = Impostos.CheckedItems.OfType<string>().ToArray();
             capa.DTA = txtDTA.Text;
             capa.Marinha = txtMarinha.Text;
             capa.CE = txtCE.Text;
@@ -172,8 +203,8 @@ namespace Trabalho
             capa.ConsultaSEFAZ = ItensAdicionais.CheckedItems.Contains("Consulta SEFAZ");
             capa.DAT_IIDeferida = ItensAdicionais.CheckedItems.Contains("DAT & LI Deferida");
             capa.DANFE = ItensAdicionais.CheckedItems.Contains("DANFE");
-            capa.Armazenagem = ItensAdicionais.CheckedItems.Contains("Armazenagem");
-            capa.Faturado = ItensAdicionais.CheckedItems.Contains("Faturado");
+            capa.Armazenagem = cbArmazenagem.Checked;
+            capa.Faturado = cbArmFaturado.Checked;
 
             capa.AverbarData = DTPAverbar.Value;
             capa.LiberarBLData = DTPLiberarBL.Value;

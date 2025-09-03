@@ -7,7 +7,7 @@ namespace CLUSA
         public string Sigvig { get; set; }
         public DateTime? SigvigData { get; set; }
         public string Incoterm { get; set; }
-        public string Numerario { get; set; }
+        public string[] Numerario { get; set; }
         public string DTA { get; set; }
         public string Marinha { get; set; }
         public string CE { get; set; }

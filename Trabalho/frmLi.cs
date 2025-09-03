@@ -4,127 +4,140 @@ namespace Trabalho
 {
     public partial class frmLi : Form
     {
-        public LiInfo Li;
+        public LiInfo Li { get; private set; }
         private bool _somenteVisualizacao;
-        private string _numeroLi;
-        // Construtor padrão para criar uma nova LI
-        public frmLi()
+        private string? _numeroOriginal;
+
+        public frmLi(LiInfo? liParaEditar, bool somenteVisualizacao)
         {
             InitializeComponent();
-            Li = new LiInfo();
             InicializarDateTimePickersComCheckbox();
-            CarregarDateTimePickers(Li);
+            Li = liParaEditar ?? new LiInfo();
+            _somenteVisualizacao = somenteVisualizacao;
+            if (liParaEditar != null)
+            {
+                _numeroOriginal = liParaEditar.Numero;
+            }
         }
 
-        public frmLi(string numeroLi, List<string> orgaos, string ncm, string lpco, DateTime? dataregistroLI, bool checkdataregistroLI,
-                    DateTime? dataRegistro, bool checkDataRegistro, DateTime? dataDeferimento, bool checkDataDeferimento, string parametrizacao,
-                    bool somenteVisualizacao = false)
-                    : this()
+        private void frmLi_Load(object sender, EventArgs e)
         {
-            _somenteVisualizacao = somenteVisualizacao;
-            _numeroLi = numeroLi;
+            TxtLi.Text = Li.Numero;
+            TxtNCM.Text = Li.NCM;
 
-            // Preenche campos básicos
-            TxtLi.Text = numeroLi;
-            TxtNCM.Text = ncm;
-            TXTlilpco.Text = lpco;
-            cbMapa.Checked = orgaos.Contains("MAPA");
-            cbAnvisa.Checked = orgaos.Contains("ANVISA");
-            cbDecex.Checked = orgaos.Contains("DECEX");
-            cbIbama.Checked = orgaos.Contains("IBAMA");
-            cbInmetro.Checked = orgaos.Contains("INMETRO");
-
-            // Preenche DateTimePickers
-            DTPdataderegistrolilpco.Checked = checkDataRegistro;
-            if (checkDataRegistro && dataRegistro.HasValue)
+            if (Li.CheckDataRegistroLI && Li.DataRegistroLI != null!)
             {
-                DTPdataderegistrolilpco.Format = DateTimePickerFormat.Short;
-                DTPdataderegistrolilpco.Value = dataRegistro.Value;
-            }
-            else
-            {
-                DTPdataderegistrolilpco.Format = DateTimePickerFormat.Custom;
-                DTPdataderegistrolilpco.CustomFormat = " -";
-            }
-
-            DTPdatadedeferimentolilpco.Checked = checkDataDeferimento;
-            if (checkDataDeferimento && dataDeferimento.HasValue)
-            {
-                DTPdatadedeferimentolilpco.Format = DateTimePickerFormat.Short;
-                DTPdatadedeferimentolilpco.Value = dataDeferimento.Value;
-            }
-            else
-            {
-                DTPdatadedeferimentolilpco.Format = DateTimePickerFormat.Custom;
-                DTPdatadedeferimentolilpco.CustomFormat = " -";
-            }
-            dtpDataRegistroLI.Checked = checkdataregistroLI;
-            if (checkdataregistroLI && dataregistroLI.HasValue)
-            {
+                dtpDataRegistroLI.Checked = true;
+                dtpDataRegistroLI.Value = Li.DataRegistroLI.Value;
                 dtpDataRegistroLI.Format = DateTimePickerFormat.Short;
-                dtpDataRegistroLI.Value = dataregistroLI.Value;
             }
             else
             {
+                dtpDataRegistroLI.Checked = false;
                 dtpDataRegistroLI.Format = DateTimePickerFormat.Custom;
-                dtpDataRegistroLI.CustomFormat = " -";
+                dtpDataRegistroLI.CustomFormat = " ";
             }
 
-            // Preenche textbox de parametrização
-            CBparametrizacaolilpco.Text = parametrizacao;
+            cbMapa.Tag = "MAPA";
+            cbAnvisa.Tag = "ANVISA";
+            cbDecex.Tag = "DECEX";
+            cbIbama.Tag = "IBAMA";
+            cbInmetro.Tag = "INMETRO";
+
+            SincronizarCheckBoxesComDados();
 
             // Ajusta para apenas leitura se necessário
             if (_somenteVisualizacao)
             {
                 TxtLi.ReadOnly = true;
                 TxtNCM.ReadOnly = true;
-                TXTlilpco.ReadOnly = true;
-                cbMapa.Enabled = cbAnvisa.Enabled = cbDecex.Enabled = cbIbama.Enabled = cbInmetro.Enabled = false;
-                DTPdataderegistrolilpco.Enabled = DTPdatadedeferimentolilpco.Enabled = dtpDataRegistroLI.Enabled = false;
-                CBparametrizacaolilpco.Enabled = false;
-                btnOK.Visible = false;
-                btnCancelar.Text = "Remover";
+                dtpDataRegistroLI.Enabled = false;
 
-                btnCancelar.Click -= btnCancelar_Click;
-                btnCancelar.Click += (s, e) =>
+                // Desabilita os checkboxes
+                foreach (var cb in GBOrgaosAnuentes.Controls.OfType<CheckBox>())
                 {
-                    var resp = MessageBox.Show($"Remover LI {_numeroLi}?", "Confirmação", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
-                    if (resp == DialogResult.Yes && Owner is ILiHandler handler)
-                    {
-                        btnOK.Enabled = false;
-                        handler.RemoverLi(_numeroLi);
-                        this.Close();
-                    }
-                };
-            }
-        }
-        private void InicializarDateTimePickersComCheckbox()
-        {
-            // Liste aqui todos os seus DateTimePickers que devem ter checkbox interno
-            var dtps = new[]
-            {
-            DTPdataderegistrolilpco,
-            DTPdatadedeferimentolilpco,
-            dtpDataRegistroLI
-            };
+                    cb.Enabled = false;
+                }
 
-            foreach (var dtp in dtps)
-            {
-                dtp.ShowCheckBox = true;
-                dtp.ValueChanged += DateTimePicker_OnValueChanged;
-                // caso queira capturar também o uncheck via clique:
-                dtp.MouseUp += (s, e2) => DateTimePicker_OnValueChanged(s!, EventArgs.Empty);
+                btnOK.Visible = false;
+                btnRemover.Text = "Fechar"; // No modo visualização, o botão "Remover" apenas fecha
             }
         }
+
+        private void OrgaoCheckBox_CheckedChanged(object sender, EventArgs e)
+        {
+            var checkBox = sender as CheckBox;
+            if (checkBox == null || !checkBox.Focused) return; // Evita disparos múltiplos
+
+            var nomeOrgao = checkBox.Tag.ToString();
+            var lpcoExistente = Li.LpcosPorOrgao.FirstOrDefault(l => l.NomeOrgao == nomeOrgao);
+
+            if (checkBox.Checked)
+            {
+                LpcoInfo lpcoParaEditar = lpcoExistente ?? new LpcoInfo { NomeOrgao = nomeOrgao };
+
+                using (var frm = new frmLpcoDetalhes(lpcoParaEditar))
+                {
+                    if (frm.ShowDialog() == DialogResult.OK)
+                    {
+                        if (lpcoExistente == null)
+                        {
+                            Li.LpcosPorOrgao.Add(lpcoParaEditar);
+                        }
+                    }
+                    else
+                    {
+                        checkBox.CheckedChanged -= OrgaoCheckBox_CheckedChanged;
+                        checkBox.Checked = false; // Cancela, então desmarca sem disparar o evento de novo
+                        checkBox.CheckedChanged += OrgaoCheckBox_CheckedChanged;
+                    }
+                }
+            }
+            else
+            {
+                if (lpcoExistente != null)
+                {
+                    var confirmacao = MessageBox.Show(
+                        $"Deseja remover os dados do LPCO para o órgão {nomeOrgao}?",
+                        "Confirmar Remoção", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
+
+                    if (confirmacao == DialogResult.Yes)
+                    {
+                        Li.LpcosPorOrgao.Remove(lpcoExistente);
+                    }
+                    else
+                    {
+                        checkBox.CheckedChanged -= OrgaoCheckBox_CheckedChanged;
+                        checkBox.Checked = true; // Usuário desistiu, marca de volta sem disparar o evento
+                        checkBox.CheckedChanged += OrgaoCheckBox_CheckedChanged;
+                    }
+                }
+            }
+        }
+
+        private void SincronizarCheckBoxesComDados()
+        {
+            foreach (var cb in GBOrgaosAnuentes.Controls.OfType<CheckBox>())
+            {
+                // Desativa temporariamente o evento para evitar que seja disparado
+                cb.CheckedChanged -= OrgaoCheckBox_CheckedChanged;
+
+                var nomeOrgao = cb.Tag?.ToString();
+                if (nomeOrgao != null)
+                {
+                    cb.Checked = Li.LpcosPorOrgao.Any(lpco => lpco.NomeOrgao == nomeOrgao);
+                }
+
+                // Reativa o evento
+                cb.CheckedChanged += OrgaoCheckBox_CheckedChanged;
+            }
+        }
+
+        // Método simplificado para o único DateTimePicker que restou
         private void DateTimePicker_OnValueChanged(object? sender, EventArgs e)
         {
-            if (sender is not DateTimePicker picker)
-                return;
+            if (sender is not DateTimePicker picker) return;
 
-            // Extrai o sufixo do nome para construir o nome da propriedade
-            var campo = picker.Name!.Substring(3);
-
-            // Ajusta o formato de acordo com o Checked
             if (picker.Checked)
             {
                 picker.Format = DateTimePickerFormat.Short;
@@ -132,112 +145,99 @@ namespace Trabalho
             else
             {
                 picker.Format = DateTimePickerFormat.Custom;
-                picker.CustomFormat = "' -'";
+                picker.CustomFormat = " ";
             }
 
-            DateTime? valor = picker.Checked ? picker.Value : (DateTime?)null;
-
-            // Atualiza a propriedade DateTime? (DataX) no objeto LiInfo
-            var nomePropData = campo switch
+            if (picker.Name == "dtpDataRegistroLI")
             {
-                "dataderegistrolilpco" => "DataRegistroLPCO",
-                "datadedeferimentolilpco" => "DataDeferimentoLPCO",
-                "DataRegistroLI" => "DataRegistroLI",
-                _ => null
-            };
-            if (nomePropData != null)
-            {
-                var propData = typeof(LiInfo).GetProperty(nomePropData);
-                if (propData?.PropertyType == typeof(DateTime?))
-                    propData.SetValue(Li, valor);
-
-                var propCheck = typeof(LiInfo).GetProperty("Check" + nomePropData);
-                if (propCheck?.PropertyType == typeof(bool))
-                    propCheck.SetValue(Li, picker.Checked);
+                Li.CheckDataRegistroLI = picker.Checked;
+                Li.DataRegistroLI = picker.Checked ? picker.Value : null;
             }
         }
-        private void CarregarDateTimePickers(LiInfo li)
+
+        private void InicializarDateTimePickersComCheckbox()
         {
-            // Mapeamento de cada DTP ao par (data, flag)
-            var mapeamento = new Dictionary<DateTimePicker, (DateTime? data, bool has)>()
+            // Liste aqui todos os seus DateTimePickers que devem ter checkbox interno
+            var dtps = new[]
             {
-                { DTPdataderegistrolilpco,    (li.DataRegistroLPCO,      li.CheckDataRegistroLPCO) },
-                { DTPdatadedeferimentolilpco, (li.DataDeferimentoLPCO,   li.CheckDataDeferimentoLPCO) },
-                { dtpDataRegistroLI,          (li.DataRegistroLI,        li.CheckDataRegistroLI) }
+                dtpDataRegistroLI
             };
 
-            foreach (var kv in mapeamento)
+            foreach (var dtp in dtps)
             {
-                var dtp = kv.Key;
-                var (date, has) = kv.Value;
-
-                // 1) Se quiser exibir checkbox interno (opcional)
                 dtp.ShowCheckBox = true;
+                dtp.Checked = false;
 
-                // 2) Sincroniza o Checked com o banco
-                dtp.Checked = has;
+                dtp.Format = DateTimePickerFormat.Custom;
+                dtp.CustomFormat = " ";
 
-                // 3) Se tiver data, formata e atribui; senão, mantém em branco
-                if (has && date.HasValue)
-                {
-                    dtp.Format = DateTimePickerFormat.Short;
-                    dtp.Value = date.Value;
-                }
-                else
-                {
-                    dtp.Format = DateTimePickerFormat.Custom;
-                    dtp.CustomFormat = " -";
-                }
+                dtp.ValueChanged += DateTimePicker_OnValueChanged;
+                dtp.MouseUp += (s, e2) => DateTimePicker_OnValueChanged(s, null);
             }
         }
+
         private void btnOK_Click(object sender, EventArgs e)
         {
-            var numeroLi = TxtLi.Text.Trim();
-            if (string.IsNullOrWhiteSpace(numeroLi))
+            Li.Numero = TxtLi.Text.Trim();
+            Li.NCM = TxtNCM.Text.Trim();
+            Li.CheckDataRegistroLI = dtpDataRegistroLI.Checked;
+            Li.DataRegistroLI = dtpDataRegistroLI.Checked ? dtpDataRegistroLI.Value : null;
+
+            if (string.IsNullOrWhiteSpace(Li.Numero))
             {
-                MessageBox.Show("Informe o número da LI.", "Atenção", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show("O número da LI é obrigatório.", "Atenção", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
-            var orgaosSelecionados = new List<string>();
-            if (cbMapa.Checked) orgaosSelecionados.Add("MAPA");
-            if (cbAnvisa.Checked) orgaosSelecionados.Add("ANVISA");
-            if (cbDecex.Checked) orgaosSelecionados.Add("DECEX");
-            if (cbIbama.Checked) orgaosSelecionados.Add("IBAMA");
-            if (cbInmetro.Checked) orgaosSelecionados.Add("INMETRO");
-
-            var ncm = TxtNCM.Text.Trim();
-            var lpco = TXTlilpco.Text.Trim();
-            var dataReg = DTPdataderegistrolilpco.Checked ? DTPdataderegistrolilpco.Value : (DateTime?)null;
-            var chkReg = DTPdataderegistrolilpco.Checked;
-            var dataDef = DTPdatadedeferimentolilpco.Checked ? DTPdatadedeferimentolilpco.Value : (DateTime?)null;
-            var chkDef = DTPdatadedeferimentolilpco.Checked;
-            var dataRegLI = dtpDataRegistroLI.Checked ? dtpDataRegistroLI.Value : (DateTime?)null;
-            var chkRegLI = dtpDataRegistroLI.Checked;
-            var param = CBparametrizacaolilpco.Text.Trim();
-
-            var novaLi = new LiInfo(numeroLi, orgaosSelecionados, ncm, lpco, dataRegLI, chkRegLI, dataReg, chkReg, dataDef, chkDef, param);
-
             if (Owner is ILiHandler handler)
             {
-                // Se já existe, atualiza; se não, adiciona
-                if (handler.ContainsLi(numeroLi))
+                // Lógica de decisão simplificada:
+                bool eraUmaLiExistente = !string.IsNullOrEmpty(_numeroOriginal);
+
+                if (eraUmaLiExistente)
                 {
-                    handler.AtualizarLi(numeroLi, novaLi);
-                    MessageBox.Show("LI atualizada com sucesso.", "Sucesso", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    // Se estávamos editando, sempre chamamos AtualizarLi.
+                    // Passamos o número ORIGINAL para que o sistema saiba qual LI encontrar e substituir.
+                    handler.AtualizarLi(_numeroOriginal, Li);
                 }
                 else
                 {
-                    handler.AdicionarLi(novaLi);
-                    MessageBox.Show("LI adicionada com sucesso.", "Sucesso", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    // Se não havia número original, é uma LI nova.
+                    handler.AdicionarLi(Li);
                 }
-                this.Close();
             }
+            this.DialogResult = DialogResult.OK;
         }
 
-        private void btnCancelar_Click(object sender, EventArgs e)
+        private void btnRemover_Click(object sender, EventArgs e)
         {
-            this.Close();
+            if (_somenteVisualizacao)
+            {
+                this.Close(); // Se for só visualização, o botão apenas fecha
+                return;
+            }
+
+            if (string.IsNullOrEmpty(Li.Numero))
+            {
+                this.Close(); // Se for uma LI nova, não há o que remover, então age como "Cancelar"
+                return;
+            }
+
+            var confirmacao = MessageBox.Show(
+                $"Você tem certeza que deseja remover a LI '{Li.Numero}'?",
+                "Confirmar Remoção",
+                MessageBoxButtons.YesNo,
+                MessageBoxIcon.Question);
+
+            if (confirmacao == DialogResult.Yes)
+            {
+                if (Owner is ILiHandler handler)
+                {
+                    handler.RemoverLi(Li.Numero);
+                }
+                this.DialogResult = DialogResult.Abort;
+                this.Close();
+            }
         }
     }
 }
