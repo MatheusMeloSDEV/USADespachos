@@ -35,8 +35,9 @@ namespace CLUSA
 
         //adicionados
         public string Container { get; set; } = string.Empty;
-        public bool PresençaDeCarga { get; set; } = false;
-        public bool SIGVIG { get; set; } = false;
+        public bool PresencaDeCarga { get; set; } = false;
+        public bool SIGVIGLiberadi { get; set; } = false;
+        public bool SIGVIGSelecionado { get; set; } = false;
         public bool ResultadoLab { get; set; } = false;
         //
 

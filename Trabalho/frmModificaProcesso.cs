@@ -43,9 +43,9 @@ namespace Trabalho
             }
             btnRelatorio.MouseClick += btnRelatorio_MouseClick;
 
-            CarregarLis(processo);
+            //CarregarLis(processo);
             PopularMarca();
-            bsModificaProcesso.DataSource = processo;
+            //bsModificaProcesso.DataSource = processo;
             InicializarDateTimePickersComCheckbox();
             CarregarDateTimePickers(processo);
 
@@ -211,30 +211,30 @@ namespace Trabalho
                 dtp.MouseUp += (s, e2) => DateTimePicker_OnValueChanged(s, null);
             }
         }
-        private void AtualizarPainelLi()
-        {
-            flpLis.Controls.Clear(); // flpLis é o seu FlowLayoutPanel
+        //private void AtualizarPainelLi()
+        //{
+        //    flpLis.Controls.Clear(); // flpLis é o seu FlowLayoutPanel
 
-            foreach (var li in listaLis)
-            {
-                // Cria uma instância do nosso novo controle de exibição
-                var displayControl = new LiDisplayControl();
+        //    foreach (var li in listaLis)
+        //    {
+        //        // Cria uma instância do nosso novo controle de exibição
+        //        var displayControl = new LiDisplayControl();
 
-                // Carrega os dados da LI no controle
-                displayControl.CarregarDados(li);
+        //        // Carrega os dados da LI no controle
+        //        displayControl.CarregarDados(li);
 
-                // Adiciona o controle preenchido ao painel
-                flpLis.Controls.Add(displayControl);
-            }
-        }
-        public void CarregarLis(Processo processo)
-        {
-            if (processo?.LI != null)
-            {
-                listaLis = processo.LI.ToList();
-                AtualizarPainelLi();
-            }
-        }
+        //        // Adiciona o controle preenchido ao painel
+        //        flpLis.Controls.Add(displayControl);
+        //    }
+        //}
+        //public void CarregarLis(Processo processo)
+        //{
+        //    if (processo?.LI != null)
+        //    {
+        //        listaLis = processo.LI.ToList();
+        //        AtualizarPainelLi();
+        //    }
+        //}
         private void PopularMarca()
         {
             string marcaCompleta = processo.Marca;
