@@ -1,61 +1,22 @@
-﻿using MongoDB.Bson;
-using MongoDB.Driver;
+﻿using MongoDB.Driver;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace CLUSA
 {
-    public class RepositorioRecibo
+    public class RepositorioRecibo : RepositorioBase<Recibo>
     {
-        private readonly IMongoCollection<Recibo> _colecao;
-        public RepositorioRecibo(string? connectionString = null,
-                                 string? databaseName = null,
-                                 string collectionName = "Recibo")
-        {
-            var client = new MongoClient(connectionString ?? ConfigDatabase.MongoConnectionString);
-            var database = client.GetDatabase(databaseName ?? ConfigDatabase.MongoDatabaseName);
-            _colecao = database.GetCollection<Recibo>(collectionName);
-        }
-        public async Task UpdateAsync(Recibo recibo)
-        {
-            if (recibo is null) throw new ArgumentNullException(nameof(recibo));
-            if (recibo.Id == ObjectId.Empty)
-                throw new ArgumentException("Id inválido para atualização.", nameof(recibo.Id));
+        // O construtor apenas informa o nome da coleção para a classe base.
+        public RepositorioRecibo() : base("Recibo") { }
 
-            var filter = Builders<Recibo>
-                         .Filter
-                         .Eq(f => f.Id, recibo.Id);
-
-            var update = Builders<Recibo>.Update
-                .Set(f => f.Ref_USA, recibo.Ref_USA)
-                .Set(f => f.SR, recibo.SR)
-                .Set(f => f.Importador, recibo.Importador)
-                .Set(f => f.Exportador, recibo.Exportador)
-                .Set(f => f.Endereco_Importador, recibo.Endereco_Importador)
-                .Set(f => f.Veiculo, recibo.Veiculo)
-                .Set(f => f.Mercadoria, recibo.Mercadoria)
-                .Set(f => f.EmissaoLicenca, recibo.EmissaoLicenca)
-                .Set(f => f.Expediente, recibo.Expediente)
-                .Set(f => f.HonorariosDespachante, recibo.HonorariosDespachante)
-                .Set(f => f.Total, recibo.Total)
-                .Set(f => f.Datahoje, recibo.Datahoje);
-
-            await _colecao.UpdateOneAsync(filter, update);
-        }
-        public List<Recibo> FindRef()
+        // Mantenha aqui apenas os métodos que são ESPECÍFICOS para Recibo.
+        public async Task<List<Recibo>> FindRefAsync()
         {
-            var filtro = Builders<Recibo>.Filter.And(
+            var filter = Builders<Recibo>.Filter.And(
                 Builders<Recibo>.Filter.Ne(f => f.Ref_USA, null),
                 Builders<Recibo>.Filter.Ne(f => f.Importador, null)
             );
-
-            return _colecao.Find(filtro).ToList();
-        }
-        public async Task<Recibo> ObterPorRefUSAAsync(string refUsa)
-        {
-            if (string.IsNullOrWhiteSpace(refUsa))
-                throw new ArgumentException("Referência USA não pode ser nula ou vazia.", nameof(refUsa));
-
-            var filtro = Builders<Recibo>.Filter.Eq(f => f.Ref_USA, refUsa);
-            return await _colecao.Find(filtro).FirstOrDefaultAsync();
+            return await _colecao.Find(filter).ToListAsync();
         }
     }
 }

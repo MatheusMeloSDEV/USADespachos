@@ -1,22 +1,30 @@
 ﻿using CLUSA;
-using MongoDB.Driver;
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
 using System.Diagnostics;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
 
 namespace Trabalho
 {
-    public partial class frmSantos : Form
+    public partial class FrmItajaí : Form
     {
         private readonly RepositorioProcesso _repositorio;
         private int _estadoOrdenacaoRefUsa = 0; // 0 = original, 1 = asc, 2 = desc
         private List<Processo> _listaOriginal = new();
 
-        public frmSantos()
+        public FrmItajaí()
         {
             InitializeComponent();
             _repositorio = new RepositorioProcesso();
-            this.Shown += FrmSantos_Shown;
+            this.Shown += FrmItajaí_Shown;
         }
-        private async void FrmSantos_Shown(object? sender, EventArgs e)
+        private async void FrmItajaí_Shown(object? sender, EventArgs e)
         {
             try
             {
@@ -41,12 +49,12 @@ namespace Trabalho
         {
             try
             {
-                var registros = await _repositorio.ListarExcetoSufixoRefUsaAsync("itj");
+                var registros = await _repositorio.ListarPorSufixoRefUsaAsync("itj");
                 var registrosOrdenados = registros.OrderBy(p => ExtrairAnoNumero(p.Ref_USA)).ToList();
                 _listaOriginal = registrosOrdenados;
 
                 BsProcesso.DataSource = registrosOrdenados;
-                DGVSantos.DataSource = BsProcesso;
+                DGVItajai.DataSource = BsProcesso;
                 BsProcesso.ResetBindings(false);
             }
             catch (Exception ex)
@@ -56,68 +64,68 @@ namespace Trabalho
         }
         private void ConfigurarColunasDataGridViewProcesso()
         {
-            DGVSantos.Columns.Clear();
+            DGVItajai.Columns.Clear();
 
             // Configuração básica
-            DGVSantos.AutoGenerateColumns = false;
-            DGVSantos.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
-            DGVSantos.ColumnHeadersDefaultCellStyle.WrapMode = DataGridViewTriState.True;
-            DGVSantos.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            DGVSantos.RowHeadersVisible = false;
-            DGVSantos.AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.AllCells;
-            DGVSantos.DefaultCellStyle.WrapMode = DataGridViewTriState.True;
+            DGVItajai.AutoGenerateColumns = false;
+            DGVItajai.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
+            DGVItajai.ColumnHeadersDefaultCellStyle.WrapMode = DataGridViewTriState.True;
+            DGVItajai.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            DGVItajai.RowHeadersVisible = false;
+            DGVItajai.AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.AllCells;
+            DGVItajai.DefaultCellStyle.WrapMode = DataGridViewTriState.True;
 
             // Ref. USA - menor peso
-            DGVSantos.Columns.Add(new DataGridViewTextBoxColumn
+            DGVItajai.Columns.Add(new DataGridViewTextBoxColumn
             {
                 DataPropertyName = "Ref_USA",
                 HeaderText = "Ref. USA",
                 Name = "ColunaRefUSA",
                 FillWeight = 40
             });
-            DGVSantos.Columns.Add(new DataGridViewTextBoxColumn
+            DGVItajai.Columns.Add(new DataGridViewTextBoxColumn
             {
                 DataPropertyName = "SR",
                 HeaderText = "S. Ref",
                 Name = "ColunaSR",
                 FillWeight = 40
             });
-            DGVSantos.Columns.Add(new DataGridViewTextBoxColumn
+            DGVItajai.Columns.Add(new DataGridViewTextBoxColumn
             {
                 DataPropertyName = "Importador",
                 HeaderText = "Importador",
                 Name = "ColunaImportador",
                 FillWeight = 80
             });
-            DGVSantos.Columns.Add(new DataGridViewTextBoxColumn
+            DGVItajai.Columns.Add(new DataGridViewTextBoxColumn
             {
                 DataPropertyName = "Exportador",
                 HeaderText = "Exportador",
                 Name = "ColunaExportador",
                 FillWeight = 80
             });
-            DGVSantos.Columns.Add(new DataGridViewTextBoxColumn
+            DGVItajai.Columns.Add(new DataGridViewTextBoxColumn
             {
                 DataPropertyName = "Produto",
                 HeaderText = "Produto",
                 Name = "ColunaProduto",
                 FillWeight = 80
             });
-            DGVSantos.Columns.Add(new DataGridViewTextBoxColumn
+            DGVItajai.Columns.Add(new DataGridViewTextBoxColumn
             {
                 DataPropertyName = "Veiculo",
                 HeaderText = "Veículo",
                 Name = "ColunaVeiculo",
                 FillWeight = 80
             });
-            DGVSantos.Columns.Add(new DataGridViewTextBoxColumn
+            DGVItajai.Columns.Add(new DataGridViewTextBoxColumn
             {
                 DataPropertyName = "PortoDestino",
                 HeaderText = "Porto Destino",
                 Name = "ColunaPortoDestino",
                 FillWeight = 80
             });
-            DGVSantos.Columns.Add(new DataGridViewTextBoxColumn
+            DGVItajai.Columns.Add(new DataGridViewTextBoxColumn
             {
                 DataPropertyName = "Pendencia",
                 HeaderText = "Pendência",
@@ -128,7 +136,7 @@ namespace Trabalho
 
 
             // 2) Estilo geral
-            foreach (DataGridViewColumn coluna in DGVSantos.Columns)
+            foreach (DataGridViewColumn coluna in DGVItajai.Columns)
             {
                 coluna.DefaultCellStyle.Font = new Font("Segoe UI", 10);
                 coluna.DefaultCellStyle.ForeColor = Color.Black;
@@ -153,7 +161,7 @@ namespace Trabalho
                 if (registrosOrdenados.Any())
                 {
                     BsProcesso.DataSource = registrosOrdenados;
-                    DGVSantos.DataSource = BsProcesso;
+                    DGVItajai.DataSource = BsProcesso;
                 }
                 else
                 {
@@ -189,7 +197,7 @@ namespace Trabalho
 
             CmbPesquisar.Items.Clear();
 
-            foreach (DataGridViewColumn coluna in DGVSantos.Columns)
+            foreach (DataGridViewColumn coluna in DGVItajai.Columns)
             {
                 if (!string.IsNullOrEmpty(coluna.DataPropertyName) && !camposIgnorados.Contains(coluna.DataPropertyName))
                 {
@@ -326,7 +334,7 @@ namespace Trabalho
                 MessageBox.Show($"Erro ao pesquisar: {ex.Message}", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
-        private async void DGVSantos_CellDoubleClick(object sender, DataGridViewCellEventArgs e)
+        private async void DGVItajai_CellDoubleClick(object sender, DataGridViewCellEventArgs e)
         {
             if (e.RowIndex < 0 || BsProcesso.Current is not Processo processoSelecionado) return;
 
@@ -436,9 +444,9 @@ namespace Trabalho
 
             public override string ToString() => HeaderText;
         }
-        private void DGVSantos_ColumnHeaderMouseClick(object sender, DataGridViewCellMouseEventArgs e)
+        private void DGVItajai_ColumnHeaderMouseClick(object sender, DataGridViewCellMouseEventArgs e)
         {
-            var coluna = DGVSantos.Columns[e.ColumnIndex];
+            var coluna = DGVItajai.Columns[e.ColumnIndex];
             if (coluna.Name == "ColunaRefUSA")
             {
                 if (BsProcesso.DataSource is not List<Processo> lista) return;
@@ -463,8 +471,8 @@ namespace Trabalho
                 }
 
                 BsProcesso.DataSource = listaOrdenada;
-                DGVSantos.DataSource = BsProcesso;
-                DGVSantos.Columns[0].HeaderText = header;
+                DGVItajai.DataSource = BsProcesso;
+                DGVItajai.Columns[0].HeaderText = header;
             }
         }
 

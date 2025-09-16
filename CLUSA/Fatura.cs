@@ -3,7 +3,7 @@ using MongoDB.Bson.Serialization.Attributes;
 
 namespace CLUSA
 {
-    public class Fatura
+    public class Fatura : IEntidadeBase
     {
         public Fatura() { }
         public Fatura(Processo processo)

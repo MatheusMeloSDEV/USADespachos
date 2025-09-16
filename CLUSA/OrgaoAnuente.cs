@@ -1,59 +1,32 @@
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
+using System;
+using System.Collections.Generic;
 
 namespace CLUSA
 {
-    /// <summary>
-    /// Classe base para todos os órgãos anuentes.
-    /// </summary>
-    public abstract class OrgaoAnuente
+    public enum TipoOrgaoAnuente { MAPA, ANVISA, DECEX, IBAMA, INMETRO }
+
+    public class OrgaoAnuente
     {
         [BsonId]
         [BsonRepresentation(BsonType.ObjectId)]
-        public ObjectId Id { get; set; }
+        public ObjectId Id { get; set; } = ObjectId.GenerateNewId();
 
-        /// <summary>
-        /// Identificador único do órgão (ex: "MAPA", "ANVISA", "IBAMA", etc).
-        /// </summary>
-        public string Ref_USA { get; set; } = string.Empty;
-        public string Importador { get; set; } = string.Empty;
-        public string SR { get; set; } = string.Empty;
-        public string Exportador { get; set; } = string.Empty;
-        public string Terminal { get; set; } = string.Empty;
-        public string Veiculo { get; set; } = string.Empty;
-        public string Produto { get; set; } = string.Empty;
-        public string Origem { get; set; } = string.Empty;
-        public DateTime? DataDeAtracacao { get; set; } = null;
-        public bool CheckDataDeAtracacao { get; set; } = false;
-        public DateTime? DataEmbarque { get; set; } = null;
-        public bool CheckDataEmbarque { get; set; } = false;
-        public DateTime? Inspecao { get; set; } = null;
-        public bool CheckInspecao { get; set; } = false;
+        [BsonRepresentation(BsonType.String)]
+        public TipoOrgaoAnuente Tipo { get; set; }
+        public string Ref_USA { get; set; } = string.Empty; 
+        public DateTime? Inspecao { get; set; }
         public string Pendencia { get; set; } = string.Empty;
         public string StatusDoProcesso { get; set; } = string.Empty;
-        public List<LiInfo> LI { get; set; } = new();
-        public bool Amostra { get; set; } = false;
-    }
+        public LicencaImportacao Licenca { get; set; } = new();
 
-    public static class OrgaoAnuenteExtensions
-    {
-        public static (DateTime? dataInspecao, bool checkInspecao) ObterInspecaoEspecifica(this OrgaoAnuente orgao)
+        public OrgaoAnuente() { }
+
+        public OrgaoAnuente(string refUsa, TipoOrgaoAnuente tipo)
         {
-            switch (orgao)
-            {
-                case MAPA mapa:
-                    return (mapa.InspecaoMapa, mapa.CheckInspecaoMapa);
-                case DECEX decex:
-                    return (decex.InspecaoDecex, decex.CheckInspecaoDecex);
-                case ANVISA anvisa:
-                    return (anvisa.InspecaoAnvisa, anvisa.CheckInspecaoAnvisa);
-                case IBAMA ibama:
-                    return (ibama.InspecaoIbama, ibama.CheckInspecaoIbama);
-                case INMETRO inmetro:
-                    return (inmetro.InspecaoInmetro, inmetro.CheckInspecaoInmetro);
-                default:
-                    return (orgao.Inspecao, orgao.CheckInspecao);
-            }
+            Ref_USA = refUsa;
+            Tipo = tipo;
         }
     }
 }

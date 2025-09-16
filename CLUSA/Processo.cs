@@ -1,5 +1,7 @@
-﻿using MongoDB.Bson;
+﻿using Microsoft.Win32;
+using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
+using System.ComponentModel;
 
 namespace CLUSA
 {
@@ -10,11 +12,7 @@ namespace CLUSA
         public ObjectId Id { get; set; }
 
         //Não Aparecem
-        public bool TDecex { get; set; } = false;
-        public bool TAnvisa { get; set; } = false;
-        public bool TMapa { get; set; } = false;
-        public bool TImetro { get; set; } = false;
-        public bool TIbama { get; set; } = false;
+        public List<TipoOrgaoAnuente> OrgaosAnuentesEnvolvidos { get; set; } = new();
         public bool PossuiEmbarque { get; set; } = false;
         public DateTime? VencimentoFreeTime { get; set; } = (DateTime?)null;
         public DateTime? VencimentoFMA { get; set; } = (DateTime?)null;
@@ -27,7 +25,7 @@ namespace CLUSA
         public string Exportador { get; set; } = string.Empty;
         public string Produto { get; set; } = string.Empty;
         public string Marca { get; set; } = string.Empty;
-        public string Veiculo { get; set; } = string.Empty; //Implementar
+        public string Veiculo { get; set; } = string.Empty;
         public string PortoDestino { get; set; } = string.Empty;
         public string FLO { get; set; } = string.Empty;
         public int FreeTime { get; set; } = 0;
@@ -35,9 +33,16 @@ namespace CLUSA
         public string Conhecimento { get; set; } = string.Empty;
         public string Armador { get; set; } = string.Empty;
 
-        //public string LI_LPCO { get; set; } = string.Empty;
-        public List<LiInfo> LI { get; set; } = new List<LiInfo>();
-        public List<Capa> Capa { get; set; } = new List<Capa>();
+        //adicionados
+        public string Container { get; set; } = string.Empty;
+        public bool PresençaDeCarga { get; set; } = false;
+        public bool SIGVIG { get; set; } = false;
+        public bool ResultadoLab { get; set; } = false;
+        //
+
+        public List<LicencaImportacao> LI { get; set; } = new List<LicencaImportacao>();
+
+        public Capa Capa { get; set; } = new Capa();
 
         public string DI { get; set; } = string.Empty;
         public DateTime? DataRegistroDI { get; set; } = (DateTime?)null;
@@ -60,20 +65,21 @@ namespace CLUSA
 
         public DateTime? DataRecebOriginais { get; set; } = (DateTime?)null;
         public bool CheckDataRecebOriginais { get; set; } = false;
-        public string FormaRecOriginais { get; set; } = string.Empty; // Seletor - DHL, UPS,Correio, Fedex, Daytona
+        public string FormaRecOriginais { get; set; } = string.Empty; // Seletor Vários - DHL, UPS, Correio, Fedex, Daytona, 
         public string[] DocRecebidos { get; set; } = Array.Empty<string>(); // Seletor Varios -  BL, Fatura, Packing List, CO, Fito, CSI, CA, CF (String Concat)
 
         public bool Amostra { get; set; } = false;
         public bool Desovado { get; set; } = false;
         public string Pendencia { get; set; } = string.Empty;
-        public string StatusDoProcesso { get; set; } = string.Empty;
+        public string HistóricoDoProcesso { get; set; } = string.Empty;
 
         public string Origem { get; set; } = string.Empty;
 
+        public string Status { get; set; } = "Aguardando embarque";
 
-        //Implementar - Calculo Vencimento FreeTime = Data de Atracação + FreeTime
-        //Implementar - Calculo Vencimento FMA = Data de Atracação + 85 dias
-        //Implementar - Status / Conclusão - Verde, Atracado - Laranja, Esperado - Amarelo, Aguardando Embarque - Branco
-
+        //Aguardando atracação, Aguardando presença de carga, Aguardando SIGVIG
+        //Aguardando LI/LPCO, Aguardando parametrização LI/LPCO, Aguardando inspeção/coleta LI/LPCO
+        //Aguardando deferimento LI/LPCO, Aguardando registro DI/DUIMP, Aguardando parametrização DI/DUIMP
+        //Aguardando inspeção DI/DUIMP, Aguardando minuta devolução container vazio, Aguardando resultado laboratório, Finalizado
     }
 }

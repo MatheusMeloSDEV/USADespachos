@@ -122,7 +122,7 @@ namespace Trabalho
             HideLoginControls();
             ShowLoginFeedback();
 
-            var menuForm = new FrmMenu(Logado);
+            var menuForm = new FrmPrincipal(Logado);
             menuForm.ShowDialog();
 
             if (menuForm.DialogResult == DialogResult.OK)

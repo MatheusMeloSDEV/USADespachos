@@ -5,18 +5,6 @@ namespace Trabalho
     partial class frmSantos
     {
         private System.ComponentModel.IContainer components = null;
-
-        private ToolStrip toolStrip1;
-        private ToolStripButton BtnAdicionar;
-        private ToolStripButton BtnRemover;
-        private ToolStripButton BtnExportar;
-        private ToolStripButton BtnEditar;
-        private ToolStripButton BtnCancelar;
-        private ToolStripButton BtnPesquisar;
-        private ToolStripButton BtnReload;
-        private ToolStripTextBox TxtPesquisar;
-        private ToolStripComboBox CmbPesquisar;
-        private DataGridView DataGridView1;
         private BindingSource BsProcesso;
         /// <summary>
         /// Liberar recursos utilizados.
@@ -34,210 +22,215 @@ namespace Trabalho
 
         private void InitializeComponent()
         {
-            var components = new System.ComponentModel.Container();
+            components = new System.ComponentModel.Container();
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(frmSantos));
+            DataGridViewCellStyle dataGridViewCellStyle1 = new DataGridViewCellStyle();
+            DataGridViewCellStyle dataGridViewCellStyle2 = new DataGridViewCellStyle();
+            DataGridViewCellStyle dataGridViewCellStyle3 = new DataGridViewCellStyle();
             BsProcesso = new BindingSource(components);
-
-            #region ToolStrip Config
-
-            toolStrip1 = new ToolStrip
-            {
-                GripStyle = ToolStripGripStyle.Hidden,
-                RenderMode = ToolStripRenderMode.Professional,
-                BackColor = Color.WhiteSmoke,
-                AutoSize = false,
-                Height = 40,
-                Padding = new Padding(5, 5, 5, 5),
-            };
-
-            // Definir uma fonte padrão
-            Font defaultFont = new Font("Segoe UI", 10, FontStyle.Regular);
-
-            BtnAdicionar = new ToolStripButton
-            {
-                Text = "Adicionar",
-                Font = defaultFont,
-                Margin = Margin = new Padding(0, 0, 5, 0),
-                DisplayStyle = ToolStripItemDisplayStyle.ImageAndText,
-                ImageScaling = ToolStripItemImageScaling.SizeToFit
-            };
+            TSMenuItajai = new ToolStrip();
+            BtnAdicionar = new ToolStripButton();
+            toolStripSeparator2 = new ToolStripSeparator();
+            toolStripButton1 = new ToolStripButton();
+            toolStripSeparator4 = new ToolStripSeparator();
+            BtnRemover = new ToolStripButton();
+            toolStripSeparator3 = new ToolStripSeparator();
+            BtnExportar = new ToolStripButton();
+            BtnCancelar = new ToolStripButton();
+            BtnPesquisar = new ToolStripButton();
+            toolStripSeparator1 = new ToolStripSeparator();
+            CmbPesquisar = new ToolStripComboBox();
+            TxtPesquisar = new ToolStripTextBox();
+            DGVSantos = new DataGridView();
+            ((System.ComponentModel.ISupportInitialize)BsProcesso).BeginInit();
+            TSMenuItajai.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)DGVSantos).BeginInit();
+            SuspendLayout();
+            // 
+            // TSMenuItajai
+            // 
+            TSMenuItajai.AutoSize = false;
+            TSMenuItajai.Items.AddRange(new ToolStripItem[] { BtnAdicionar, toolStripSeparator2, toolStripButton1, toolStripSeparator4, BtnRemover, toolStripSeparator3, BtnExportar, BtnCancelar, BtnPesquisar, toolStripSeparator1, CmbPesquisar, TxtPesquisar });
+            TSMenuItajai.Location = new Point(0, 0);
+            TSMenuItajai.Name = "TSMenuItajai";
+            TSMenuItajai.Size = new Size(800, 40);
+            TSMenuItajai.TabIndex = 3;
+            TSMenuItajai.Text = "toolStrip1";
+            // 
+            // BtnAdicionar
+            // 
+            BtnAdicionar.Image = (Image)resources.GetObject("BtnAdicionar.Image");
+            BtnAdicionar.ImageTransparentColor = Color.Magenta;
+            BtnAdicionar.Margin = new Padding(0);
+            BtnAdicionar.Name = "BtnAdicionar";
+            BtnAdicionar.Size = new Size(78, 40);
+            BtnAdicionar.Text = "Adicionar";
             BtnAdicionar.Click += BtnAdicionar_Click;
-
-            BtnEditar = new ToolStripButton
-            {
-                Text = "Editar",
-                Font = defaultFont,
-                Margin = Margin = new Padding(0, 0, 5, 0),
-                DisplayStyle = ToolStripItemDisplayStyle.ImageAndText,
-                ImageScaling = ToolStripItemImageScaling.SizeToFit
-            };
-            BtnEditar.Click += BtnEditar_Click;
-
-            BtnRemover = new ToolStripButton
-            {
-                Text = "Excluir",
-                Font = defaultFont,
-                Margin = Margin = new Padding(0, 0, 5, 0),
-                DisplayStyle = ToolStripItemDisplayStyle.ImageAndText,
-                ImageScaling = ToolStripItemImageScaling.SizeToFit
-            };
+            // 
+            // toolStripSeparator2
+            // 
+            toolStripSeparator2.Margin = new Padding(5, 0, 5, 0);
+            toolStripSeparator2.Name = "toolStripSeparator2";
+            toolStripSeparator2.Size = new Size(6, 40);
+            // 
+            // toolStripButton1
+            // 
+            toolStripButton1.Image = (Image)resources.GetObject("toolStripButton1.Image");
+            toolStripButton1.ImageTransparentColor = SystemColors.Menu;
+            toolStripButton1.Margin = new Padding(0);
+            toolStripButton1.Name = "toolStripButton1";
+            toolStripButton1.Size = new Size(57, 40);
+            toolStripButton1.Text = "Editar";
+            toolStripButton1.Click += BtnEditar_Click;
+            // 
+            // toolStripSeparator4
+            // 
+            toolStripSeparator4.Margin = new Padding(5, 0, 5, 0);
+            toolStripSeparator4.Name = "toolStripSeparator4";
+            toolStripSeparator4.Size = new Size(6, 40);
+            // 
+            // BtnRemover
+            // 
+            BtnRemover.Image = (Image)resources.GetObject("BtnRemover.Image");
+            BtnRemover.ImageTransparentColor = SystemColors.Menu;
+            BtnRemover.Margin = new Padding(0);
+            BtnRemover.Name = "BtnRemover";
+            BtnRemover.Size = new Size(74, 40);
+            BtnRemover.Text = "Remover";
             BtnRemover.Click += BtnExcluir_Click;
-
-            BtnExportar = new ToolStripButton
-            {
-                Text = "Exportar",
-                Font = defaultFont,
-                Margin = Margin = new Padding(0, 0, 5, 0),
-                DisplayStyle = ToolStripItemDisplayStyle.ImageAndText,
-                ImageScaling = ToolStripItemImageScaling.SizeToFit
-            };
+            // 
+            // toolStripSeparator3
+            // 
+            toolStripSeparator3.Margin = new Padding(5, 0, 5, 0);
+            toolStripSeparator3.Name = "toolStripSeparator3";
+            toolStripSeparator3.Size = new Size(6, 40);
+            // 
+            // BtnExportar
+            // 
+            BtnExportar.Image = (Image)resources.GetObject("BtnExportar.Image");
+            BtnExportar.ImageTransparentColor = Color.Magenta;
+            BtnExportar.Margin = new Padding(0);
+            BtnExportar.Name = "BtnExportar";
+            BtnExportar.Size = new Size(70, 40);
+            BtnExportar.Text = "Exportar";
             BtnExportar.Click += BtnExportar_Click;
-
-            new ToolStripSeparator();
-
-            BtnCancelar = new ToolStripButton
-            {
-                Alignment = ToolStripItemAlignment.Right,
-                Text = "Cancelar",
-                Font = defaultFont,
-                Margin = Margin = new Padding(5, 0, 0, 0),
-                DisplayStyle = ToolStripItemDisplayStyle.ImageAndText,
-                ImageScaling = ToolStripItemImageScaling.SizeToFit
-            };
+            // 
+            // BtnCancelar
+            // 
+            BtnCancelar.Alignment = ToolStripItemAlignment.Right;
+            BtnCancelar.DisplayStyle = ToolStripItemDisplayStyle.Image;
+            BtnCancelar.Image = (Image)resources.GetObject("BtnCancelar.Image");
+            BtnCancelar.ImageTransparentColor = Color.Magenta;
+            BtnCancelar.Margin = new Padding(0, 1, 7, 2);
+            BtnCancelar.Name = "BtnCancelar";
+            BtnCancelar.Size = new Size(23, 37);
+            BtnCancelar.Text = "toolStripButton4";
             BtnCancelar.Click += BtnCancelar_Click;
-
-            BtnReload = new ToolStripButton
-            {
-                Alignment = ToolStripItemAlignment.Right,
-                Text = "Recarregar",
-                Font = defaultFont,
-                Margin = Margin = new Padding(5, 0, 0, 0),
-                DisplayStyle = ToolStripItemDisplayStyle.ImageAndText,
-                ImageScaling = ToolStripItemImageScaling.SizeToFit
-            };
-            BtnReload.Click += BtnReload_Click;
-
-            new ToolStripSeparator();
-
-            BtnPesquisar = new ToolStripButton
-            {
-                Alignment = ToolStripItemAlignment.Right,
-                Text = "Pesquisar",
-                Font = defaultFont,
-                Margin = Margin = new Padding(5, 0, 0, 0),
-                DisplayStyle = ToolStripItemDisplayStyle.ImageAndText,
-                ImageScaling = ToolStripItemImageScaling.SizeToFit
-            };
+            // 
+            // BtnPesquisar
+            // 
+            BtnPesquisar.Alignment = ToolStripItemAlignment.Right;
+            BtnPesquisar.DisplayStyle = ToolStripItemDisplayStyle.Image;
+            BtnPesquisar.Image = (Image)resources.GetObject("BtnPesquisar.Image");
+            BtnPesquisar.ImageTransparentColor = Color.Magenta;
+            BtnPesquisar.Name = "BtnPesquisar";
+            BtnPesquisar.Size = new Size(23, 37);
+            BtnPesquisar.Text = "toolStripButton5";
             BtnPesquisar.Click += BtnPesquisar_Click;
-
-            CmbPesquisar = new ToolStripComboBox
-            {
-                Alignment = ToolStripItemAlignment.Right,
-                Font = defaultFont,
-                Margin = Margin = new Padding(5, 0, 5, 0),
-                Size = new Size(150, 25),
-                DropDownStyle = ComboBoxStyle.DropDownList
-            };
-            CmbPesquisar.SelectedIndexChanged += CmbPesquisar_SelectedIndexChanged;
-
-            TxtPesquisar = new ToolStripTextBox
-            {
-                Alignment = ToolStripItemAlignment.Right,
-                Font = defaultFont,
-                Margin = Margin = new Padding(0, 0, 5, 0),
-                Size = new Size(200, 25),
-                BorderStyle = BorderStyle.FixedSingle
-            };
-
-            // Agora adicione na ordem inversa desejada para itens à direita:
-            ToolStripSeparator ToolStripRight = new ToolStripSeparator
-            {
-                Alignment = ToolStripItemAlignment.Right,
-            };
-            ToolStripSeparator ToolStripRight1 = new ToolStripSeparator
-            {
-                Alignment = ToolStripItemAlignment.Right,
-            };
-
-            toolStrip1.Items.Add(BtnAdicionar);
-            toolStrip1.Items.Add(BtnEditar);
-            toolStrip1.Items.Add(BtnRemover);
-            toolStrip1.Items.Add(BtnExportar);
-            toolStrip1.Items.Add(BtnCancelar);
-            toolStrip1.Items.Add(ToolStripRight1);
-            toolStrip1.Items.Add(BtnReload);
-            toolStrip1.Items.Add(ToolStripRight);
-            toolStrip1.Items.Add(BtnPesquisar);
-            toolStrip1.Items.Add(CmbPesquisar);
-            toolStrip1.Items.Add(TxtPesquisar);
-
-            #endregion
-
-            #region DataGridView Configuração
-
-            DataGridView1 = new DataGridView
-            {
-                AllowUserToAddRows = false,
-                AllowUserToDeleteRows = false,
-                AllowUserToResizeRows = false,
-                AutoGenerateColumns = false,
-                Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right,
-                EnableHeadersVisualStyles = false,
-                Location = new Point(12, 50),
-                Name = "dataGridView1",
-                ReadOnly = true,
-                RowHeadersVisible = false,
-                RowTemplate = { Height = 25 },
-                Size = new Size(776, 388),
-                BorderStyle = BorderStyle.FixedSingle,
-                BackgroundColor = Color.White,
-            };
-
-            DataGridView1.CellDoubleClick += DataGridView1_CellDoubleClick;
-            DataGridView1.ColumnHeaderMouseClick += DataGridView1_ColumnHeaderMouseClick;
-
-            DataGridView1.ColumnHeadersDefaultCellStyle = new DataGridViewCellStyle
-            {
-                BackColor = Color.FromArgb(50, 50, 50),
-                ForeColor = Color.White,
-                Font = new Font("Segoe UI", 10, FontStyle.Bold),
-                Alignment = DataGridViewContentAlignment.MiddleLeft,
-                WrapMode = DataGridViewTriState.True
-            };
-
-            DataGridView1.DefaultCellStyle = new DataGridViewCellStyle
-            {
-                Font = new Font("Segoe UI", 10),
-                BackColor = Color.White,
-                ForeColor = Color.Black,
-                SelectionBackColor = Color.LightBlue,
-                SelectionForeColor = Color.Black,
-                Alignment = DataGridViewContentAlignment.MiddleLeft
-            };
-
-            DataGridView1.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
-
-            DataGridView1.AlternatingRowsDefaultCellStyle = new DataGridViewCellStyle
-            {
-                BackColor = Color.WhiteSmoke
-            };
-
-            #endregion
-
-            #region Form Configuração
-
+            // 
+            // toolStripSeparator1
+            // 
+            toolStripSeparator1.Alignment = ToolStripItemAlignment.Right;
+            toolStripSeparator1.Margin = new Padding(5, 0, 5, 0);
+            toolStripSeparator1.Name = "toolStripSeparator1";
+            toolStripSeparator1.Size = new Size(6, 40);
+            // 
+            // CmbPesquisar
+            // 
+            CmbPesquisar.Alignment = ToolStripItemAlignment.Right;
+            CmbPesquisar.AutoSize = false;
+            CmbPesquisar.Margin = new Padding(5, 0, 0, 0);
+            CmbPesquisar.Name = "CmbPesquisar";
+            CmbPesquisar.Size = new Size(150, 23);
+            // 
+            // TxtPesquisar
+            // 
+            TxtPesquisar.Alignment = ToolStripItemAlignment.Right;
+            TxtPesquisar.AutoSize = false;
+            TxtPesquisar.Name = "TxtPesquisar";
+            TxtPesquisar.Size = new Size(150, 40);
+            // 
+            // DGVSantos
+            // 
+            DGVSantos.AllowUserToAddRows = false;
+            DGVSantos.AllowUserToDeleteRows = false;
+            DGVSantos.AllowUserToResizeColumns = false;
+            DGVSantos.AllowUserToResizeRows = false;
+            dataGridViewCellStyle1.BackColor = Color.WhiteSmoke;
+            DGVSantos.AlternatingRowsDefaultCellStyle = dataGridViewCellStyle1;
+            DGVSantos.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            DGVSantos.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
+            DGVSantos.BackgroundColor = Color.White;
+            dataGridViewCellStyle2.Alignment = DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle2.BackColor = Color.DarkGray;
+            dataGridViewCellStyle2.Font = new Font("Segoe UI", 9.75F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            dataGridViewCellStyle2.ForeColor = Color.White;
+            dataGridViewCellStyle2.SelectionBackColor = SystemColors.Highlight;
+            dataGridViewCellStyle2.SelectionForeColor = SystemColors.HighlightText;
+            dataGridViewCellStyle2.WrapMode = DataGridViewTriState.True;
+            DGVSantos.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle2;
+            DGVSantos.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            dataGridViewCellStyle3.Alignment = DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle3.BackColor = Color.White;
+            dataGridViewCellStyle3.Font = new Font("Segoe UI", 9.75F, FontStyle.Regular, GraphicsUnit.Point, 0);
+            dataGridViewCellStyle3.ForeColor = Color.Black;
+            dataGridViewCellStyle3.SelectionBackColor = Color.LightBlue;
+            dataGridViewCellStyle3.SelectionForeColor = Color.Black;
+            dataGridViewCellStyle3.WrapMode = DataGridViewTriState.False;
+            DGVSantos.DefaultCellStyle = dataGridViewCellStyle3;
+            DGVSantos.EnableHeadersVisualStyles = false;
+            DGVSantos.Location = new Point(12, 49);
+            DGVSantos.Name = "DGVSantos";
+            DGVSantos.ReadOnly = true;
+            DGVSantos.RowHeadersVisible = false;
+            DGVSantos.RowTemplate.Height = 25;
+            DGVSantos.Size = new Size(776, 395);
+            DGVSantos.TabIndex = 2;
+            DGVSantos.ColumnHeaderMouseClick += DGVSantos_ColumnHeaderMouseClick;
+            // 
+            // frmSantos
+            // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(800, 450);
-            Controls.Add(DataGridView1);
-            Controls.Add(toolStrip1);
+            ControlBox = false;
+            Controls.Add(TSMenuItajai);
+            Controls.Add(DGVSantos);
+            Name = "frmSantos";
             Text = "Gerenciamento de Processos";
             WindowState = FormWindowState.Maximized;
-            ControlBox = false;
-
             Load += FrmProcesso_Load;
+            KeyDown += FrmProcesso_KeyDown;
+            ((System.ComponentModel.ISupportInitialize)BsProcesso).EndInit();
+            TSMenuItajai.ResumeLayout(false);
+            TSMenuItajai.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)DGVSantos).EndInit();
+            ResumeLayout(false);
 
-            #endregion
         }
-
+        private ToolStrip TSMenuItajai;
+        private ToolStripButton BtnAdicionar;
+        private ToolStripSeparator toolStripSeparator2;
+        private ToolStripButton BtnRemover;
+        private ToolStripSeparator toolStripSeparator3;
+        private ToolStripButton BtnExportar;
+        private ToolStripButton BtnCancelar;
+        private ToolStripButton BtnPesquisar;
+        private ToolStripSeparator toolStripSeparator1;
+        private ToolStripComboBox CmbPesquisar;
+        private ToolStripTextBox TxtPesquisar;
+        private DataGridView DGVSantos;
+        private ToolStripButton toolStripButton1;
+        private ToolStripSeparator toolStripSeparator4;
     }
 }

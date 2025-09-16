@@ -1,63 +1,53 @@
 ﻿using MongoDB.Driver;
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace CLUSA
 {
     public class RepositorioNotificacao
     {
-
         private readonly IMongoCollection<Notificacao> _colecao;
 
         public RepositorioNotificacao(IMongoDatabase database)
         {
             _colecao = database.GetCollection<Notificacao>("Notificacao");
         }
-
-        /// <summary>
-        /// Verifica se já existe alguma notificação (visível ou não)
-        /// para esta referência e mensagem.
-        /// </summary>
-        public bool ExisteNotificacao(string refUsa, string mensagem)
+        public async Task<bool> ExisteNotificacaoAsync(string refUsa, string mensagem)
         {
             var filtro = Builders<Notificacao>.Filter.And(
                 Builders<Notificacao>.Filter.Eq(n => n.RefUsa, refUsa),
                 Builders<Notificacao>.Filter.Eq(n => n.Mensagem, mensagem)
             );
-            return _colecao.Find(filtro).Any();
+            return await _colecao.Find(filtro).AnyAsync();
         }
-
-        public void ExcluirPorRefUsa(string refUsa)
+        public async Task ExcluirPorRefUsaAsync(string refUsa)
         {
             var filtro = Builders<Notificacao>.Filter.Eq(n => n.RefUsa, refUsa);
-            _colecao.DeleteMany(filtro);
+            await _colecao.DeleteManyAsync(filtro); 
         }
-
-        public void SalvarNotificacao(Notificacao notif)
+        public async Task SalvarNotificacaoAsync(Notificacao notif)
         {
-            _colecao.InsertOne(notif);
+            await _colecao.InsertOneAsync(notif);
         }
-
-        public Notificacao ObterNotificacaoPorRefUsa(string refUsa)
+        public async Task<Notificacao> ObterNotificacaoPorRefUsaAsync(string refUsa)
         {
             var filtro = Builders<Notificacao>.Filter.Eq(n => n.RefUsa, refUsa);
-            return _colecao.Find(filtro).FirstOrDefault();
+            return await _colecao.Find(filtro).FirstOrDefaultAsync(); 
         }
-
-        // Obter notificações não visualizadas
-        public List<Notificacao> ObterNotificacoesNaoVisualizadas()
+        public async Task<List<Notificacao>> ObterNotificacoesNaoVisualizadasAsync()
         {
             var filtro = Builders<Notificacao>.Filter.Eq(n => n.Visualizado, false);
-            return _colecao.Find(filtro).ToList();
+            return await _colecao.Find(filtro).ToListAsync(); 
         }
-
-        // Marcar uma notificação como visualizada
-        public void MarcarComoVisualizado(string refUsa, string mensagem)
+        public async Task MarcarComoVisualizadoAsync(string refUsa, string mensagem)
         {
             var filtro = Builders<Notificacao>.Filter.And(
-                            Builders<Notificacao>.Filter.Eq(n => n.RefUsa, refUsa),
-                            Builders<Notificacao>.Filter.Eq(n => n.Mensagem, mensagem)
-                        );
+                Builders<Notificacao>.Filter.Eq(n => n.RefUsa, refUsa),
+                Builders<Notificacao>.Filter.Eq(n => n.Mensagem, mensagem)
+            );
             var update = Builders<Notificacao>.Update.Set(n => n.Visualizado, true);
-            var resultado = _colecao.UpdateMany(filtro, update);
+            var resultado = await _colecao.UpdateManyAsync(filtro, update); 
 
             if (resultado.ModifiedCount > 0)
             {

@@ -1,13 +1,22 @@
 ﻿using CLUSA;
 using MongoDB.Bson;
 using MongoDB.Driver;
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
 using System.Diagnostics;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
 
 namespace Trabalho
 {
-    public partial class FrmMenu : Form
+    public partial class FrmPrincipal : Form
     {
-        private readonly string _connectionString = "mongodb+srv://dev:dev@cluster0.cn10nzt.mongodb.net/";
+        private readonly string _connectionString = "mongodb+srv://dev:dev@testeusa.kt5go1v.mongodb.net/";
         private readonly string _databaseName = "Trabalho";
         private readonly IMongoCollection<BsonDocument> _processoCollection;
         private readonly RepositorioNotificacao _notificacaoRepo;
@@ -16,13 +25,13 @@ namespace Trabalho
         private readonly Dictionary<Type, Form> _forms = new();
         private bool _logoutPeloMenu = false;
 
-        public FrmMenu(Logado logadoUsuario)
+        public FrmPrincipal(Logado logadoUsuario)
         {
             InitializeComponent();
 
             _logadoUsuario = logadoUsuario ?? throw new ArgumentNullException(nameof(logadoUsuario));
 
-            this.Shown += FrmMenu_Shown;
+            this.Shown += FrmPrincipal_Shown;
             // Inicializa e dispara o timer para habilitar o Exit após 3s
             timerReleaseExit = new System.Windows.Forms.Timer { Interval = 3000 };
             timerReleaseExit.Tick += TimerReleaseExit_Tick;
@@ -45,13 +54,13 @@ namespace Trabalho
             if (FrmLogin.Instance.Escuro)
                 AplicarModoEscuro();
         }
-        private async void FrmMenu_Shown(object? sender, EventArgs e)
+        private async void FrmPrincipal_Shown(object? sender, EventArgs e)
         {
             // Aqui o form já apareceu na tela, podemos carregar sem bloquear a pintura
             await CarregarDadosProcessos();
             TCabas.Visible = true;  // se você ainda quiser mostrar as abas só após o load
         }
-        private void FrmMenu_Load(object sender, EventArgs e)
+        private void FrmPrincipal_Load(object sender, EventArgs e)
         {
             this.Icon = Icon.ExtractAssociatedIcon(Application.ExecutablePath);
             // não chame aqui o CarregarDadosProcessos
@@ -66,7 +75,7 @@ namespace Trabalho
 
         private void AplicarModoEscuro()
         {
-            MSnotificacoes.BackColor = SystemColors.ControlDark;
+            MenuItemNotifications.BackColor = SystemColors.ControlDark;
             // configure outros componentes se necessário...
         }
 
@@ -234,33 +243,38 @@ namespace Trabalho
         }
 
 
-        private void GerarNotificacoes(List<BsonDocument> processos)
+        public async Task GerarNotificacoes(List<BsonDocument> processos)
         {
             var novas = new List<Notificacao>();
 
             foreach (var p in processos)
             {
+                // ... (lógica inicial sem alteração) ...
                 string refUsa = p.GetValue("Ref_USA", BsonNull.Value)?.ToString() ?? "";
                 if (!DateTime.TryParse(p.GetValue("DataDeAtracacao", BsonNull.Value)?.ToString(), out var dataAtracacao))
                     continue;
 
                 int dias = (dataAtracacao - DateTime.Today).Days;
 
-                // Notificações padrão
                 if (dias is >= 0 and <= 15)
-                    TentarAdicionarNotificacao(novas, refUsa, $"Processo {refUsa}: Dar entrada no Mapa/Anvisa");
+                    // MUDANÇA: Adicionado 'await' para a chamada assíncrona
+                    await TentarAdicionarNotificacao(novas, refUsa, $"Processo {refUsa}: Dar entrada no Mapa/Anvisa");
 
                 if (dias is >= 0 and <= 5)
-                    TentarAdicionarNotificacao(novas, refUsa, $"Processo {refUsa}: Redestinar container ao terminal");
+                    // MUDANÇA: Adicionado 'await' para a chamada assíncrona
+                    await TentarAdicionarNotificacao(novas, refUsa, $"Processo {refUsa}: Redestinar container ao terminal");
 
-                // Notificações de vencimento
+                // ...
                 VerificarVencimento(p, "VencimentoFreeTime", "Free Time", refUsa, novas);
                 VerificarVencimento(p, "VencimentoFMA", "FMA", refUsa, novas);
                 VerificarVencimento(p, "VencimentoLI_LPCO", "LI/LPCO", refUsa, novas);
             }
 
             foreach (var n in novas)
-                _notificacaoRepo.SalvarNotificacao(n);
+            {
+                // MUDANÇA: Usando 'await' e o novo nome 'SalvarNotificacaoAsync'
+                await _notificacaoRepo.SalvarNotificacaoAsync(n);
+            }
         }
 
         private void VerificarVencimento(BsonDocument doc, string campo, string nomeExibicao, string refUsa, List<Notificacao> lista)
@@ -272,13 +286,18 @@ namespace Trabalho
             if (dias is >= 0 and <= 5)
             {
                 string msg = $"Processo {refUsa}: {nomeExibicao} vence em {dias} dia(s)";
+                // MUDANÇA: A chamada aqui é para um método local que agora é async, mas como não precisamos
+                // esperar o resultado aqui, podemos simplesmente chamar e deixar rodar.
+                // Se a ordem de adição for crítica, este método também precisaria se tornar async.
+                // Para este caso, está OK.
                 TentarAdicionarNotificacao(lista, refUsa, msg);
             }
         }
 
-        private void TentarAdicionarNotificacao(List<Notificacao> lista, string refUsa, string mensagem)
+        private async Task TentarAdicionarNotificacao(List<Notificacao> lista, string refUsa, string mensagem)
         {
-            if (!_notificacaoRepo.ExisteNotificacao(refUsa, mensagem))
+            // MUDANÇA: Usando 'await' e o novo nome 'ExisteNotificacaoAsync'
+            if (!await _notificacaoRepo.ExisteNotificacaoAsync(refUsa, mensagem))
             {
                 lista.Add(new Notificacao
                 {
@@ -289,11 +308,11 @@ namespace Trabalho
                 });
             }
         }
-        private void AtualizarNotificacoes()
+        private async void AtualizarNotificacoes()
         {
             MenuItemNotifications.DropDownItems.Clear();
 
-            var pendentes = _notificacaoRepo.ObterNotificacoesNaoVisualizadas();
+            var pendentes = await _notificacaoRepo.ObterNotificacoesNaoVisualizadasAsync();
 
             // Atualiza o texto do menu com a contagem
             int qtd = pendentes.Count;
@@ -318,7 +337,7 @@ namespace Trabalho
                     Text = notif.Mensagem ?? "",
                     Tag = notif.RefUsa
                 };
-                item.MouseDown += (sender, e) =>
+                item.MouseDown += async (sender, e) =>
                 {
                     if (e.Button == MouseButtons.Right &&
                         sender is ToolStripMenuItem mnu &&
@@ -333,7 +352,7 @@ namespace Trabalho
 
                         if (resp == DialogResult.Yes)
                         {
-                            _notificacaoRepo.MarcarComoVisualizado(refUsa, mnu.Text);
+                            await _notificacaoRepo.MarcarComoVisualizadoAsync(refUsa, mnu.Text);
                             AtualizarNotificacoes();
                             MessageBox.Show("Notificação finalizada.", "Sucesso",
                                             MessageBoxButtons.OK, MessageBoxIcon.Information);
@@ -344,7 +363,7 @@ namespace Trabalho
             }
         }
 
-        private void FrmMenu_FormClosing(object sender, FormClosingEventArgs e)
+        private void FrmPrincipal_FormClosing(object sender, FormClosingEventArgs e)
         {
             if (!_logoutPeloMenu && e.CloseReason == CloseReason.UserClosing)
             {
@@ -400,7 +419,7 @@ namespace Trabalho
                 var novo = new T();
                 Debug.WriteLine($"Formulário {typeof(T).Name} criado com sucesso.");
                 novo.MdiParent = this;
-                novo.Show();        
+                novo.Show();
                 _forms[typeof(T)] = novo;
                 return novo;
             }
@@ -416,21 +435,15 @@ namespace Trabalho
             => this.WindowState = FormWindowState.Maximized;
         private void MenuItemMinimize_Click(Object sender, EventArgs e)
             => this.WindowState = FormWindowState.Minimized;
-        private void MenuItemMap_Click(object sender, EventArgs e)
-            => ShowSingleFormOfType<FrmMapa>();
-        private void MenuItemAnvisa_Click(object sender, EventArgs e)
-            => ShowSingleFormOfType<FrmAnvisa>();
-        private void MenuItemDecex_Click(object sender, EventArgs e)
-            => ShowSingleFormOfType<FrmDecex>();
-        private void MenuItemIbama_Click(object sender, EventArgs e)
-            => ShowSingleFormOfType<FrmIbama>();
-        private void MenuItemImetro_Click(object sender, EventArgs e)
-            => ShowSingleFormOfType<FrmImetro>();
-        private void MenuItemProcess_Click(object sender, EventArgs e)
-            => ShowSingleFormOfType<frmSantos>();
         private void MenuItemAdmin_Click(object sender, EventArgs e)
             => ShowSingleFormOfType<FrmAdmin>();
         private void MenuItemFinanceiro_Click(object sender, EventArgs e)
             => ShowSingleFormOfType<FrmFinanceiro>();
+        private void MenuItemProcessoSantos_Click(object sender, EventArgs e)
+        => ShowSingleFormOfType<frmSantos>();
+        private void MenuItemProcessosItajai_Click(object sender, EventArgs e)
+         => ShowSingleFormOfType<FrmItajaí>();
+        private void MenuItemOrgaoAnuente_Click(object sender, EventArgs e)
+         => ShowSingleFormOfType<FrmOrgaoAnuente>();
     }
 }

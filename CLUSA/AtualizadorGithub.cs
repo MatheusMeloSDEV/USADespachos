@@ -39,7 +39,7 @@ namespace CLUSA
             string? versaoMaisRecente = doc.RootElement.GetProperty("tag_name").GetString();
             versaoAtual ??= System.Reflection.Assembly.GetEntryAssembly()?.GetName().Version?.ToString() ?? "0.0.0.0";
 
-            string NormalizarVersao(string? v)
+            static string NormalizarVersao(string? v)
             {
                 if (string.IsNullOrWhiteSpace(v)) return "";
                 var partes = v.TrimStart('v', 'V').Split('-')[0].Split('.');
@@ -111,7 +111,7 @@ namespace CLUSA
             }
         }
 
-        private string CalcularHashSHA256(string filePath)
+        private static string CalcularHashSHA256(string filePath)
         {
             using var sha256 = SHA256.Create();
             using var stream = File.OpenRead(filePath);
@@ -119,7 +119,7 @@ namespace CLUSA
             return BitConverter.ToString(hash).Replace("-", "").ToLowerInvariant();
         }
 
-        private void Log(string mensagem)
+        private static void Log(string mensagem)
         {
             string logPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "atualizador.log");
             File.AppendAllText(logPath, $"[{DateTime.Now:yyyy-MM-dd HH:mm:ss}] {mensagem}{Environment.NewLine}");

@@ -1,125 +1,122 @@
+using MongoDB.Bson;
 using MongoDB.Driver;
+using System.Collections.Generic;
+using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 
 namespace CLUSA
 {
-    public class RepositorioOrgaoAnuente<T> where T : class
+    /// <summary>
+    /// Gerencia as operações de banco de dados para a coleção de Órgãos Anuentes.
+    /// </summary>
+    public class RepositorioOrgaoAnuente
     {
-        private readonly IMongoCollection<T> _colecao;
+        private readonly IMongoCollection<OrgaoAnuente> _colecao;
 
-        public RepositorioOrgaoAnuente(string collectionName)
+        public RepositorioOrgaoAnuente()
         {
             var client = new MongoClient(ConfigDatabase.MongoConnectionString);
             var database = client.GetDatabase(ConfigDatabase.MongoDatabaseName);
-            _colecao = database.GetCollection<T>(collectionName);
+            _colecao = database.GetCollection<OrgaoAnuente>("OrgaosAnuentes");
         }
 
-        // Síncronos
-        public List<T> ListarTodos()
+        /// <summary>
+        /// Insere um novo documento de OrgaoAnuente na coleção.
+        /// </summary>
+        public async Task CreateAsync(OrgaoAnuente orgao)
         {
-            return _colecao.Find(FilterDefinition<T>.Empty).ToList();
+            await _colecao.InsertOneAsync(orgao);
         }
 
-        public T? ObterPorRefUsa(string refUsa)
+        /// <summary>
+        /// Retorna uma lista com todos os documentos de OrgaoAnuente.
+        /// </summary>
+        public async Task<List<OrgaoAnuente>> GetAllAsync()
         {
-            var filter = Builders<T>.Filter.Eq("Ref_USA", refUsa);
-            return _colecao.Find(filter).FirstOrDefault();
+            return await _colecao.Find(FilterDefinition<OrgaoAnuente>.Empty).ToListAsync();
         }
 
-        public async Task<T?> ObterPorIdAsync(string id)
+        /// <summary>
+        /// Busca um OrgaoAnuente pelo seu ID único.
+        /// </summary>
+        public async Task<OrgaoAnuente?> GetByIdAsync(string id)
         {
-            var filtro = Builders<T>.Filter.Eq("Ref_USA", id);
-            return await _colecao.Find(filtro).FirstOrDefaultAsync();
+            var filter = Builders<OrgaoAnuente>.Filter.Eq(x => x.Id, ObjectId.Parse(id));
+            return await _colecao.Find(filter).FirstOrDefaultAsync();
         }
 
-        // Assíncronos
-        public async Task<List<T>> ListarTodosAsync()
+        /// <summary>
+        /// Busca um OrgaoAnuente específico pela combinação de Ref_USA e Tipo.
+        /// </summary>
+        public async Task<OrgaoAnuente?> GetByRefUsaAndTypeAsync(string refUsa, TipoOrgaoAnuente tipo)
         {
-            return await _colecao.Find(FilterDefinition<T>.Empty).ToListAsync();
+            var filter = Builders<OrgaoAnuente>.Filter.And(
+                Builders<OrgaoAnuente>.Filter.Eq(x => x.Ref_USA, refUsa),
+                Builders<OrgaoAnuente>.Filter.Eq(x => x.Tipo, tipo)
+            );
+            return await _colecao.Find(filter).FirstOrDefaultAsync();
         }
 
-        public async Task AtualizarAsync(string refUsa, T entidade)
+        /// <summary>
+        /// Lista todos os Órgãos Anuentes associados a uma mesma Ref_USA.
+        /// </summary>
+        public async Task<List<OrgaoAnuente>> ListByRefUsaAsync(string refUsa)
         {
-            var filter = Builders<T>.Filter.Eq("Ref_USA", refUsa);
+            var filter = Builders<OrgaoAnuente>.Filter.Eq(x => x.Ref_USA, refUsa);
+            return await _colecao.Find(filter).ToListAsync();
+        }
 
-            // Atualiza apenas os campos alterados na coleção principal
-            var atual = await _colecao.Find(filter).FirstOrDefaultAsync();
-            if (atual == null)
-                return;
+        /// <summary>
+        /// Pesquisa documentos com base em um campo e um valor de texto.
+        /// </summary>
+        public async Task<List<OrgaoAnuente>> SearchAsync(string field, string value)
+        {
+            var filter = Builders<OrgaoAnuente>.Filter.Regex(field, new BsonRegularExpression(new Regex(value, RegexOptions.IgnoreCase)));
+            return await _colecao.Find(filter).ToListAsync();
+        }
 
-            var tipo = typeof(T);
-            var updates = new List<UpdateDefinition<T>>();
-            var propriedades = new[]
+        /// <summary>
+        /// Atualiza um OrgaoAnuente existente ou o insere caso não exista (Upsert).
+        /// </summary>
+        public async Task UpdateAsync(string refUsa, TipoOrgaoAnuente tipo, OrgaoAnuente entidade)
+        {
+            var filter = Builders<OrgaoAnuente>.Filter.And(
+                Builders<OrgaoAnuente>.Filter.Eq(x => x.Ref_USA, refUsa),
+                Builders<OrgaoAnuente>.Filter.Eq(x => x.Tipo, tipo)
+            );
+
+            // Tenta buscar o documento existente para preservar o ID original.
+            var orgaoExistente = await _colecao.Find(filter).FirstOrDefaultAsync();
+            if (orgaoExistente != null)
             {
-                "Ref_USA", "Importador", "SR", "Exportador", "Veiculo", "Produto", "Origem",
-                "Li", "Inspecao","CheckInspecaoS", "DataDeAtracacao", "CheckDataDeAtracacao", "DataEmbarque", "CheckDataEmbarque",
-                "Amostra", "Pendencia", "StatusDoProcesso"
-            };
-
-            foreach (var prop in propriedades)
-            {
-                var info = tipo.GetProperty(prop);
-                if (info != null)
-                {
-                    var valorNovo = info.GetValue(entidade);
-                    var valorAtual = info.GetValue(atual);
-
-                    if ((valorNovo == null && valorAtual != null) ||
-                        (valorNovo != null && !valorNovo.Equals(valorAtual)))
-                    {
-                        updates.Add(Builders<T>.Update.Set(prop, valorNovo));
-                    }
-                }
+                entidade.Id = orgaoExistente.Id;
             }
 
-            if (updates.Count > 0)
-            {
-                var updateDef = Builders<T>.Update.Combine(updates);
-                await _colecao.UpdateOneAsync(filter, updateDef);
-            }
-
-            // Atualiza as outras coleções relacionadas
-            await AtualizarColecoesRelacionadasAsync(refUsa, entidade);
+            // A opção IsUpsert = true faz a mágica:
+            // Se encontrar um documento com o filtro, ele o substitui.
+            // Se NÃO encontrar, ele insere a 'entidade' como um novo documento.
+            await _colecao.ReplaceOneAsync(filter, entidade, new ReplaceOptions { IsUpsert = true });
         }
 
-        private async Task AtualizarColecoesRelacionadasAsync(string refUsa, T entidade)
+        /// <summary>
+        /// Deleta um OrgaoAnuente específico pela combinação de Ref_USA e Tipo.
+        /// </summary>
+        public async Task DeleteAsync(string refUsa, TipoOrgaoAnuente tipo)
         {
-            var client = new MongoClient(ConfigDatabase.MongoConnectionString);
-            var database = client.GetDatabase(ConfigDatabase.MongoDatabaseName);
+            var filter = Builders<OrgaoAnuente>.Filter.And(
+                Builders<OrgaoAnuente>.Filter.Eq(x => x.Ref_USA, refUsa),
+                Builders<OrgaoAnuente>.Filter.Eq(x => x.Tipo, tipo)
+            );
+            await _colecao.DeleteOneAsync(filter);
+        }
 
-            var colecoes = new[] { "MAPA", "ANVISA", "DECEX", "IBAMA", "IMETRO", "PROCESSO" };
-
-            foreach (var nomeColecao in colecoes)
-            {
-                // Use o mesmo tipo T para todas as coleções relacionadas
-                var colecao = database.GetCollection<T>(nomeColecao);
-                var filter = Builders<T>.Filter.Eq("Ref_USA", refUsa);
-
-                var updates = new List<UpdateDefinition<T>>();
-                var tipo = entidade.GetType();
-
-                var propriedades = new[]
-                {
-                    "Ref_USA", "Importador", "SR", "Exportador", "Veiculo", "Produto", "Origem",
-                    "Li", "Inspecao","CheckInspecaoS", "DataDeAtracacao", "CheckDataDeAtracacao", "DataEmbarque", "CheckDataEmbarque",
-                    "Amostra", "Pendencia", "StatusDoProcesso"
-                };
-
-                foreach (var prop in propriedades)
-                {
-                    var info = tipo.GetProperty(prop);
-                    if (info != null)
-                    {
-                        var valorNovo = info.GetValue(entidade);
-                        updates.Add(Builders<T>.Update.Set(prop, valorNovo));
-                    }
-                }
-
-                if (updates.Count > 0)
-                {
-                    var updateDef = Builders<T>.Update.Combine(updates);
-                    await colecao.UpdateOneAsync(filter, updateDef);
-                }
-            }
+        /// <summary>
+        /// Deleta todos os Órgãos Anuentes associados a uma mesma Ref_USA.
+        /// </summary>
+        public async Task DeleteAllByRefUsaAsync(string refUsa)
+        {
+            var filter = Builders<OrgaoAnuente>.Filter.Eq(x => x.Ref_USA, refUsa);
+            await _colecao.DeleteManyAsync(filter);
         }
     }
 }

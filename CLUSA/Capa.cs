@@ -2,18 +2,18 @@ namespace CLUSA
 {
     public class Capa
     {
-        public string Master { get; set; }
-        public string Container { get; set; }
-        public string Sigvig { get; set; }
+        public string Master { get; set; } = string.Empty; 
+        public string Container { get; set; } = string.Empty;
+        public string Sigvig { get; set; } = string.Empty;
         public DateTime? SigvigData { get; set; }
-        public string Incoterm { get; set; }
-        public string[] Numerario { get; set; }
-        public string DTA { get; set; }
-        public string Marinha { get; set; }
-        public string CE { get; set; }
-        public string[] Imposto { get; set; }
+        public string Incoterm { get; set; } = string.Empty;
+        public string[] Numerario { get; set; } = Array.Empty<string>();
+        public string DTA { get; set; } = string.Empty; 
+        public string Marinha { get; set; } = string.Empty; 
+        public string CE { get; set; } = string.Empty; 
+        public string[] Imposto { get; set; } = Array.Empty<string>(); 
 
-        // Bools
+
         public bool TelaDoCanal { get; set; }
         public bool Averbar { get; set; }
         public bool LiberarBL { get; set; }
@@ -31,19 +31,18 @@ namespace CLUSA
         public bool ENTAlfandega { get; set; }
         public bool ConferenciaFisica { get; set; }
 
-        // Datas
         public DateTime? AverbarData { get; set; }
         public DateTime? LiberarBLData { get; set; }
         public DateTime? MarinhaMercante_IsencaoData { get; set; }
         public DateTime? ICMS_ExoneracaoData { get; set; }
         public DateTime? SISCargaLiberadoData { get; set; }
-        public string PagoPor { get; set; }
+        public string PagoPor { get; set; } = string.Empty; 
         public DateTime? ENTTransporteData { get; set; }
-        public string ENTTransporteN { get; set; }
+        public string ENTTransporteN { get; set; } = string.Empty; 
         public DateTime? ENTAlfandegaData { get; set; }
-        public string ENTAlfandegaDossie { get; set; }
+        public string ENTAlfandegaDossie { get; set; } = string.Empty; 
         public DateTime? ConferenciaFisicaData { get; set; }
 
-        public string Observacoes { get; set; }
+        public string Observacoes { get; set; } = string.Empty; 
     }
 }

@@ -3,12 +3,12 @@ using System.Diagnostics;
 
 namespace Trabalho
 {
-    public partial class FrmModificaProcesso : Form, ILiHandler
+    public partial class FrmModificaProcesso : Form
     {
         public Processo processo;
         public string? Modo;
         public bool Visualização;
-        public List<LiInfo> listaLis = new List<LiInfo>();
+        public List<LicencaImportacao> listaLis = new List<LicencaImportacao>();
         public FrmModificaProcesso()
         {
             InitializeComponent();
@@ -96,11 +96,8 @@ namespace Trabalho
                 }
             }
         }
-
-
         private void SetCamposSomenteLeitura(Control parent)
         {
-            button3.Enabled = false;
             foreach (Control control in parent.Controls)
             {
                 switch (control)
@@ -117,7 +114,7 @@ namespace Trabalho
                         control.Enabled = false;
                         break;
                 }
-                
+
                 // Recursivamente trata controles compostos (GroupBox, Panel, etc.)
                 if (control.HasChildren)
                 {
@@ -214,93 +211,21 @@ namespace Trabalho
                 dtp.MouseUp += (s, e2) => DateTimePicker_OnValueChanged(s, null);
             }
         }
-        public bool ContainsLi(string numeroLi)
-        {
-            return listaLis.Any(li => li.Numero == numeroLi);
-        }
-
-        public void AdicionarLi(LiInfo li)
-        {
-            listaLis.Add(li);
-            AtualizarPainelLi();
-        }
-
-        public void AtualizarLi(string numeroLi, LiInfo liAtualizada)
-        {
-            // Encontra o índice (a posição) do item antigo na lista
-            int index = listaLis.FindIndex(li => li.Numero == numeroLi);
-
-            // Se o item foi encontrado...
-            if (index != -1)
-            {
-                // ...substitui o objeto inteiro naquela posição pelo novo.
-                listaLis[index] = liAtualizada;
-                AtualizarPainelLi();
-            }
-        }
-
-        public void RemoverLi(string numeroLi)
-        {
-            var li = listaLis.FirstOrDefault(x => x.Numero == numeroLi);
-            if (li != null)
-            {
-                listaLis.Remove(li);
-                AtualizarPainelLi();
-            }
-        }
         private void AtualizarPainelLi()
         {
-            flpLis.Controls.Clear();
-            flpLis.FlowDirection = FlowDirection.LeftToRight;
-            flpLis.WrapContents = true;
-            flpLis.AutoScroll = true;
-
-            int panelWidth = (flpLis.ClientSize.Width - SystemInformation.VerticalScrollBarWidth) / 2 - 4;
-            int panelHeight = 40;
+            flpLis.Controls.Clear(); // flpLis é o seu FlowLayoutPanel
 
             foreach (var li in listaLis)
             {
+                // Cria uma instância do nosso novo controle de exibição
+                var displayControl = new LiDisplayControl();
 
-                var panel = new Panel
-                {
-                    Size = new Size(panelWidth, panelHeight),
-                    BorderStyle = BorderStyle.FixedSingle,
-                    Margin = new Padding(2)
-                };
+                // Carrega os dados da LI no controle
+                displayControl.CarregarDados(li);
 
-                var lbl = new Label
-                {
-                    Text = $"LI: {li.Numero}",
-                    AutoSize = true,
-                    Location = new Point(5, 10)
-                };
-
-                var somenteVisualizacao = this.Visualização;
-                var btnVisualizar = new Button
-                {
-                    Text = somenteVisualizacao ? "Visualizar" : "Editar",
-                    Size = new Size(75, 25),
-                    Location = new Point(panel.Width - 80, 7),
-                    Anchor = AnchorStyles.Top | AnchorStyles.Right
-                };
-
-                btnVisualizar.Click += (s, e) =>
-                {
-                    var frm = new frmLi(li, somenteVisualizacao);
-                    frm.Owner = this;
-                    frm.ShowDialog(this);
-                };
-
-                panel.Controls.Add(lbl);
-                panel.Controls.Add(btnVisualizar);
-                flpLis.Controls.Add(panel);
+                // Adiciona o controle preenchido ao painel
+                flpLis.Controls.Add(displayControl);
             }
-        }
-        private void btnAdicionarLi_Click(object sender, EventArgs e)
-        {
-            var frm = new frmLi(null, false);
-            frm.Owner = this;
-            frm.ShowDialog();
         }
         public void CarregarLis(Processo processo)
         {
@@ -350,12 +275,7 @@ namespace Trabalho
 
         private void btnAdiciona_Click(object sender, EventArgs e)
         {
-            processo.TMapa = CBmapa.Checked;
-            processo.TAnvisa = CBanvisa.Checked;
-            processo.TDecex = CBdecex.Checked;
-            processo.TIbama = CBibama.Checked;
-            processo.TImetro = CBimetro.Checked;
-
+            // Mapeamento direto dos controles para o objeto 'processo'
             processo.Importador = TXTimportador.Text;
             processo.Veiculo = txtVeiculo.Text;
             processo.Ref_USA = TXTnr.Text;
@@ -366,173 +286,42 @@ namespace Trabalho
             processo.Origem = txtOrigem.Text;
             processo.FLO = TXTflo.Text;
             processo.Terminal = txtTerminal.Text;
-            processo.FreeTime = int.Parse(NUMfreetime.Text);
-            processo.VencimentoFreeTime = DataHelper.CalcularVencimento(DTPdatadeatracacao.Value, int.Parse(NUMfreetime.Text));
-            processo.VencimentoFMA = DataHelper.CalcularVencimento(DTPdatadeatracacao.Value, 85);
-            if (listaLis.Count > 0)
-            {
-                processo.VencimentoLI_LPCO = DataHelper.CalcularVencimento(listaLis[0].DataRegistroLI, 85);
-            }
+            processo.FreeTime = (int)NUMfreetime.Value;
             processo.Conhecimento = txtConhecimento.Text;
             processo.Armador = txtArmador.Text;
-            processo.LI = listaLis;
-
             processo.DI = TXTdi.Text;
             processo.ParametrizacaoDI = CBparametrizacaodi.Text;
-
-            processo.DocRecebidos = ObterItensSelecionados(checkedListBox1);
-            processo.FormaRecOriginais =
-                checkedListBox2.CheckedItems.Count > 0
-                    ? checkedListBox2.CheckedItems[0]?.ToString() ?? string.Empty
-                    : string.Empty;
-
-            processo.StatusDoProcesso = TXTstatusdoprocesso.Text;
+            processo.HistóricoDoProcesso = TXTstatusdoprocesso.Text;
             processo.Pendencia = TXTpendencia.Text;
             processo.Amostra = CBamostra.Checked;
             processo.Desovado = CBdesovado.Checked;
 
-            if (DTPdataderegistrodi.Checked)
-            {
-                processo.DataRegistroDI = DTPdataderegistrodi.Value;
-                processo.CheckDataRegistroDI = true;
-            }
-            else
-            {
-                processo.DataRegistroDI = default;
-                processo.CheckDataRegistroDI = false;
-            }
+            // --- LÓGICA SIMPLIFICADA PARA DATAS ---
+            // A propriedade do processo recebe o valor do DTP se estiver marcado, senão recebe null.
+            processo.DataRegistroDI = DTPdataderegistrodi.Checked ? DTPdataderegistrodi.Value : null;
+            processo.DataDesembaracoDI = DTPdatadedesembaracodi.Checked ? DTPdatadedesembaracodi.Value : null;
+            processo.DataCarregamentoDI = DTPdatadecarregamentodi.Checked ? DTPdatadecarregamentodi.Value : null;
+            processo.Inspecao = DTPdatadeinspecao.Checked ? DTPdatadeinspecao.Value : null;
+            processo.DataDeAtracacao = DTPdatadeatracacao.Checked ? DTPdatadeatracacao.Value : null;
+            processo.DataEmbarque = DTPdatadeembarque.Checked ? DTPdatadeembarque.Value : null;
+            processo.DataRecebOriginais = DTPDataRecOriginais.Checked ? DTPDataRecOriginais.Value : null;
+            processo.DataMinutaDI = dtpDataMinuta.Checked ? dtpDataMinuta.Value : null;
 
-            if (DTPdataderegistrodi.Checked)
-            {
-                processo.DataRegistroDI = DTPdataderegistrodi.Value;
-                processo.CheckDataRegistroDI = true;
-            }
-            else
-            {
-                processo.DataRegistroDI = default;
-                processo.CheckDataRegistroDI = false;
-            }
+            // --- LÓGICA DE LISTAS E CÁLCULOS ---
+            processo.LI = listaLis;
+            processo.DocRecebidos = ObterItensSelecionados(checkedListBox1);
+            processo.FormaRecOriginais = checkedListBox2.CheckedItems.Count > 0
+                    ? checkedListBox2.CheckedItems[0]?.ToString() ?? string.Empty
+                    : string.Empty;
 
-            // Registro DI
-            if (DTPdataderegistrodi.Checked)
-            {
-                processo.DataRegistroDI = DTPdataderegistrodi.Value;
-                processo.CheckDataRegistroDI = true;
-            }
-            else
-            {
-                processo.DataRegistroDI = default;
-                processo.CheckDataRegistroDI = false;
-            }
+            // Constrói a string da Marca
+            processo.Marca = (new[] { "Sacos", "Caixas", "Pallets" }.Contains(cbMarca.Text))
+                ? $"{numMarca.Value} {cbMarca.Text}"
+                : $"{numMarca.Value} x {cbMarca.Text}";
 
-            // Desembaraço DI
-            if (DTPdatadedesembaracodi.Checked)
-            {
-                processo.DataDesembaracoDI = DTPdatadedesembaracodi.Value;
-                processo.CheckDataDesembaracoDI = true;
-            }
-            else
-            {
-                processo.DataDesembaracoDI = default;
-                processo.CheckDataDesembaracoDI = false;
-            }
-
-            // Carregamento DI
-            if (DTPdatadecarregamentodi.Checked)
-            {
-                processo.DataCarregamentoDI = DTPdatadecarregamentodi.Value;
-                processo.CheckDataCarregamentoDI = true;
-            }
-            else
-            {
-                processo.DataCarregamentoDI = default;
-                processo.CheckDataCarregamentoDI = false;
-            }
-
-            // Inspeção
-            if (DTPdatadeinspecao.Checked)
-            {
-                processo.Inspecao = DTPdatadeinspecao.Value;
-                processo.CheckInspecao = true;
-            }
-            else
-            {
-                processo.Inspecao = default;
-                processo.CheckInspecao = false;
-            }
-
-            // Atracação
-            if (DTPdatadeatracacao.Checked)
-            {
-                processo.DataDeAtracacao = DTPdatadeatracacao.Value;
-                processo.CheckDataDeAtracacao = true;
-            }
-            else
-            {
-                processo.DataDeAtracacao = default;
-                processo.CheckDataDeAtracacao = false;
-            }
-
-            // Embarque
-            if (DTPdatadeembarque.Checked)
-            {
-                processo.DataEmbarque = DTPdatadeembarque.Value;
-                processo.CheckDataEmbarque = true;
-            }
-            else
-            {
-                processo.DataEmbarque = default;
-                processo.CheckDataEmbarque = false;
-            }
-
-            // Recebimento de Originais
-            if (DTPDataRecOriginais.Checked)
-            {
-                processo.DataRecebOriginais = DTPDataRecOriginais.Value;
-                processo.CheckDataRecebOriginais = true;
-            }
-            else
-            {
-                processo.DataRecebOriginais = default;
-                processo.CheckDataRecebOriginais = false;
-            }
-
-            switch (cbMarca.Text)
-            {
-                case "Sacos":
-                case "Caixas":
-                case "Pallets":
-                    processo.Marca = $"{numMarca.Value} {cbMarca.Text}";
-                    break;
-
-                default:
-                    processo.Marca = $"{numMarca.Value} x {cbMarca.Text}";
-                    break;
-            }
-            DialogResult confirmResult;
-
-            switch (Modo)
-            {
-                case "Editar":
-                    confirmResult = MessageBox.Show(
-                            $"Tem certeza de que deseja editar o processo {processo.Ref_USA}?",
-                            "Confirmação",
-                            MessageBoxButtons.YesNo,
-                            MessageBoxIcon.Question);
-                    if (confirmResult == DialogResult.Yes) { DialogResult = DialogResult.OK; }
-                    break;
-                case "Adicionar":
-                    confirmResult = MessageBox.Show(
-                            $"Tem certeza de que deseja adicionar o novo processo?",
-                            "Confirmação",
-                            MessageBoxButtons.YesNo,
-                            MessageBoxIcon.Question);
-                    if (confirmResult == DialogResult.Yes) { DialogResult = DialogResult.OK; }
-                    break;
-                case "Visualizar":
-                    DialogResult = DialogResult.OK;
-                    break;
-            }
+            // O DialogResult é definido para fechar o form e sinalizar que a operação foi um sucesso
+            this.DialogResult = DialogResult.OK;
+            this.Close();
         }
 
         private void CBmapa_CheckedChanged(object sender, EventArgs e)
@@ -625,8 +414,8 @@ namespace Trabalho
         private void btnCapa_Click(object sender, EventArgs e)
         {
             var frm = new FrmModificaCapa();
-            if (processo.Capa != null && processo.Capa.Count > 0)
-                frm.capa = processo.Capa[0];
+            if (processo.Capa != null)
+                frm.capa = processo.Capa;
             frm.Modo = this.Modo;
             frm.ref_usa = processo.Ref_USA;
             frm.Visualizacao = (this.Modo == "Visualizar");
@@ -634,14 +423,20 @@ namespace Trabalho
             if (frm.ShowDialog(this) == DialogResult.OK)
             {
                 if (processo.Capa == null)
-                    processo.Capa = new List<Capa>();
+                    processo.Capa = new Capa();
 
-                if (processo.Capa.Count > 0)
-                    processo.Capa[0] = frm.capa;
-                else
-                    processo.Capa.Add(frm.capa);
+                processo.Capa = frm.capa;
             }
         }
 
+        private void tabPage1_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void label32_Click(object sender, EventArgs e)
+        {
+
+        }
     }
 }

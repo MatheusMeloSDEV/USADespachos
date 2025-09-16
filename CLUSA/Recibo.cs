@@ -3,8 +3,9 @@ using MongoDB.Bson.Serialization.Attributes;
 
 namespace CLUSA
 {
-    public class Recibo
+    public class Recibo : IEntidadeBase
     {
+        public Recibo() { }
         public Recibo(Processo processo)
         {
             Ref_USA = processo.Ref_USA;
