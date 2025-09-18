@@ -1,7 +1,5 @@
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
-using System;
-using System.Collections.Generic;
 
 namespace CLUSA
 {
@@ -13,20 +11,30 @@ namespace CLUSA
         [BsonRepresentation(BsonType.ObjectId)]
         public ObjectId Id { get; set; } = ObjectId.GenerateNewId();
 
-        [BsonRepresentation(BsonType.String)]
-        public TipoOrgaoAnuente Tipo { get; set; }
-        public string Ref_USA { get; set; } = string.Empty; 
+        // Propriedades da Licença de Importação (LI)
+        public string Numero { get; set; } = string.Empty;
+        public string NCM { get; set; } = string.Empty;
+        public DateTime? DataRegistro { get; set; }
+        
+
+        // Lista de LPCOs DENTRO desta LI
+        public List<LpcoInfo> LPCO { get; set; } = new();
+
+        // Dados de status específicos desta LI/Órgão
+
+        // Dados de contexto (copiados do Processo)
+        //public TipoOrgaoAnuente Tipo { get; set; } // O órgão principal desta LI
+        public string Ref_USA { get; set; } = string.Empty;
+        public string Importador { get; set; } = string.Empty;
+        public string Container { get; set; } = string.Empty;
+        public string Origem { get; set; } = string.Empty;
+        public string Conhecimento { get; set; } = string.Empty;
+        public string Produto { get; set; } = string.Empty;
         public DateTime? Inspecao { get; set; }
+        public DateTime? DataChegada { get; set; }
         public string Pendencia { get; set; } = string.Empty;
-        public string StatusDoProcesso { get; set; } = string.Empty;
-        public LicencaImportacao Licenca { get; set; } = new();
+        public string HistoricoDoProcesso { get; set; } = string.Empty;
 
         public OrgaoAnuente() { }
-
-        public OrgaoAnuente(string refUsa, TipoOrgaoAnuente tipo)
-        {
-            Ref_USA = refUsa;
-            Tipo = tipo;
-        }
     }
 }

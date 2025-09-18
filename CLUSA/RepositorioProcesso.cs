@@ -72,24 +72,16 @@ namespace CLUSA
         public async Task CreateAsync(Processo processo)
         {
             await _processos.InsertOneAsync(processo);
-
-            foreach (var tipoOrgao in processo.OrgaosAnuentesEnvolvidos)
-            {
-                // CORREÇÃO: Usando o novo construtor simplificado.
-                var orgaoAnuente = new OrgaoAnuente(processo.Ref_USA, tipoOrgao);
-                await _repositorioOrgaoAnuente.CreateAsync(orgaoAnuente);
-            }
-
+            await SincronizarLicencas(processo);
             await _repositorioFatura.CreateAsync(new Fatura(processo));
             await _repositorioRecibo.CreateAsync(new Recibo(processo));
         }
 
+
         public async Task UpdateAsync(Processo processo)
         {
             await _processos.ReplaceOneAsync(p => p.Id == processo.Id, processo);
-            await SincronizarOrgaosAnuentes(processo);
-            await _repositorioFatura.UpdatePorRefUsaAsync(processo.Ref_USA, new Fatura(processo));
-            await _repositorioRecibo.UpdatePorRefUsaAsync(processo.Ref_USA, new Recibo(processo));
+            await SincronizarLicencas(processo);
         }
 
         public async Task DeleteAsync(string processoId)
@@ -111,36 +103,94 @@ namespace CLUSA
             var filter = Builders<Processo>.Filter.Eq(p => p.Ref_USA, refUsa);
             return await _processos.Find(filter).FirstOrDefaultAsync();
         }
+        // Dentro da classe RepositorioProcesso.cs
 
-        private async Task SincronizarOrgaosAnuentes(Processo processo)
+        /// <summary>
+        /// Mapeia os dados de um Processo e uma Licenca para um objeto OrgaoAnuente.
+        /// Esta é a "fonte da verdade" para os dados que são copiados.
+        /// </summary>
+        private OrgaoAnuente MapearParaOrgaoAnuente(Processo processo, LicencaImportacao li)
         {
-            var orgaosRequeridos = processo.OrgaosAnuentesEnvolvidos;
-            // CORREÇÃO: Usando o novo nome do método.
-            var orgaosAtuais = await _repositorioOrgaoAnuente.ListByRefUsaAsync(processo.Ref_USA);
-            var tiposAtuais = orgaosAtuais.Select(o => o.Tipo).ToList();
+            // Tenta definir o Tipo principal da LI com base no primeiro LPCO.
+            Enum.TryParse<TipoOrgaoAnuente>(li.LPCO.FirstOrDefault()?.NomeOrgao, out var tipoPrincipal);
 
-            var tiposParaAdicionar = orgaosRequeridos.Except(tiposAtuais);
-            foreach (var tipo in tiposParaAdicionar)
+            return new OrgaoAnuente
             {
-                // CORREÇÃO: Usando o novo construtor simplificado.
-                await _repositorioOrgaoAnuente.CreateAsync(new OrgaoAnuente(processo.Ref_USA, tipo));
+                Ref_USA = processo.Ref_USA,
+                Importador = processo.Importador,
+                Produto = processo.Produto,
+                Container = processo.Container,
+                Origem = processo.Origem,
+                Conhecimento = processo.Conhecimento,
+                DataChegada = processo.DataDeAtracacao,
+                HistoricoDoProcesso = processo.HistoricoDoProcesso,
+                Pendencia = processo.Pendencia,
+                // Dados vindos da própria LI
+                Numero = li.Numero,
+                NCM = li.NCM,
+                DataRegistro = li.DataRegistro,
+                LPCO = li.LPCO,
+            };
+        }
+
+        /// <summary>
+        /// Sincroniza a coleção de OrgaosAnuentes (LIs) com base na lista de LIs de um Processo.
+        /// </summary>
+        private async Task SincronizarLicencas(Processo processo)
+        {
+            var lisDoProcesso = processo.LI;
+            var lisAtuaisNoDb = await _repositorioOrgaoAnuente.ListByRefUsaAsync(processo.Ref_USA);
+
+            // --- ATUALIZA LIs existentes ---
+            var lisParaAtualizar = from liProc in lisDoProcesso
+                                   join liDb in lisAtuaisNoDb on liProc.Numero equals liDb.Numero
+                                   select (ProcessoLi: liProc, DatabaseLi: liDb);
+
+            foreach (var (liProcesso, liDatabase) in lisParaAtualizar)
+            {
+                // Ponto de partida: o objeto que já está no banco (liDatabase).
+                // Ele contém os dados que queremos preservar (Id, Inspecao, Pendencia, Status).
+                var orgaoParaSalvar = liDatabase;
+
+                // Atualiza os dados que vêm do Processo principal
+                orgaoParaSalvar.Importador = processo.Importador;
+                orgaoParaSalvar.Produto = processo.Produto;
+                orgaoParaSalvar.Container = processo.Container;
+                orgaoParaSalvar.Origem = processo.Origem;
+                orgaoParaSalvar.Conhecimento = processo.Conhecimento;
+                orgaoParaSalvar.DataChegada = processo.DataDeAtracacao;
+                orgaoParaSalvar.Inspecao = processo.Inspecao;
+
+                // Atualiza os dados que vêm da LI editada no FrmModificaProcesso
+                orgaoParaSalvar.NCM = liProcesso.NCM;
+                orgaoParaSalvar.DataRegistro = liProcesso.DataRegistro;
+                orgaoParaSalvar.LPCO = liProcesso.LPCO;
+
+                orgaoParaSalvar.HistoricoDoProcesso = processo.HistoricoDoProcesso;
+                orgaoParaSalvar.Pendencia = processo.Pendencia;
+
+                // Agora, 'orgaoParaSalvar' é a fusão perfeita. Os dados únicos foram
+                // preservados e os dados compartilhados/editados foram atualizados.
+                await _repositorioOrgaoAnuente.UpdateAsync(orgaoParaSalvar);
             }
 
-            var tiposParaRemover = tiposAtuais.Except(orgaosRequeridos);
-            foreach (var tipo in tiposParaRemover)
+            // --- ADICIONA LIs novas ---
+            var numerosLisAtuais = lisAtuaisNoDb.Select(li => li.Numero).ToHashSet();
+            var lisParaAdicionar = lisDoProcesso.Where(li => !numerosLisAtuais.Contains(li.Numero));
+
+            foreach (var li in lisParaAdicionar)
             {
-                await _repositorioOrgaoAnuente.DeleteAsync(processo.Ref_USA, tipo);
+                var novoOrgaoAnuente = MapearParaOrgaoAnuente(processo, li);
+                await _repositorioOrgaoAnuente.CreateAsync(novoOrgaoAnuente);
             }
 
-            var tiposParaAtualizar = orgaosRequeridos.Intersect(tiposAtuais);
-            foreach (var tipo in tiposParaAtualizar)
+            // --- DELETA LIs que foram removidas ---
+            var numerosLisProcesso = lisDoProcesso.Select(li => li.Numero).ToHashSet();
+            var lisParaDeletar = lisAtuaisNoDb.Where(li => !numerosLisProcesso.Contains(li.Numero));
+
+            foreach (var li in lisParaDeletar)
             {
-                // CORREÇÃO: Usando o novo construtor simplificado.
-                // Criamos um novo objeto OrgaoAnuente apenas com o link, pois os dados específicos
-                // (Pendencia, Status, etc.) seriam atualizados em outra tela (FrmOrgaoAnuente).
-                // Se o objetivo é apenas garantir que ele exista, um objeto vazio serve.
-                // Se precisar copiar dados do processo, crie um construtor apropriado.
-                await _repositorioOrgaoAnuente.UpdateAsync(processo.Ref_USA, tipo, new OrgaoAnuente(processo.Ref_USA, tipo));
+                await _repositorioOrgaoAnuente.DeleteByIdAsync(li.Id.ToString());
             }
         }
     }

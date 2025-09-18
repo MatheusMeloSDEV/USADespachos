@@ -1,303 +1,77 @@
 ﻿using CLUSA;
+using System.Data;
 using System.Diagnostics;
 
 namespace Trabalho
 {
     public partial class FrmModificaProcesso : Form
     {
-        public Processo processo;
-        public string? Modo;
-        public bool Visualização;
-        public List<LicencaImportacao> listaLis = new List<LicencaImportacao>();
+        public Processo processo { get; set; }
+        public string Modo { get; set; } = "Adicionar"; // Valor padrão
+        public bool Visualização { get; set; } = false;
+
         public FrmModificaProcesso()
         {
             InitializeComponent();
-            processo = new();
+            processo = new(); // Garante que 'processo' nunca seja nulo
         }
 
-        private void FrmModificaProcesso_Load(object sender, EventArgs e)
+        private void FrmModificaProcesso_Load(object? sender, EventArgs e)
         {
             this.Icon = Icon.ExtractAssociatedIcon(Application.ExecutablePath);
+            CarregarDadosNosControles();
+            ConfigurarFormularioPeloModo();
+        }
 
+        #region "Configuração, Carregamento e Salvamento"
 
-            SelecionarItemCheckedListBox(checkedListBox2, processo.FormaRecOriginais);
-            SelecionarItensCheckedListBox(checkedListBox1, processo.DocRecebidos);
-
-            if (Modo == "Editar") { TXTnr.Enabled = false; }
-
-            if (Modo == "Adicionar")
+        private void ConfigurarFormularioPeloModo()
+        {
+            this.Text = $"{Modo} Processo";
+            if (Modo == "Editar")
+            {
+                TXTnr.Enabled = false; // Não permite editar a Ref. USA
+            }
+            else if (Modo == "Adicionar")
             {
                 btnCapa.Enabled = false;
                 btnRelatorio.Enabled = false;
-                DTPdataderegistrodi.Value = System.DateTime.Today;
-                DTPdatadedesembaracodi.Value = System.DateTime.Today;
-                DTPdatadecarregamentodi.Value = System.DateTime.Today;
-                DTPdatadeinspecao.Value = System.DateTime.Today;
-                DTPdatadeatracacao.Value = System.DateTime.Today;
-                DTPdatadeembarque.Value = System.DateTime.Today;
-                DTPDataRecOriginais.Value = System.DateTime.Today;
+                // Inicializa o processo com uma LI em branco para o usuário preencher
+                if (!processo.LI.Any())
+                {
+                    processo.LI.Add(new LicencaImportacao());
+                }
             }
-            else if (Modo == "Visualizar")
-            {
-                Visualização = true;
-            }
-            btnRelatorio.MouseClick += btnRelatorio_MouseClick;
 
-            //CarregarLis(processo);
+            if (Visualização)
+            {
+                SetCamposSomenteLeitura(this);
+                btnAdiciona.Visible = false;
+            }
+        }
+
+        private void CarregarDadosNosControles()
+        {
+            BsModificaProcesso.DataSource = processo;
+            CarregarControlesDeData();
+            CarregarCheckedListBoxes();
             PopularMarca();
-            //bsModificaProcesso.DataSource = processo;
-            InicializarDateTimePickersComCheckbox();
-            CarregarDateTimePickers(processo);
-
-            if (Visualização) SetCamposSomenteLeitura(this);
-        }
-        // Carrega as LIs existentes de um processo
-        private DateTime? GetDateIfChecked(DateTimePicker dtp)
-            => dtp.Checked ? (DateTime?)dtp.Value : null;
-        private void CarregarDateTimePickers(Processo p)
-        {
-            // Mapeamento de cada DTP ao par (data, flag)
-            var mapeamento = new Dictionary<DateTimePicker, (DateTime? data, bool has)>()
-            {
-                { DTPdataderegistrodi,        (p.DataRegistroDI,        p.CheckDataRegistroDI) },
-                { DTPdatadedesembaracodi,     (p.DataDesembaracoDI,     p.CheckDataDesembaracoDI) },
-                { DTPdatadecarregamentodi,    (p.DataCarregamentoDI,    p.CheckDataCarregamentoDI) },
-                { DTPdatadeinspecao,          (p.Inspecao,              p.CheckInspecao) },
-                { DTPdatadeatracacao,         (p.DataDeAtracacao,       p.CheckDataDeAtracacao) },
-                { DTPdatadeembarque,          (p.DataEmbarque,          p.CheckDataEmbarque) },
-                { DTPDataRecOriginais,        (p.DataRecebOriginais,    p.CheckDataRecebOriginais) },
-                { dtpDataMinuta,              (p.DataMinutaDI,          p.CheckDataMinutaDI) },
-                { dtpVencimentoFMA,           (p.VencimentoFMA,         p.VencimentoFMA.HasValue) },
-                { dtpVencimentoFreeTime,      (p.VencimentoFreeTime,    p.VencimentoFreeTime.HasValue) },
-                { dtpVencimentoLI_LPCO,       (p.VencimentoLI_LPCO,     p.VencimentoLI_LPCO.HasValue) }
-            };
-
-            foreach (var kv in mapeamento)
-            {
-                var dtp = kv.Key;
-                var (date, has) = kv.Value;
-
-                // 1) Se quiser exibir checkbox interno (opcional)
-                dtp.ShowCheckBox = true;
-
-                // 2) Sincroniza o Checked com o banco
-                dtp.Checked = has;
-
-                // 3) Se tiver data, formata e atribui; senão, mantém em branco
-                if (has && date.HasValue)
-                {
-                    dtp.Format = DateTimePickerFormat.Short;
-                    dtp.Value = date.Value;
-                }
-                else
-                {
-                    dtp.Format = DateTimePickerFormat.Custom;
-                    dtp.CustomFormat = " -";
-                }
-            }
-        }
-        private void SetCamposSomenteLeitura(Control parent)
-        {
-            foreach (Control control in parent.Controls)
-            {
-                switch (control)
-                {
-                    case TextBox textBox:
-                        textBox.ReadOnly = true;
-                        break;
-
-                    case DateTimePicker:
-                    case CheckBox:
-                    case ComboBox:
-                    case NumericUpDown:
-                    case CheckedListBox:
-                        control.Enabled = false;
-                        break;
-                }
-
-                // Recursivamente trata controles compostos (GroupBox, Panel, etc.)
-                if (control.HasChildren)
-                {
-                    SetCamposSomenteLeitura(control);
-                }
-            }
-        }
-        public void SelecionarItensCheckedListBox(CheckedListBox clb, string[] itensSelecionados)
-        {
-            for (int i = 0; i < clb.Items.Count; i++)
-            {
-                string item = clb.Items[i]?.ToString() ?? string.Empty;
-                clb.SetItemChecked(i, itensSelecionados.Contains(item));
-            }
-        }
-        private void SelecionarItemCheckedListBox(CheckedListBox clb, string itemParaSelecionar, bool selecaoUnica = true)
-        {
-            if (string.IsNullOrEmpty(itemParaSelecionar))
-            {
-                for (int i = 0; i < clb.Items.Count; i++)
-                    clb.SetItemChecked(i, false);
-                return;
-            }
-
-            for (int i = 0; i < clb.Items.Count; i++)
-            {
-                bool deveMarcar = clb.Items[i].ToString() == itemParaSelecionar;
-                clb.SetItemChecked(i, deveMarcar || (!selecaoUnica && clb.GetItemChecked(i)));
-
-                if (selecaoUnica && !deveMarcar)
-                    clb.SetItemChecked(i, false);
-            }
-        }
-        public string[] ObterItensSelecionados(CheckedListBox clb)
-        {
-            return clb.CheckedItems
-                      .OfType<string>()
-                      .ToArray();
-        }
-        private void DateTimePicker_OnValueChanged(object sender, EventArgs e)
-        {
-            var dtp = (DateTimePicker)sender;
-
-            // 1) Ajusta o formato visual
-            dtp.Format = dtp.Checked
-                ? DateTimePickerFormat.Short
-                : DateTimePickerFormat.Custom;
-            if (!dtp.Checked)
-                dtp.CustomFormat = "' -'";
-
-            // 2) Descobre o nome da propriedade no seu modelo
-            //    ex: dtp.Name = "DTPdatadeinspecao" → campo = "datadeinspecao"
-            var campo = dtp.Name.Substring(3);
-
-            // 3) Atualiza a propriedade DateTime? (DataX) 
-            var propData = typeof(Processo).GetProperty(
-                // supõe que o nome da prop é PascalCase igual ao suffix do DTP:
-                char.ToUpper(campo[0]) + campo.Substring(1)
-            );
-            if (propData != null && propData.PropertyType == typeof(DateTime?))
-            {
-                propData.SetValue(processo, GetDateIfChecked(dtp));
-            }
-
-            // 4) Atualiza o flag CheckDataX (bool)
-            var propCheck = typeof(Processo).GetProperty("Check" +
-                char.ToUpper(campo[0]) + campo.Substring(1));
-            if (propCheck != null && propCheck.PropertyType == typeof(bool))
-            {
-                propCheck.SetValue(processo, dtp.Checked);
-            }
+            CarregarAbasLi();
         }
 
-        private void InicializarDateTimePickersComCheckbox()
+        private void SalvarDadosDosControles()
         {
-            // Liste aqui todos os seus DateTimePickers que devem ter checkbox interno
-            var dtps = new[]
-            {
-                dtpDataMinuta,
-                DTPdataderegistrodi,
-                DTPdatadedesembaracodi,
-                DTPdatadecarregamentodi,
-                DTPdatadeinspecao,
-                DTPdatadeatracacao,
-                DTPdatadeembarque,
-                DTPDataRecOriginais
-            };
+            BsModificaProcesso.EndEdit();
+            this.ValidateChildren();
 
-            foreach (var dtp in dtps)
-            {
-                dtp.ShowCheckBox = true;
-                dtp.ValueChanged += DateTimePicker_OnValueChanged;
-                // caso queira capturar também o uncheck via clique:
-                dtp.MouseUp += (s, e2) => DateTimePicker_OnValueChanged(s, null);
-            }
-        }
-        //private void AtualizarPainelLi()
-        //{
-        //    flpLis.Controls.Clear(); // flpLis é o seu FlowLayoutPanel
+            // --- Salva dados gerais ---
+            processo.DocRecebidos = ObterItensSelecionados(checkedListBox1);
+            processo.FormaRecOriginais = checkedListBox2.CheckedItems.Count > 0 ? checkedListBox2.CheckedItems[0]?.ToString() ?? "" : "";
+            processo.Marca = (new[] { "Sacos", "Caixas", "Pallets" }.Contains(cbMarca.Text))
+                ? $"{numMarca.Value} {cbMarca.Text}"
+                : $"{numMarca.Value} x {cbMarca.Text}";
 
-        //    foreach (var li in listaLis)
-        //    {
-        //        // Cria uma instância do nosso novo controle de exibição
-        //        var displayControl = new LiDisplayControl();
-
-        //        // Carrega os dados da LI no controle
-        //        displayControl.CarregarDados(li);
-
-        //        // Adiciona o controle preenchido ao painel
-        //        flpLis.Controls.Add(displayControl);
-        //    }
-        //}
-        //public void CarregarLis(Processo processo)
-        //{
-        //    if (processo?.LI != null)
-        //    {
-        //        listaLis = processo.LI.ToList();
-        //        AtualizarPainelLi();
-        //    }
-        //}
-        private void PopularMarca()
-        {
-            string marcaCompleta = processo.Marca;
-            string[] modulosEspacos = new[] { "Sacos", "Caixas", "Pallets" };
-
-            string numMarcaStr = "";
-            string textoMarca = "";
-
-            if (modulosEspacos.Any(m => marcaCompleta.EndsWith(" " + m)))
-            {
-                // Ex: "10 Sacos"
-                int indexEspaco = marcaCompleta.LastIndexOf(' ');
-                if (indexEspaco > 0)
-                {
-                    numMarcaStr = marcaCompleta.Substring(0, indexEspaco);
-                    textoMarca = marcaCompleta.Substring(indexEspaco + 1);
-                }
-            }
-            else if (marcaCompleta.Contains(" x "))
-            {
-                // Ex: "10 x 40 DRY"
-                int indexX = marcaCompleta.IndexOf(" x ");
-                numMarcaStr = marcaCompleta.Substring(0, indexX);
-                textoMarca = marcaCompleta.Substring(indexX + 3);
-            }
-
-            // Converte e atribui
-            if (decimal.TryParse(numMarcaStr, out decimal num))
-                numMarca.Value = Math.Min(numMarca.Maximum, Math.Max(numMarca.Minimum, num)); // garante dentro do intervalo
-
-            cbMarca.Text = textoMarca;
-
-        }
-        private void btnCancelar_Click(object sender, EventArgs e)
-        {
-            this.Close();
-        }
-
-        private void btnAdiciona_Click(object sender, EventArgs e)
-        {
-            // Mapeamento direto dos controles para o objeto 'processo'
-            processo.Importador = TXTimportador.Text;
-            processo.Veiculo = txtVeiculo.Text;
-            processo.Ref_USA = TXTnr.Text;
-            processo.SR = TXTsr.Text;
-            processo.Exportador = TXTexportador.Text;
-            processo.Produto = TXTProduto.Text;
-            processo.PortoDestino = TXTportodedestino.Text;
-            processo.Origem = txtOrigem.Text;
-            processo.FLO = TXTflo.Text;
-            processo.Terminal = txtTerminal.Text;
-            processo.FreeTime = (int)NUMfreetime.Value;
-            processo.Conhecimento = txtConhecimento.Text;
-            processo.Armador = txtArmador.Text;
-            processo.DI = TXTdi.Text;
-            processo.ParametrizacaoDI = CBparametrizacaodi.Text;
-            processo.HistóricoDoProcesso = TXTstatusdoprocesso.Text;
-            processo.Pendencia = TXTpendencia.Text;
-            processo.Amostra = CBamostra.Checked;
-            processo.Desovado = CBdesovado.Checked;
-
-            // --- LÓGICA SIMPLIFICADA PARA DATAS ---
-            // A propriedade do processo recebe o valor do DTP se estiver marcado, senão recebe null.
+            // --- Salva as datas do processo principal ---
             processo.DataRegistroDI = DTPdataderegistrodi.Checked ? DTPdataderegistrodi.Value : null;
             processo.DataDesembaracoDI = DTPdatadedesembaracodi.Checked ? DTPdatadedesembaracodi.Value : null;
             processo.DataCarregamentoDI = DTPdatadecarregamentodi.Checked ? DTPdatadecarregamentodi.Value : null;
@@ -307,51 +81,337 @@ namespace Trabalho
             processo.DataRecebOriginais = DTPDataRecOriginais.Checked ? DTPDataRecOriginais.Value : null;
             processo.DataMinutaDI = dtpDataMinuta.Checked ? dtpDataMinuta.Value : null;
 
-            // --- LÓGICA DE LISTAS E CÁLCULOS ---
-            processo.LI = listaLis;
-            processo.DocRecebidos = ObterItensSelecionados(checkedListBox1);
-            processo.FormaRecOriginais = checkedListBox2.CheckedItems.Count > 0
-                    ? checkedListBox2.CheckedItems[0]?.ToString() ?? string.Empty
-                    : string.Empty;
+            processo.HistoricoDoProcesso = TXTstatusdoprocesso.Text;
+            processo.Pendencia = TXTpendencia.Text;
 
-            // Constrói a string da Marca
-            processo.Marca = (new[] { "Sacos", "Caixas", "Pallets" }.Contains(cbMarca.Text))
-                ? $"{numMarca.Value} {cbMarca.Text}"
-                : $"{numMarca.Value} x {cbMarca.Text}";
-
-            // O DialogResult é definido para fechar o form e sinalizar que a operação foi um sucesso
-            this.DialogResult = DialogResult.OK;
-            this.Close();
-        }
-
-        private void CBmapa_CheckedChanged(object sender, EventArgs e)
-        {
-        }
-
-        private void checkedListBox2_ItemCheck(object sender, ItemCheckEventArgs e)
-        {
-            for (int i = 0; i < checkedListBox2.Items.Count; i++)
+            // --- (NOVO) Salva os dados das abas dinâmicas de LI e LPCO ---
+            foreach (TabPage abaLi in TCLi.TabPages)
             {
-                if (i != e.Index)
+                if (abaLi.Tag is not LicencaImportacao li) continue;
+
+                // O DataBinding para TxtLi e TxtNCM geralmente funciona, mas vamos garantir.
+                if (abaLi.Controls.Find("TxtLi", true).FirstOrDefault() is TextBox txtLi) li.Numero = txtLi.Text;
+                if (abaLi.Controls.Find("TxtNCM", true).FirstOrDefault() is TextBox txtNcm) li.NCM = txtNcm.Text;
+                if (abaLi.Controls.Find("DtpDataRegistro", true).FirstOrDefault() is DateTimePicker dtpLi)
                 {
-                    checkedListBox2.SetItemChecked(i, false);
+                    li.DataRegistro = dtpLi.Checked ? dtpLi.Value : null;
+                }
+
+                // Encontra o TabControl aninhado dos LPCOs
+                var tabControlLpco = abaLi.Controls.OfType<TabControl>().FirstOrDefault();
+                if (tabControlLpco != null)
+                {
+                    foreach (TabPage abaLpco in tabControlLpco.TabPages)
+                    {
+                        if (abaLpco.Tag is not LpcoInfo lpco) continue;
+
+                        // AGORA ESTA PARTE VAI FUNCIONAR CORRETAMENTE
+                        if (abaLpco.Controls.Find("txtLpcoNum", true).FirstOrDefault() is TextBox txtLpcoNum)
+                            lpco.LPCO = txtLpcoNum.Text;
+
+                        if (abaLpco.Controls.Find("cmbParam", true).FirstOrDefault() is ComboBox cmbParam)
+                            lpco.ParametrizacaoLPCO = cmbParam.Text;
+
+                        if (abaLpco.Controls.Find("dtpDataReg", true).FirstOrDefault() is DateTimePicker dtpLpcoReg)
+                            lpco.DataRegistroLPCO = dtpLpcoReg.Checked ? dtpLpcoReg.Value : null;
+
+                        if (abaLpco.Controls.Find("dtpDataDef", true).FirstOrDefault() is DateTimePicker dtpLpcoDef)
+                            lpco.DataDeferimentoLPCO = dtpLpcoDef.Checked ? dtpLpcoDef.Value : null;
+                    }
                 }
             }
         }
 
-        private void btnRelatorio_Click(object sender, EventArgs e)
+        private void btnAdiciona_Click(object? sender, EventArgs e)
+        {
+            SalvarDadosDosControles();
+            // Lógica de cálculo dos vencimentos
+            if (processo.DataDeAtracacao.HasValue)
+            {
+                processo.VencimentoFreeTime = processo.DataDeAtracacao.Value.AddDays(processo.FreeTime);
+                processo.VencimentoFMA = processo.DataDeAtracacao.Value.AddDays(85); // Exemplo
+            }
+            if (processo.LI.FirstOrDefault()?.DataRegistro.HasValue ?? false)
+            {
+                processo.VencimentoLI_LPCO = processo.LI.First().DataRegistro.Value.AddDays(85); // Exemplo
+            }
+
+            this.DialogResult = DialogResult.OK;
+            this.Close();
+        }
+
+        #endregion
+
+        #region "Gerenciamento Dinâmico de LI/LPCO"
+
+        private void CarregarAbasLi()
+        {
+            TCLi.TabPages.Clear();
+            foreach (var li in processo.LI)
+            {
+                AdicionarAbaLi(li);
+            }
+        }
+
+        private void AdicionarAbaLi(LicencaImportacao li)
+        {
+            var tabPageLi = new TabPage($"LI - {li.Numero}") { Tag = li, BackColor = SystemColors.Control };
+
+            var cbOrgaos = new ComboBox { Location = new Point(415, 6), Width = 184, DropDownStyle = ComboBoxStyle.DropDownList };
+            cbOrgaos.Items.AddRange(Enum.GetNames(typeof(TipoOrgaoAnuente)));
+            var btnNovoLpco = new Button { Text = "Novo LPCO", Location = new Point(604, 6), Width = 129 };
+
+            var tabControlLpco = new TabControl { Location = new Point(6, 3), Size = new Size(730, 137), Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right };
+            btnNovoLpco.Click += (s, e) => BtnNovoLpco_Click(li, cbOrgaos, tabControlLpco);
+
+            var groupBoxDadosLi = new GroupBox { Text = "Dados da LI", Location = new Point(6, 145), Size = new Size(730, 83), Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right };
+            var lblLiNum = new Label { Text = "LI", Font = new Font("Segoe UI", 12F), Location = new Point(193, 19), AutoSize = true, Parent = groupBoxDadosLi };
+            var txtLi = new TextBox { Name = "TxtLi", Location = new Point(137, 43), Width = 134, Parent = groupBoxDadosLi };
+            var lblNcm = new Label { Text = "NCM", Font = new Font("Segoe UI", 12F), Location = new Point(335, 19), AutoSize = true, Parent = groupBoxDadosLi };
+            var txtNcm = new TextBox { Name = "TxtNCM", Location = new Point(285, 43), Width = 147, Parent = groupBoxDadosLi };
+            var lblDataRegLi = new Label { Text = "Data Registro", Font = new Font("Segoe UI", 12F), Location = new Point(463, 19), AutoSize = true, Parent = groupBoxDadosLi };
+            var dtpRegistroLi = new DateTimePicker { Name = "DtpDataRegistro", Location = new Point(446, 43), Width = 135, Format = DateTimePickerFormat.Short, Parent = groupBoxDadosLi };
+
+            txtLi.DataBindings.Add("Text", li, nameof(li.Numero), false, DataSourceUpdateMode.OnPropertyChanged);
+            txtNcm.DataBindings.Add("Text", li, nameof(li.NCM), false, DataSourceUpdateMode.OnPropertyChanged);
+
+            // MUDANÇA: Passando o valor da data diretamente.
+            ConfigurarDatePickerNulavel(dtpRegistroLi, li.DataRegistro);
+
+            txtLi.TextChanged += (s, e) => { tabPageLi.Text = $"LI - {txtLi.Text}"; };
+
+            tabPageLi.Controls.AddRange(new Control[] { cbOrgaos, btnNovoLpco, tabControlLpco, groupBoxDadosLi });
+
+            foreach (var lpco in li.LPCO)
+            {
+                AdicionarAbaLpco(tabControlLpco, lpco);
+            }
+
+            TCLi.TabPages.Add(tabPageLi);
+        }
+
+        private void AdicionarAbaLpco(TabControl parentTabControl, LpcoInfo lpco)
+        {
+            var tabPageLpco = new TabPage(lpco.NomeOrgao) { Tag = lpco, BackColor = SystemColors.Control };
+
+            var lblLpcoNum = new Label { Text = "LPCO", Location = new Point(46, 28), AutoSize = true, Parent = tabPageLpco };
+            var txtLpcoNum = new TextBox { Name = "txtLpcoNum", Location = new Point(90, 25), Width = 261, Parent = tabPageLpco };
+            var lblParam = new Label { Text = "Parametrização", Location = new Point(46, 62), AutoSize = true, Parent = tabPageLpco };
+            var cmbParam = new ComboBox { Name = "cmbParam", Location = new Point(140, 59), Width = 211, DropDownStyle = ComboBoxStyle.DropDownList, Parent = tabPageLpco };
+            cmbParam.Items.AddRange(new string[] { "", "Documental", "Exame Físico", "Conferência Física", "Coleta de Amostra", "Inspeção Física" });
+
+            var lblDataReg = new Label { Text = "Data Registro", Font = new Font("Segoe UI", 11F), Location = new Point(399, 34), AutoSize = true, Parent = tabPageLpco };
+            var dtpDataReg = new DateTimePicker { Name = "dtpDataReg", Location = new Point(382, 56), Width = 135, Format = DateTimePickerFormat.Short, Parent = tabPageLpco };
+            var lblDataDef = new Label { Text = "Data Deferimento", Font = new Font("Segoe UI", 11F), Location = new Point(534, 34), AutoSize = true, Parent = tabPageLpco };
+            var dtpDataDef = new DateTimePicker { Name = "dtpDataDef", Location = new Point(531, 56), Width = 135, Format = DateTimePickerFormat.Short, Parent = tabPageLpco };
+
+            txtLpcoNum.DataBindings.Add("Text", lpco, nameof(lpco.LPCO), false, DataSourceUpdateMode.OnPropertyChanged);
+            cmbParam.DataBindings.Add("Text", lpco, nameof(lpco.ParametrizacaoLPCO), false, DataSourceUpdateMode.OnPropertyChanged);
+
+            ConfigurarDatePickerNulavel(dtpDataReg, lpco.DataRegistroLPCO);
+            ConfigurarDatePickerNulavel(dtpDataDef, lpco.DataDeferimentoLPCO);
+
+            parentTabControl.TabPages.Add(tabPageLpco);
+        }
+
+        private void BtnLI_Click(object? sender, EventArgs e)
+        {
+            var novaLi = new LicencaImportacao { Numero = "Nova LI" };
+            processo.LI.Add(novaLi);
+            AdicionarAbaLi(novaLi);
+            TCLi.SelectedIndex = TCLi.TabPages.Count - 1;
+        }
+
+        private void BtnNovoLpco_Click(LicencaImportacao liPai, ComboBox cbOrgaos, TabControl tabControlLpco)
+        {
+            string? nomeOrgao = cbOrgaos.SelectedItem?.ToString();
+            if (string.IsNullOrEmpty(nomeOrgao)) { MessageBox.Show("Selecione um órgão anuente."); return; }
+            if (liPai.LPCO.Any(l => l.NomeOrgao == nomeOrgao)) { MessageBox.Show($"Já existe um LPCO para o órgão '{nomeOrgao}' nesta LI."); return; }
+
+            var novoLpco = new LpcoInfo { NomeOrgao = nomeOrgao };
+            liPai.LPCO.Add(novoLpco);
+            AdicionarAbaLpco(tabControlLpco, novoLpco);
+            tabControlLpco.SelectTab(tabControlLpco.TabPages.Count - 1);
+        }
+
+        #endregion
+
+        #region "Métodos Auxiliares"
+
+        private void CarregarControlesDeData()
+        {
+            // Mapeia o controle à sua propriedade correspondente no objeto 'processo'
+            ConfigurarDatePickerNulavel(dtpDataMinuta, processo.DataMinutaDI);
+            ConfigurarDatePickerNulavel(DTPdataderegistrodi, processo.DataRegistroDI);
+            ConfigurarDatePickerNulavel(DTPdatadedesembaracodi, processo.DataDesembaracoDI);
+            ConfigurarDatePickerNulavel(DTPdatadecarregamentodi, processo.DataCarregamentoDI);
+            ConfigurarDatePickerNulavel(DTPdatadeinspecao, processo.Inspecao);
+            ConfigurarDatePickerNulavel(DTPdatadeatracacao, processo.DataDeAtracacao);
+            ConfigurarDatePickerNulavel(DTPdatadeembarque, processo.DataEmbarque);
+            ConfigurarDatePickerNulavel(DTPDataRecOriginais, processo.DataRecebOriginais);
+        }
+
+        private void ConfigurarDatePickerNulavel(DateTimePicker dtp, DateTime? data)
+        {
+            dtp.ShowCheckBox = true;
+
+            // Carrega o valor inicial
+            if (data.HasValue)
+            {
+                dtp.Checked = true;
+                dtp.Value = data.Value;
+                dtp.Format = DateTimePickerFormat.Short;
+            }
+            else
+            {
+                dtp.Checked = false;
+                dtp.Format = DateTimePickerFormat.Custom;
+                dtp.CustomFormat = " ";
+            }
+
+            dtp.ValueChanged -= Dtp_ValueChanged; 
+            dtp.ValueChanged += Dtp_ValueChanged;
+        }
+
+        // Este evento agora só cuida da FORMATAÇÃO VISUAL.
+        private void Dtp_ValueChanged(object? sender, EventArgs e)
+        {
+            if (sender is DateTimePicker picker)
+            {
+                picker.Format = picker.Checked ? DateTimePickerFormat.Short : DateTimePickerFormat.Custom;
+            }
+        }
+
+        private void CarregarCheckedListBoxes()
+        {
+            // 1. Lida com o CheckedListBox de multi-seleção ("Docs Recebidos")
+            if (processo.DocRecebidos != null)
+            {
+                // Desmarca todos os itens primeiro para garantir uma carga limpa
+                for (int i = 0; i < checkedListBox1.Items.Count; i++)
+                {
+                    checkedListBox1.SetItemChecked(i, false);
+                }
+
+                // Marca os itens que estão na lista do processo
+                foreach (var item in processo.DocRecebidos)
+                {
+                    int index = checkedListBox1.Items.IndexOf(item);
+                    if (index != -1)
+                    {
+                        checkedListBox1.SetItemChecked(index, true);
+                    }
+                }
+            }
+
+            // 2. Lida com o CheckedListBox de seleção única ("Forma Rec.")
+            if (!string.IsNullOrEmpty(processo.FormaRecOriginais))
+            {
+                int index = checkedListBox2.Items.IndexOf(processo.FormaRecOriginais);
+                if (index != -1)
+                {
+                    // Marca apenas o item correspondente
+                    checkedListBox2.SetItemChecked(index, true);
+                }
+            }
+        }
+        private string[] ObterItensSelecionados(CheckedListBox clb) => clb.CheckedItems.OfType<string>().ToArray();
+        private void PopularMarca()
+        {
+            string marcaCompleta = processo.Marca ?? string.Empty;
+            string[] modulosEspacos = new[] { "Sacos", "Caixas", "Pallets" };
+
+            string numMarcaStr = "";
+            string textoMarca = "";
+
+            if (modulosEspacos.Any(m => marcaCompleta.EndsWith(" " + m)))
+            {
+                // Formato "10 Sacos"
+                int indexEspaco = marcaCompleta.LastIndexOf(' ');
+                if (indexEspaco > 0)
+                {
+                    numMarcaStr = marcaCompleta.Substring(0, indexEspaco);
+                    textoMarca = marcaCompleta.Substring(indexEspaco + 1);
+                }
+            }
+            else if (marcaCompleta.Contains(" x "))
+            {
+                // Formato "2 x 40 HC"
+                int indexX = marcaCompleta.IndexOf(" x ");
+                if (indexX > 0)
+                {
+                    numMarcaStr = marcaCompleta.Substring(0, indexX);
+                    textoMarca = marcaCompleta.Substring(indexX + 3);
+                }
+            }
+            else
+            {
+                // Se não encontrar um padrão, assume que é tudo texto
+                textoMarca = marcaCompleta;
+            }
+
+            // Atribui os valores aos controles
+            if (decimal.TryParse(numMarcaStr, out decimal num))
+            {
+                numMarca.Value = Math.Clamp(num, numMarca.Minimum, numMarca.Maximum);
+            }
+            cbMarca.Text = textoMarca;
+        }
+        private void SetCamposSomenteLeitura(Control parent)
+        {
+            // Desabilita botões de ação que não fazem sentido no modo de visualização
+            BtnNovoOrgaoAnuente.Enabled = false; // Exemplo de botão no designer
+                                                 // Adicione outros botões que precisam ser desabilitados
+
+            foreach (Control control in parent.Controls)
+            {
+                switch (control)
+                {
+                    case TextBox box: box.ReadOnly = true; break;
+                    case MaskedTextBox box: box.ReadOnly = true; break;
+                    case ComboBox box: box.Enabled = false; break;
+                    case CheckBox box: box.Enabled = false; break;
+                    case DateTimePicker picker: picker.Enabled = false; break;
+                    case NumericUpDown num: num.Enabled = false; break;
+                    case CheckedListBox list: list.Enabled = false; break;
+                    case Button btn when btn.Name != "btnCancelar" && btn.Name != "btnRelatorio" && btn.Name != "btnCapa":
+                        btn.Enabled = false; // Desabilita outros botões, exceto os de navegação/relatório
+                        break;
+                }
+
+                // Chamada recursiva para controles dentro de GroupBoxes, Panels, TabPages, etc.
+                if (control.HasChildren)
+                {
+                    SetCamposSomenteLeitura(control);
+                }
+            }
+        }
+        private void btnCapa_Click(object? sender, EventArgs e)
+        {
+            using var frm = new FrmModificaCapa
+            {
+                capa = processo.Capa ?? new Capa(),
+                Modo = this.Modo,
+                ref_usa = processo.Ref_USA,
+                Visualizacao = this.Visualização
+            };
+
+            if (frm.ShowDialog(this) == DialogResult.OK)
+            {
+                processo.Capa = frm.capa;
+            }
+        }
+
+        private void btnRelatorio_Click(object? sender, EventArgs e)
         {
             string referencia = TXTnr.Text;
-
-            // 1) Cria sem using
             var progressForm = new ProgressForm();
-            progressForm.Show(this);       // exibe modeless, com o próprio Form como owner
+            progressForm.Show(this);
 
             Task.Run(() =>
             {
-                string pdfPath = "";
-                string mensagemErro = null;
-
+                string? pdfPath = null;
+                string? mensagemErro = null;
                 try
                 {
                     pdfPath = PythonRunner.ExecutarRelatorio(referencia).Trim();
@@ -364,79 +424,36 @@ namespace Trabalho
                 Invoke(new Action(() =>
                 {
                     progressForm.Close();
-                    progressForm.Dispose();
-
                     if (mensagemErro != null)
                     {
                         MessageBox.Show(mensagemErro, "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
                         return;
                     }
-
-                    var resp = MessageBox.Show(
-                        "Exportação concluída. Deseja abrir o PDF?",
-                        "Resultado",
-                        MessageBoxButtons.YesNo,
-                        MessageBoxIcon.Question
-                    );
-
-                    if (resp == DialogResult.Yes && File.Exists(pdfPath))
+                    var resp = MessageBox.Show("Exportação concluída. Deseja abrir o PDF?", "Resultado", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+                    if (resp == DialogResult.Yes && !string.IsNullOrEmpty(pdfPath) && File.Exists(pdfPath))
                     {
-                        Process.Start(new ProcessStartInfo
-                        {
-                            FileName = pdfPath,
-                            UseShellExecute = true
-                        });
+                        Process.Start(new ProcessStartInfo { FileName = pdfPath, UseShellExecute = true });
                     }
-
-                    this.Close();
                 }));
             });
         }
-
-        private void btnRelatorio_MouseClick(object sender, MouseEventArgs e)
+        private void checkedListBox2_ItemCheck(object? sender, ItemCheckEventArgs e)
         {
-            if (e.Button == MouseButtons.Right)
+            // Se o usuário está marcando um novo item...
+            if (e.NewValue == CheckState.Checked)
             {
-                // Caminho da pasta do relatório
-                string pasta = @"C:\UsaDespachos\Docs\Relatorio"; // Substitua pelo caminho real
-
-                if (!string.IsNullOrEmpty(pasta) && System.IO.Directory.Exists(pasta))
+                // ...percorre todos os outros itens e os desmarca.
+                for (int i = 0; i < checkedListBox2.Items.Count; i++)
                 {
-                    Process.Start("explorer.exe", pasta);
-                }
-                else
-                {
-                    MessageBox.Show("Pasta do relatório não encontrada.", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    if (i != e.Index)
+                    {
+                        checkedListBox2.SetItemChecked(i, false);
+                    }
                 }
             }
         }
 
-        private void btnCapa_Click(object sender, EventArgs e)
-        {
-            var frm = new FrmModificaCapa();
-            if (processo.Capa != null)
-                frm.capa = processo.Capa;
-            frm.Modo = this.Modo;
-            frm.ref_usa = processo.Ref_USA;
-            frm.Visualizacao = (this.Modo == "Visualizar");
+        #endregion
 
-            if (frm.ShowDialog(this) == DialogResult.OK)
-            {
-                if (processo.Capa == null)
-                    processo.Capa = new Capa();
-
-                processo.Capa = frm.capa;
-            }
-        }
-
-        private void tabPage1_Click(object sender, EventArgs e)
-        {
-
-        }
-
-        private void label32_Click(object sender, EventArgs e)
-        {
-
-        }
     }
 }

@@ -17,7 +17,7 @@ namespace CLUSA
         }
         [BsonId]
         [BsonRepresentation(BsonType.ObjectId)]
-        public ObjectId Id { get; set; }
+        public ObjectId Id { get; set; } = ObjectId.GenerateNewId();
         public string Ref_USA { get; set; } = string.Empty;
         public string SR { get; set; } = string.Empty;
         public string Importador { get; set; } = string.Empty;

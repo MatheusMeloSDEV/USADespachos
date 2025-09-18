@@ -54,8 +54,6 @@
             TxtNCM = new TextBox();
             TxtLi = new TextBox();
             groupBox2 = new GroupBox();
-            TxtTipo = new TextBox();
-            label1 = new Label();
             tabControl1 = new TabControl();
             tabPage1 = new TabPage();
             label13 = new Label();
@@ -99,7 +97,7 @@
             LBLinspecao.Anchor = AnchorStyles.Top | AnchorStyles.Right;
             LBLinspecao.AutoSize = true;
             LBLinspecao.Font = new Font("Segoe UI", 11F);
-            LBLinspecao.Location = new Point(471, 27);
+            LBLinspecao.Location = new Point(402, 27);
             LBLinspecao.Name = "LBLinspecao";
             LBLinspecao.Size = new Size(68, 20);
             LBLinspecao.TabIndex = 413;
@@ -109,7 +107,7 @@
             // 
             DTPdatadeinspecao.Anchor = AnchorStyles.Top | AnchorStyles.Right;
             DTPdatadeinspecao.Format = DateTimePickerFormat.Short;
-            DTPdatadeinspecao.Location = new Point(438, 51);
+            DTPdatadeinspecao.Location = new Point(369, 51);
             DTPdatadeinspecao.Name = "DTPdatadeinspecao";
             DTPdatadeinspecao.Size = new Size(135, 23);
             DTPdatadeinspecao.TabIndex = 410;
@@ -141,7 +139,7 @@
             Label11.Anchor = AnchorStyles.Top | AnchorStyles.Right;
             Label11.AutoSize = true;
             Label11.Font = new Font("Segoe UI", 12F);
-            Label11.Location = new Point(181, 27);
+            Label11.Location = new Point(257, 27);
             Label11.Name = "Label11";
             Label11.Size = new Size(49, 21);
             Label11.TabIndex = 402;
@@ -152,7 +150,7 @@
             Label9.Anchor = AnchorStyles.Top | AnchorStyles.Right;
             Label9.AutoSize = true;
             Label9.Font = new Font("Segoe UI", 12F);
-            Label9.Location = new Point(34, 27);
+            Label9.Location = new Point(110, 27);
             Label9.Name = "Label9";
             Label9.Size = new Size(70, 21);
             Label9.TabIndex = 401;
@@ -161,7 +159,7 @@
             // TXTsr
             // 
             TXTsr.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-            TXTsr.Location = new Point(156, 51);
+            TXTsr.Location = new Point(232, 51);
             TXTsr.Name = "TXTsr";
             TXTsr.Size = new Size(98, 23);
             TXTsr.TabIndex = 400;
@@ -169,7 +167,7 @@
             // TXTnr
             // 
             TXTnr.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-            TXTnr.Location = new Point(20, 51);
+            TXTnr.Location = new Point(96, 51);
             TXTnr.Name = "TXTnr";
             TXTnr.Size = new Size(98, 23);
             TXTnr.TabIndex = 399;
@@ -296,7 +294,7 @@
             label3.Name = "label3";
             label3.Size = new Size(22, 21);
             label3.TabIndex = 420;
-            label3.Text = "Li";
+            label3.Text = "LI";
             // 
             // label4
             // 
@@ -327,8 +325,6 @@
             // 
             // groupBox2
             // 
-            groupBox2.Controls.Add(TxtTipo);
-            groupBox2.Controls.Add(label1);
             groupBox2.Controls.Add(Label9);
             groupBox2.Controls.Add(TXTexportador);
             groupBox2.Controls.Add(Label17);
@@ -347,25 +343,6 @@
             groupBox2.TabIndex = 417;
             groupBox2.TabStop = false;
             groupBox2.Text = "Informações Orgão Anuente";
-            // 
-            // TxtTipo
-            // 
-            TxtTipo.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-            TxtTipo.Location = new Point(292, 51);
-            TxtTipo.Name = "TxtTipo";
-            TxtTipo.Size = new Size(98, 23);
-            TxtTipo.TabIndex = 416;
-            // 
-            // label1
-            // 
-            label1.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-            label1.AutoSize = true;
-            label1.Font = new Font("Segoe UI", 12F);
-            label1.Location = new Point(321, 27);
-            label1.Name = "label1";
-            label1.Size = new Size(40, 21);
-            label1.TabIndex = 417;
-            label1.Text = "Tipo";
             // 
             // tabControl1
             // 
@@ -511,7 +488,8 @@
             Controls.Add(Label8);
             Controls.Add(TXTpendencia);
             Name = "FrmModificaOrgaoAnuente";
-            Text = "Li";
+            Text = "LI";
+            Load += FrmModificaOrgaoAnuente_Load;
             groupBox1.ResumeLayout(false);
             groupBox1.PerformLayout();
             groupBox2.ResumeLayout(false);
@@ -544,8 +522,6 @@
         private TextBox TXTexportador;
         private GroupBox groupBox1;
         private GroupBox groupBox2;
-        private TextBox TxtTipo;
-        private Label label1;
         private Label label5;
         private DateTimePicker DtpDataRegistro;
         private Label label3;

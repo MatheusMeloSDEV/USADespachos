@@ -12,7 +12,20 @@ namespace CLUSA
         public ObjectId Id { get; set; }
 
         //Não Aparecem
-        public List<TipoOrgaoAnuente> OrgaosAnuentesEnvolvidos { get; set; } = new();
+        [BsonIgnore] // <-- Diz ao MongoDB para NÃO salvar este campo.
+        public List<TipoOrgaoAnuente> OrgaosAnuentesEnvolvidos
+        {
+            get
+            {
+                // Lógica para extrair os órgãos únicos da lista de LIs/LPCOs.
+                if (LI == null || !LI.Any()) return new List<TipoOrgaoAnuente>();
+
+                return LI.SelectMany(li => li.LPCO)
+                         .Select(lpco => (TipoOrgaoAnuente)Enum.Parse(typeof(TipoOrgaoAnuente), lpco.NomeOrgao))
+                         .Distinct()
+                         .ToList();
+            }
+        }
         public bool PossuiEmbarque { get; set; } = false;
         public DateTime? VencimentoFreeTime { get; set; } = (DateTime?)null;
         public DateTime? VencimentoFMA { get; set; } = (DateTime?)null;
@@ -36,7 +49,7 @@ namespace CLUSA
         //adicionados
         public string Container { get; set; } = string.Empty;
         public bool PresencaDeCarga { get; set; } = false;
-        public bool SIGVIGLiberadi { get; set; } = false;
+        public bool SIGVIGLiberado { get; set; } = false;
         public bool SIGVIGSelecionado { get; set; } = false;
         public bool ResultadoLab { get; set; } = false;
         //
@@ -72,7 +85,7 @@ namespace CLUSA
         public bool Amostra { get; set; } = false;
         public bool Desovado { get; set; } = false;
         public string Pendencia { get; set; } = string.Empty;
-        public string HistóricoDoProcesso { get; set; } = string.Empty;
+        public string HistoricoDoProcesso { get; set; } = string.Empty;
 
         public string Origem { get; set; } = string.Empty;
 

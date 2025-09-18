@@ -17,30 +17,32 @@
 
         private void InitializeComponent()
         {
+            components = new System.ComponentModel.Container();
             panelFaturamento = new Panel();
             panelRecibo = new Panel();
+            _bsFaturas = new BindingSource(components);
+            ((System.ComponentModel.ISupportInitialize)_bsFaturas).BeginInit();
             SuspendLayout();
-
             // 
             // panelFaturamento
             // 
-            panelFaturamento.Dock = DockStyle.Left;
-            panelFaturamento.Width = this.Width / 2;
             panelFaturamento.AutoScroll = true;
             panelFaturamento.BorderStyle = BorderStyle.FixedSingle;
+            panelFaturamento.Dock = DockStyle.Left;
+            panelFaturamento.Location = new Point(0, 0);
             panelFaturamento.Name = "panelFaturamento";
+            panelFaturamento.Size = new Size(300, 780);
             panelFaturamento.TabIndex = 0;
-
             // 
             // panelRecibo
             // 
-            panelRecibo.Dock = DockStyle.Fill;
             panelRecibo.AutoScroll = true;
-            panelRecibo.Width = this.Width / 2;
             panelRecibo.BorderStyle = BorderStyle.FixedSingle;
+            panelRecibo.Dock = DockStyle.Fill;
+            panelRecibo.Location = new Point(300, 0);
             panelRecibo.Name = "panelRecibo";
+            panelRecibo.Size = new Size(620, 780);
             panelRecibo.TabIndex = 1;
-
             // 
             // FrmFinanceiro
             // 
@@ -51,9 +53,10 @@
             Name = "FrmFinanceiro";
             Text = "Financeiro";
             WindowState = FormWindowState.Maximized;
-
+            ((System.ComponentModel.ISupportInitialize)_bsFaturas).EndInit();
             ResumeLayout(false);
 
         }
+        private BindingSource _bsFaturas;
     }
 }

@@ -38,6 +38,7 @@
             DTPdataderegistrodi = new DateTimePicker();
             LBLinspecao = new Label();
             TXTdi = new TextBox();
+            BsModificaProcesso = new BindingSource(components);
             label21 = new Label();
             label23 = new Label();
             DTPdatadeinspecao = new DateTimePicker();
@@ -136,8 +137,9 @@
             CbPresencaCarga = new CheckBox();
             groupBox6 = new GroupBox();
             groupBox7 = new GroupBox();
-            BsModificaProcesso = new BindingSource(components);
+            BtnLI = new Button();
             groupBox2.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)BsModificaProcesso).BeginInit();
             ((System.ComponentModel.ISupportInitialize)NUMfreetime).BeginInit();
             groupBox3.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)numMarca).BeginInit();
@@ -150,7 +152,6 @@
             groupBox4.SuspendLayout();
             groupBox6.SuspendLayout();
             groupBox7.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)BsModificaProcesso).BeginInit();
             SuspendLayout();
             // 
             // groupBox2
@@ -198,7 +199,6 @@
             dtpDataMinuta.Size = new Size(135, 23);
             dtpDataMinuta.TabIndex = 303;
             dtpDataMinuta.Value = new DateTime(2023, 8, 22, 0, 0, 0, 0);
-            dtpDataMinuta.ValueChanged += DateTimePicker_OnValueChanged;
             // 
             // label19
             // 
@@ -232,7 +232,6 @@
             DTPdatadedesembaracodi.Size = new Size(135, 23);
             DTPdatadedesembaracodi.TabIndex = 150;
             DTPdatadedesembaracodi.Value = new DateTime(2024, 10, 17, 0, 0, 0, 0);
-            DTPdatadedesembaracodi.ValueChanged += DateTimePicker_OnValueChanged;
             // 
             // DTPdataderegistrodi
             // 
@@ -244,7 +243,6 @@
             DTPdataderegistrodi.Size = new Size(135, 23);
             DTPdataderegistrodi.TabIndex = 149;
             DTPdataderegistrodi.Value = new DateTime(2024, 10, 17, 0, 0, 0, 0);
-            DTPdataderegistrodi.ValueChanged += DateTimePicker_OnValueChanged;
             // 
             // LBLinspecao
             // 
@@ -266,6 +264,10 @@
             TXTdi.Name = "TXTdi";
             TXTdi.Size = new Size(135, 23);
             TXTdi.TabIndex = 148;
+            // 
+            // BsModificaProcesso
+            // 
+            BsModificaProcesso.DataSource = typeof(CLUSA.Processo);
             // 
             // label21
             // 
@@ -299,7 +301,6 @@
             DTPdatadeinspecao.Size = new Size(135, 23);
             DTPdatadeinspecao.TabIndex = 23;
             DTPdatadeinspecao.Value = new DateTime(2023, 8, 22, 0, 0, 0, 0);
-            DTPdatadeinspecao.ValueChanged += DateTimePicker_OnValueChanged;
             // 
             // label6
             // 
@@ -333,7 +334,6 @@
             DTPdatadecarregamentodi.Size = new Size(135, 23);
             DTPdatadecarregamentodi.TabIndex = 20;
             DTPdatadecarregamentodi.Value = new DateTime(2024, 10, 17, 0, 0, 0, 0);
-            DTPdatadecarregamentodi.ValueChanged += DateTimePicker_OnValueChanged;
             // 
             // CBamostra
             // 
@@ -554,7 +554,7 @@
             // TXTstatusdoprocesso
             // 
             TXTstatusdoprocesso.Anchor = AnchorStyles.None;
-            TXTstatusdoprocesso.DataBindings.Add(new Binding("Text", BsModificaProcesso, "HistóricoDoProcesso", true));
+            TXTstatusdoprocesso.DataBindings.Add(new Binding("Text", BsModificaProcesso, "HistoricoDoProcesso", true));
             TXTstatusdoprocesso.Location = new Point(6, 24);
             TXTstatusdoprocesso.Multiline = true;
             TXTstatusdoprocesso.Name = "TXTstatusdoprocesso";
@@ -658,7 +658,6 @@
             DTPDataRecOriginais.Size = new Size(135, 23);
             DTPDataRecOriginais.TabIndex = 311;
             DTPDataRecOriginais.Value = new DateTime(2023, 8, 22, 0, 0, 0, 0);
-            DTPDataRecOriginais.ValueChanged += DateTimePicker_OnValueChanged;
             // 
             // TXTnr
             // 
@@ -724,7 +723,6 @@
             dtpVencimentoLI_LPCO.Size = new Size(135, 23);
             dtpVencimentoLI_LPCO.TabIndex = 394;
             dtpVencimentoLI_LPCO.Value = new DateTime(2023, 8, 22, 0, 0, 0, 0);
-            dtpVencimentoLI_LPCO.ValueChanged += DateTimePicker_OnValueChanged;
             // 
             // dtpVencimentoFreeTime
             // 
@@ -737,7 +735,6 @@
             dtpVencimentoFreeTime.Size = new Size(135, 23);
             dtpVencimentoFreeTime.TabIndex = 395;
             dtpVencimentoFreeTime.Value = new DateTime(2023, 8, 22, 0, 0, 0, 0);
-            dtpVencimentoFreeTime.ValueChanged += DateTimePicker_OnValueChanged;
             // 
             // label26
             // 
@@ -761,7 +758,6 @@
             dtpVencimentoFMA.Size = new Size(135, 23);
             dtpVencimentoFMA.TabIndex = 398;
             dtpVencimentoFMA.Value = new DateTime(2023, 8, 22, 0, 0, 0, 0);
-            dtpVencimentoFMA.ValueChanged += DateTimePicker_OnValueChanged;
             // 
             // groupBox3
             // 
@@ -794,15 +790,15 @@
             cbMarca.AutoCompleteMode = AutoCompleteMode.Suggest;
             cbMarca.FormattingEnabled = true;
             cbMarca.Items.AddRange(new object[] { "20 DRY", "40 DRY", "20 RF", "40 RF", "20 HC", "40 HC", "20 ST", "40 ST", "Sacos", "Caixas", "Pallets" });
-            cbMarca.Location = new Point(1178, 178);
+            cbMarca.Location = new Point(1180, 178);
             cbMarca.Name = "cbMarca";
-            cbMarca.Size = new Size(91, 23);
+            cbMarca.Size = new Size(89, 23);
             cbMarca.TabIndex = 305;
             // 
             // numMarca
             // 
             numMarca.Anchor = AnchorStyles.None;
-            numMarca.Location = new Point(1141, 178);
+            numMarca.Location = new Point(1134, 178);
             numMarca.Name = "numMarca";
             numMarca.Size = new Size(49, 23);
             numMarca.TabIndex = 403;
@@ -835,10 +831,10 @@
             // 
             TCLi.Controls.Add(tabPage1);
             TCLi.Controls.Add(tabPage2);
-            TCLi.Location = new Point(357, 182);
+            TCLi.Location = new Point(357, 193);
             TCLi.Name = "TCLi";
             TCLi.SelectedIndex = 0;
-            TCLi.Size = new Size(750, 273);
+            TCLi.Size = new Size(750, 262);
             TCLi.TabIndex = 801;
             // 
             // tabPage1
@@ -850,11 +846,10 @@
             tabPage1.Location = new Point(4, 24);
             tabPage1.Name = "tabPage1";
             tabPage1.Padding = new Padding(3);
-            tabPage1.Size = new Size(742, 245);
+            tabPage1.Size = new Size(742, 234);
             tabPage1.TabIndex = 0;
             tabPage1.Text = "Li - 1251521";
             tabPage1.UseVisualStyleBackColor = true;
-            tabPage1.Click += tabPage1_Click;
             // 
             // BtnNovoOrgaoAnuente
             // 
@@ -862,7 +857,7 @@
             BtnNovoOrgaoAnuente.Name = "BtnNovoOrgaoAnuente";
             BtnNovoOrgaoAnuente.Size = new Size(129, 23);
             BtnNovoOrgaoAnuente.TabIndex = 815;
-            BtnNovoOrgaoAnuente.Text = "Novo";
+            BtnNovoOrgaoAnuente.Text = "Novo LPCO";
             BtnNovoOrgaoAnuente.UseVisualStyleBackColor = true;
             // 
             // groupBox5
@@ -875,7 +870,7 @@
             groupBox5.Controls.Add(TxtLi);
             groupBox5.Location = new Point(6, 145);
             groupBox5.Name = "groupBox5";
-            groupBox5.Size = new Size(730, 94);
+            groupBox5.Size = new Size(730, 83);
             groupBox5.TabIndex = 812;
             groupBox5.TabStop = false;
             groupBox5.Text = "Dados Li";
@@ -885,7 +880,7 @@
             label39.Anchor = AnchorStyles.Top | AnchorStyles.Right;
             label39.AutoSize = true;
             label39.Font = new Font("Segoe UI", 11F);
-            label39.Location = new Point(452, 30);
+            label39.Location = new Point(463, 19);
             label39.Name = "label39";
             label39.Size = new Size(100, 20);
             label39.TabIndex = 419;
@@ -895,7 +890,7 @@
             // 
             DtpDataRegistro.Anchor = AnchorStyles.Top | AnchorStyles.Right;
             DtpDataRegistro.Format = DateTimePickerFormat.Short;
-            DtpDataRegistro.Location = new Point(435, 54);
+            DtpDataRegistro.Location = new Point(446, 43);
             DtpDataRegistro.Name = "DtpDataRegistro";
             DtpDataRegistro.Size = new Size(135, 23);
             DtpDataRegistro.TabIndex = 418;
@@ -905,7 +900,7 @@
             label40.Anchor = AnchorStyles.Top | AnchorStyles.Right;
             label40.AutoSize = true;
             label40.Font = new Font("Segoe UI", 12F);
-            label40.Location = new Point(182, 29);
+            label40.Location = new Point(193, 18);
             label40.Name = "label40";
             label40.Size = new Size(22, 21);
             label40.TabIndex = 420;
@@ -916,7 +911,7 @@
             label41.Anchor = AnchorStyles.Top | AnchorStyles.Right;
             label41.AutoSize = true;
             label41.Font = new Font("Segoe UI", 12F);
-            label41.Location = new Point(324, 30);
+            label41.Location = new Point(335, 19);
             label41.Name = "label41";
             label41.Size = new Size(46, 21);
             label41.TabIndex = 421;
@@ -925,7 +920,7 @@
             // TxtNCM
             // 
             TxtNCM.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-            TxtNCM.Location = new Point(274, 54);
+            TxtNCM.Location = new Point(285, 43);
             TxtNCM.Name = "TxtNCM";
             TxtNCM.Size = new Size(147, 23);
             TxtNCM.TabIndex = 419;
@@ -933,7 +928,7 @@
             // TxtLi
             // 
             TxtLi.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-            TxtLi.Location = new Point(126, 54);
+            TxtLi.Location = new Point(137, 43);
             TxtLi.Name = "TxtLi";
             TxtLi.Size = new Size(134, 23);
             TxtLi.TabIndex = 418;
@@ -954,7 +949,7 @@
             tabControl2.Location = new Point(3, 6);
             tabControl2.Name = "tabControl2";
             tabControl2.SelectedIndex = 0;
-            tabControl2.Size = new Size(730, 137);
+            tabControl2.Size = new Size(736, 137);
             tabControl2.TabIndex = 817;
             // 
             // tabPage3
@@ -973,7 +968,7 @@
             tabPage3.Controls.Add(label31);
             tabPage3.Location = new Point(4, 24);
             tabPage3.Name = "tabPage3";
-            tabPage3.Size = new Size(722, 109);
+            tabPage3.Size = new Size(728, 109);
             tabPage3.TabIndex = 0;
             tabPage3.Text = "MAPA";
             tabPage3.UseVisualStyleBackColor = true;
@@ -983,7 +978,7 @@
             label42.Anchor = AnchorStyles.Top | AnchorStyles.Right;
             label42.AutoSize = true;
             label42.Font = new Font("Segoe UI", 11F);
-            label42.Location = new Point(480, 30);
+            label42.Location = new Point(534, 32);
             label42.Name = "label42";
             label42.Size = new Size(129, 20);
             label42.TabIndex = 429;
@@ -993,7 +988,7 @@
             // 
             DtpDataDefrimentoLPCO.Anchor = AnchorStyles.Top | AnchorStyles.Right;
             DtpDataDefrimentoLPCO.Format = DateTimePickerFormat.Short;
-            DtpDataDefrimentoLPCO.Location = new Point(477, 54);
+            DtpDataDefrimentoLPCO.Location = new Point(531, 56);
             DtpDataDefrimentoLPCO.Name = "DtpDataDefrimentoLPCO";
             DtpDataDefrimentoLPCO.Size = new Size(135, 23);
             DtpDataDefrimentoLPCO.TabIndex = 428;
@@ -1003,7 +998,7 @@
             label43.Anchor = AnchorStyles.Top | AnchorStyles.Right;
             label43.AutoSize = true;
             label43.Font = new Font("Segoe UI", 11F);
-            label43.Location = new Point(345, 30);
+            label43.Location = new Point(399, 32);
             label43.Name = "label43";
             label43.Size = new Size(100, 20);
             label43.TabIndex = 427;
@@ -1013,7 +1008,7 @@
             // 
             DtpDataRegsitroLPCO.Anchor = AnchorStyles.Top | AnchorStyles.Right;
             DtpDataRegsitroLPCO.Format = DateTimePickerFormat.Short;
-            DtpDataRegsitroLPCO.Location = new Point(328, 54);
+            DtpDataRegsitroLPCO.Location = new Point(382, 56);
             DtpDataRegsitroLPCO.Name = "DtpDataRegsitroLPCO";
             DtpDataRegsitroLPCO.Size = new Size(135, 23);
             DtpDataRegsitroLPCO.TabIndex = 426;
@@ -1023,7 +1018,7 @@
             label28.Anchor = AnchorStyles.Top | AnchorStyles.Right;
             label28.AutoSize = true;
             label28.Font = new Font("Segoe UI", 11F);
-            label28.Location = new Point(1850, 30);
+            label28.Location = new Point(1856, 30);
             label28.Name = "label28";
             label28.Size = new Size(129, 20);
             label28.TabIndex = 425;
@@ -1033,7 +1028,7 @@
             // 
             dateTimePicker3.Anchor = AnchorStyles.Top | AnchorStyles.Right;
             dateTimePicker3.Format = DateTimePickerFormat.Short;
-            dateTimePicker3.Location = new Point(1847, 54);
+            dateTimePicker3.Location = new Point(1853, 54);
             dateTimePicker3.Name = "dateTimePicker3";
             dateTimePicker3.Size = new Size(135, 23);
             dateTimePicker3.TabIndex = 424;
@@ -1043,7 +1038,7 @@
             label29.Anchor = AnchorStyles.Top | AnchorStyles.Right;
             label29.AutoSize = true;
             label29.Font = new Font("Segoe UI", 11F);
-            label29.Location = new Point(1715, 30);
+            label29.Location = new Point(1721, 30);
             label29.Name = "label29";
             label29.Size = new Size(100, 20);
             label29.TabIndex = 423;
@@ -1053,22 +1048,22 @@
             // 
             dateTimePicker2.Anchor = AnchorStyles.Top | AnchorStyles.Right;
             dateTimePicker2.Format = DateTimePickerFormat.Short;
-            dateTimePicker2.Location = new Point(1698, 54);
+            dateTimePicker2.Location = new Point(1704, 54);
             dateTimePicker2.Name = "dateTimePicker2";
             dateTimePicker2.Size = new Size(135, 23);
             dateTimePicker2.TabIndex = 422;
             // 
             // TxtParametrizacaoLPCO
             // 
-            TxtParametrizacaoLPCO.Location = new Point(110, 61);
+            TxtParametrizacaoLPCO.Location = new Point(140, 59);
             TxtParametrizacaoLPCO.Name = "TxtParametrizacaoLPCO";
-            TxtParametrizacaoLPCO.Size = new Size(140, 23);
+            TxtParametrizacaoLPCO.Size = new Size(211, 23);
             TxtParametrizacaoLPCO.TabIndex = 3;
             // 
             // label30
             // 
             label30.AutoSize = true;
-            label30.Location = new Point(16, 64);
+            label30.Location = new Point(46, 62);
             label30.Name = "label30";
             label30.Size = new Size(88, 15);
             label30.TabIndex = 2;
@@ -1076,15 +1071,15 @@
             // 
             // TxtLPCO
             // 
-            TxtLPCO.Location = new Point(60, 27);
+            TxtLPCO.Location = new Point(90, 25);
             TxtLPCO.Name = "TxtLPCO";
-            TxtLPCO.Size = new Size(190, 23);
+            TxtLPCO.Size = new Size(261, 23);
             TxtLPCO.TabIndex = 1;
             // 
             // label31
             // 
             label31.AutoSize = true;
-            label31.Location = new Point(16, 30);
+            label31.Location = new Point(46, 28);
             label31.Name = "label31";
             label31.Size = new Size(37, 15);
             label31.TabIndex = 0;
@@ -1094,7 +1089,7 @@
             // 
             tabPage4.Location = new Point(4, 24);
             tabPage4.Name = "tabPage4";
-            tabPage4.Size = new Size(722, 109);
+            tabPage4.Size = new Size(728, 109);
             tabPage4.TabIndex = 1;
             tabPage4.Text = "ANVISA";
             tabPage4.UseVisualStyleBackColor = true;
@@ -1104,7 +1099,7 @@
             tabPage2.Location = new Point(4, 24);
             tabPage2.Name = "tabPage2";
             tabPage2.Padding = new Padding(3);
-            tabPage2.Size = new Size(742, 245);
+            tabPage2.Size = new Size(742, 234);
             tabPage2.TabIndex = 1;
             tabPage2.Text = "Li - 15316515";
             tabPage2.UseVisualStyleBackColor = true;
@@ -1119,7 +1114,6 @@
             label32.Size = new Size(44, 16);
             label32.TabIndex = 802;
             label32.Text = "Status";
-            label32.Click += label32_Click;
             // 
             // CbStatus
             // 
@@ -1296,7 +1290,7 @@
             // 
             CbLiberado.Anchor = AnchorStyles.None;
             CbLiberado.AutoSize = true;
-            CbLiberado.DataBindings.Add(new Binding("Checked", BsModificaProcesso, "SIGVIGLiberadi", true));
+            CbLiberado.DataBindings.Add(new Binding("Checked", BsModificaProcesso, "SIGVIGLiberado", true));
             CbLiberado.Font = new Font("Microsoft Sans Serif", 8F);
             CbLiberado.Location = new Point(97, 19);
             CbLiberado.Name = "CbLiberado";
@@ -1366,15 +1360,22 @@
             groupBox7.TabStop = false;
             groupBox7.Text = "Pendência";
             // 
-            // BsModificaProcesso
+            // BtnLI
             // 
-            BsModificaProcesso.DataSource = typeof(CLUSA.Processo);
+            BtnLI.Location = new Point(965, 195);
+            BtnLI.Name = "BtnLI";
+            BtnLI.Size = new Size(129, 20);
+            BtnLI.TabIndex = 818;
+            BtnLI.Text = "Novo LI";
+            BtnLI.UseVisualStyleBackColor = true;
+            BtnLI.Click += BtnLI_Click;
             // 
             // FrmModificaProcesso
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(1443, 639);
+            Controls.Add(BtnLI);
             Controls.Add(groupBox7);
             Controls.Add(LBLdatadeatracacao);
             Controls.Add(LBLdatadeembarque);
@@ -1406,6 +1407,7 @@
             Load += FrmModificaProcesso_Load;
             groupBox2.ResumeLayout(false);
             groupBox2.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)BsModificaProcesso).EndInit();
             ((System.ComponentModel.ISupportInitialize)NUMfreetime).EndInit();
             groupBox3.ResumeLayout(false);
             groupBox3.PerformLayout();
@@ -1425,7 +1427,6 @@
             groupBox6.PerformLayout();
             groupBox7.ResumeLayout(false);
             groupBox7.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)BsModificaProcesso).EndInit();
             ResumeLayout(false);
             PerformLayout();
         }
@@ -1540,5 +1541,6 @@
         private TextBox TxtContainer;
         private Label label8;
         private BindingSource BsModificaProcesso;
+        private Button BtnLI;
     }
 }

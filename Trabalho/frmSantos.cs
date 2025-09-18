@@ -41,7 +41,7 @@ namespace Trabalho
         {
             try
             {
-                var registros = await _repositorio.ListarExcetoSufixoRefUsaAsync("itj");
+                var registros = await _repositorio.ListarExcetoSufixoRefUsaAsync("ITJ");
                 var registrosOrdenados = registros.OrderBy(p => ExtrairAnoNumero(p.Ref_USA)).ToList();
                 _listaOriginal = registrosOrdenados;
 

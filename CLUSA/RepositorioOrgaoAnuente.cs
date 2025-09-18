@@ -41,19 +41,19 @@ namespace CLUSA
         /// </summary>
         public async Task<OrgaoAnuente?> GetByIdAsync(string id)
         {
-            var filter = Builders<OrgaoAnuente>.Filter.Eq(x => x.Id, ObjectId.Parse(id));
+            if (!ObjectId.TryParse(id, out var objectId))
+                return null;
+
+            var filter = Builders<OrgaoAnuente>.Filter.Eq(x => x.Id, objectId);
             return await _colecao.Find(filter).FirstOrDefaultAsync();
         }
 
         /// <summary>
         /// Busca um OrgaoAnuente específico pela combinação de Ref_USA e Tipo.
         /// </summary>
-        public async Task<OrgaoAnuente?> GetByRefUsaAndTypeAsync(string refUsa, TipoOrgaoAnuente tipo)
+        public async Task<OrgaoAnuente?> GetByNumeroAsync(string numero)
         {
-            var filter = Builders<OrgaoAnuente>.Filter.And(
-                Builders<OrgaoAnuente>.Filter.Eq(x => x.Ref_USA, refUsa),
-                Builders<OrgaoAnuente>.Filter.Eq(x => x.Tipo, tipo)
-            );
+            var filter = Builders<OrgaoAnuente>.Filter.Eq(x => x.Numero, numero);
             return await _colecao.Find(filter).FirstOrDefaultAsync();
         }
 
@@ -78,41 +78,23 @@ namespace CLUSA
         /// <summary>
         /// Atualiza um OrgaoAnuente existente ou o insere caso não exista (Upsert).
         /// </summary>
-        public async Task UpdateAsync(string refUsa, TipoOrgaoAnuente tipo, OrgaoAnuente entidade)
+        public async Task UpdateAsync(OrgaoAnuente orgao)
         {
-            var filter = Builders<OrgaoAnuente>.Filter.And(
-                Builders<OrgaoAnuente>.Filter.Eq(x => x.Ref_USA, refUsa),
-                Builders<OrgaoAnuente>.Filter.Eq(x => x.Tipo, tipo)
-            );
-
-            // Tenta buscar o documento existente para preservar o ID original.
-            var orgaoExistente = await _colecao.Find(filter).FirstOrDefaultAsync();
-            if (orgaoExistente != null)
-            {
-                entidade.Id = orgaoExistente.Id;
-            }
-
-            // A opção IsUpsert = true faz a mágica:
-            // Se encontrar um documento com o filtro, ele o substitui.
-            // Se NÃO encontrar, ele insere a 'entidade' como um novo documento.
-            await _colecao.ReplaceOneAsync(filter, entidade, new ReplaceOptions { IsUpsert = true });
+            var filter = Builders<OrgaoAnuente>.Filter.Eq(x => x.Id, orgao.Id);
+            await _colecao.ReplaceOneAsync(filter, orgao);
         }
 
         /// <summary>
         /// Deleta um OrgaoAnuente específico pela combinação de Ref_USA e Tipo.
         /// </summary>
-        public async Task DeleteAsync(string refUsa, TipoOrgaoAnuente tipo)
+        public async Task DeleteByIdAsync(string id)
         {
-            var filter = Builders<OrgaoAnuente>.Filter.And(
-                Builders<OrgaoAnuente>.Filter.Eq(x => x.Ref_USA, refUsa),
-                Builders<OrgaoAnuente>.Filter.Eq(x => x.Tipo, tipo)
-            );
+            if (!ObjectId.TryParse(id, out var objectId))
+                return;
+
+            var filter = Builders<OrgaoAnuente>.Filter.Eq(x => x.Id, objectId);
             await _colecao.DeleteOneAsync(filter);
         }
-
-        /// <summary>
-        /// Deleta todos os Órgãos Anuentes associados a uma mesma Ref_USA.
-        /// </summary>
         public async Task DeleteAllByRefUsaAsync(string refUsa)
         {
             var filter = Builders<OrgaoAnuente>.Filter.Eq(x => x.Ref_USA, refUsa);

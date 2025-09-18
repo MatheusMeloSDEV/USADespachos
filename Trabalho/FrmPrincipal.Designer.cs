@@ -191,6 +191,7 @@
             MainMenuStrip = menuStrip1;
             Name = "FrmPrincipal";
             Text = "FrmPrincipal";
+            WindowState = FormWindowState.Maximized;
             FormClosing += FrmPrincipal_FormClosing;
             Load += FrmPrincipal_Load;
             Shown += FrmPrincipal_Shown;
