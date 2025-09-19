@@ -66,84 +66,139 @@ namespace Trabalho
         {
             DGVItajai.Columns.Clear();
 
-            // Configuração básica
+            // --- Configuração Geral da Grade ---
             DGVItajai.AutoGenerateColumns = false;
             DGVItajai.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
-            DGVItajai.ColumnHeadersDefaultCellStyle.WrapMode = DataGridViewTriState.True;
-            DGVItajai.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             DGVItajai.RowHeadersVisible = false;
-            DGVItajai.AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.AllCells;
-            DGVItajai.DefaultCellStyle.WrapMode = DataGridViewTriState.True;
+            // Impede que a altura das linhas mude
+            DGVItajai.AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.None;
+            // Impede a quebra de linha nas células
+            DGVItajai.DefaultCellStyle.WrapMode = DataGridViewTriState.False;
+            // Mostra o texto completo ao parar o mouse
+            DGVItajai.ShowCellToolTips = true;
+            // Estilo padrão para as células de data
+            var dateCellStyle = new DataGridViewCellStyle { Format = "dd/MM/yyyy" };
 
-            // Ref. USA - menor peso
+            // --- Adicionando as Colunas na Sua Sequência ---
+
             DGVItajai.Columns.Add(new DataGridViewTextBoxColumn
             {
                 DataPropertyName = "Ref_USA",
                 HeaderText = "Ref. USA",
-                Name = "ColunaRefUSA",
-                FillWeight = 40
+                AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells,
+                MinimumWidth = 90
             });
             DGVItajai.Columns.Add(new DataGridViewTextBoxColumn
             {
                 DataPropertyName = "SR",
                 HeaderText = "S. Ref",
-                Name = "ColunaSR",
-                FillWeight = 40
+                AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells,
+                MinimumWidth = 80
             });
             DGVItajai.Columns.Add(new DataGridViewTextBoxColumn
             {
                 DataPropertyName = "Importador",
                 HeaderText = "Importador",
-                Name = "ColunaImportador",
-                FillWeight = 80
+                FillWeight = 140 // Mais espaço para nomes de empresas
             });
             DGVItajai.Columns.Add(new DataGridViewTextBoxColumn
             {
                 DataPropertyName = "Exportador",
                 HeaderText = "Exportador",
-                Name = "ColunaExportador",
-                FillWeight = 80
+                FillWeight = 140
             });
             DGVItajai.Columns.Add(new DataGridViewTextBoxColumn
             {
                 DataPropertyName = "Produto",
                 HeaderText = "Produto",
-                Name = "ColunaProduto",
-                FillWeight = 80
+                FillWeight = 180 // Mais espaço para descrições de produtos
             });
             DGVItajai.Columns.Add(new DataGridViewTextBoxColumn
             {
-                DataPropertyName = "Veiculo",
-                HeaderText = "Veículo",
-                Name = "ColunaVeiculo",
-                FillWeight = 80
+                DataPropertyName = "Container",
+                HeaderText = "Container",
+                // Ajuste: Códigos ficam melhores com tamanho automático
+                AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells,
+                MinimumWidth = 120
             });
             DGVItajai.Columns.Add(new DataGridViewTextBoxColumn
             {
                 DataPropertyName = "PortoDestino",
                 HeaderText = "Porto Destino",
-                Name = "ColunaPortoDestino",
-                FillWeight = 80
+                AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells,
+                MinimumWidth = 110
+            });
+            DGVItajai.Columns.Add(new DataGridViewTextBoxColumn
+            {
+                DataPropertyName = "Veiculo",
+                HeaderText = "Veículo",
+                FillWeight = 110 // Nomes de navios podem ser longos
+            });
+            DGVItajai.Columns.Add(new DataGridViewTextBoxColumn
+            {
+                DataPropertyName = "DataDeAtracacao",
+                HeaderText = "Atracação",
+                DefaultCellStyle = dateCellStyle,
+                AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells
+            });
+            DGVItajai.Columns.Add(new DataGridViewTextBoxColumn
+            {
+                DataPropertyName = "OrgaosAnuentesString",
+                HeaderText = "Anuente",
+                // Ajuste: A lista de órgãos pode variar de tamanho, 'Fill' é melhor
+                FillWeight = 90
+            });
+            DGVItajai.Columns.Add(new DataGridViewTextBoxColumn
+            {
+                DataPropertyName = "FreeTime",
+                HeaderText = "F.T (dias)",
+                AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells
+            });
+            DGVItajai.Columns.Add(new DataGridViewTextBoxColumn
+            {
+                DataPropertyName = "VencimentoFreeTime",
+                HeaderText = "Venc. F. Time",
+                DefaultCellStyle = dateCellStyle,
+                AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells
+            });
+            DGVItajai.Columns.Add(new DataGridViewTextBoxColumn
+            {
+                DataPropertyName = "VencimentoFMA",
+                HeaderText = "Venc. FMA",
+                DefaultCellStyle = dateCellStyle,
+                AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells
+            });
+            DGVItajai.Columns.Add(new DataGridViewTextBoxColumn
+            {
+                DataPropertyName = "DI",
+                HeaderText = "DI",
+                AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells,
+                MinimumWidth = 120
+            });
+            DGVItajai.Columns.Add(new DataGridViewTextBoxColumn
+            {
+                DataPropertyName = "HistoricoDoProcesso",
+                HeaderText = "Histórico",
+                FillWeight = 200 // Mais espaço, pois é a coluna com mais texto
             });
             DGVItajai.Columns.Add(new DataGridViewTextBoxColumn
             {
                 DataPropertyName = "Pendencia",
                 HeaderText = "Pendência",
-                Name = "ColunaPendencia",
-                FillWeight = 120,
-                DefaultCellStyle = new DataGridViewCellStyle { WrapMode = DataGridViewTriState.True }
+                FillWeight = 160
+            });
+            DGVItajai.Columns.Add(new DataGridViewTextBoxColumn
+            {
+                DataPropertyName = "Status",
+                HeaderText = "Status",
+                FillWeight = 110
             });
 
-
-            // 2) Estilo geral
+            // Aplica um estilo padrão a todas as colunas
             foreach (DataGridViewColumn coluna in DGVItajai.Columns)
             {
                 coluna.DefaultCellStyle.Font = new Font("Segoe UI", 10);
-                coluna.DefaultCellStyle.ForeColor = Color.Black;
-                coluna.DefaultCellStyle.BackColor = Color.White;
-                coluna.DefaultCellStyle.SelectionBackColor = Color.LightBlue;
-                coluna.DefaultCellStyle.SelectionForeColor = Color.Black;
-                coluna.MinimumWidth = 100;
+                coluna.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleLeft;
             }
         }
 

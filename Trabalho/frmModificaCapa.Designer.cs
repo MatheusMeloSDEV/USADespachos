@@ -571,6 +571,7 @@ namespace Trabalho
             Name = "FrmModificaCapa";
             StartPosition = FormStartPosition.CenterParent;
             Text = "Modificar Capa";
+            FormClosing += frmModificaCapa_FormClosing;
             Load += FrmModificaCapa_Load;
             groupBox1.ResumeLayout(false);
             groupBox1.PerformLayout();

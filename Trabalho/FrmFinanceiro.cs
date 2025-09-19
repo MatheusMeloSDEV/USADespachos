@@ -14,12 +14,9 @@ namespace Trabalho
             _repositorioFatura = new();
             _repositorioRecibo = new();
             _bsFaturas = new BindingSource();
-
-            // MUDANÇA: O carregamento de dados foi movido do construtor para o evento Shown.
-            this.Shown += FrmFinanceiro_Shown;
         }
 
-        // MUDANÇA: O carregamento agora é assíncrono.
+        // MUDANÇA: O carregamento agora é assíncrono.a
         private async void FrmFinanceiro_Shown(object? sender, EventArgs e)
         {
             await CarregarDadosAsync();
@@ -29,18 +26,13 @@ namespace Trabalho
         {
             try
             {
-                // 1. CHAMA o método assíncrono para buscar a lista de faturas
-                List<Fatura> listaDeFaturas = await _repositorioFatura.FindRefAsync();
-
-                // 2. ENTREGA a lista diretamente para o DataSource do BindingSource
-                _bsFaturas.DataSource = listaDeFaturas;
-
-                // Se você preenche os painéis dinamicamente, chame o método aqui
-                PreencherPainelGenerico<Fatura>(panelFaturamento, listaDeFaturas);
-
-                // Faça o mesmo para os recibos...
+                // MUDANÇA: Busca os dados usando os métodos assíncronos.
+                var listaDeFaturas = await _repositorioFatura.FindRefAsync();
                 var listaDeRecibos = await _repositorioRecibo.FindRefAsync();
-                PreencherPainelGenerico<Recibo>(panelRecibo,"Recibo", listaDeRecibos);
+
+                // MUDANÇA: Chama um único método genérico para os dois painéis.
+                PreencherPainelGenerico(panelFaturamento, "Faturamento", listaDeFaturas, AbrirDetalhesFatura);
+                PreencherPainelGenerico(panelRecibo, "Recibos", listaDeRecibos, AbrirDetalhesRecibo);
             }
             catch (Exception ex)
             {

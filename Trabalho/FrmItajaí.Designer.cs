@@ -106,6 +106,7 @@
             BtnAdicionar.Name = "BtnAdicionar";
             BtnAdicionar.Size = new Size(78, 40);
             BtnAdicionar.Text = "Adicionar";
+            BtnAdicionar.Click += BtnAdicionar_Click;
             // 
             // toolStripSeparator2
             // 
@@ -121,6 +122,7 @@
             BtnEditar.Name = "BtnEditar";
             BtnEditar.Size = new Size(57, 40);
             BtnEditar.Text = "Editar";
+            BtnEditar.Click += BtnEditar_Click;
             // 
             // toolStripSeparator3
             // 
@@ -136,6 +138,7 @@
             BtnExportar.Name = "BtnExportar";
             BtnExportar.Size = new Size(70, 40);
             BtnExportar.Text = "Exportar";
+            BtnExportar.Click += BtnExportar_Click;
             // 
             // BtnCancelar
             // 
@@ -147,6 +150,7 @@
             BtnCancelar.Name = "BtnCancelar";
             BtnCancelar.Size = new Size(23, 37);
             BtnCancelar.Text = "toolStripButton4";
+            BtnCancelar.Click += BtnCancelar_Click;
             // 
             // BtnPesquisar
             // 
@@ -157,6 +161,7 @@
             BtnPesquisar.Name = "BtnPesquisar";
             BtnPesquisar.Size = new Size(23, 37);
             BtnPesquisar.Text = "toolStripButton5";
+            BtnPesquisar.Click += BtnPesquisar_Click;
             // 
             // toolStripSeparator1
             // 
@@ -172,6 +177,7 @@
             CmbPesquisar.Margin = new Padding(5, 0, 0, 0);
             CmbPesquisar.Name = "CmbPesquisar";
             CmbPesquisar.Size = new Size(150, 23);
+            CmbPesquisar.SelectedIndexChanged += CmbPesquisar_SelectedIndexChanged;
             // 
             // TxtPesquisar
             // 
@@ -190,6 +196,8 @@
             Name = "FrmItajaí";
             Text = "FrmItajaí";
             WindowState = FormWindowState.Maximized;
+            Load += FrmProcesso_Load;
+            Shown += FrmItajaí_Shown;
             ((System.ComponentModel.ISupportInitialize)DGVItajai).EndInit();
             TSMenuItajai.ResumeLayout(false);
             TSMenuItajai.PerformLayout();

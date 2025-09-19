@@ -8,6 +8,7 @@ namespace Trabalho
     {
         RepositorioRecibo _repositorio;
         public Recibo ReciboAtual { get; set; }
+        private bool _dadosForamAlterados = false;
         public frmModificaRecibo(Recibo recibo)
         {
             this.Icon = Icon.ExtractAssociatedIcon(Application.ExecutablePath);
@@ -15,6 +16,58 @@ namespace Trabalho
             ReciboAtual = recibo;
             _repositorio = new();
             PreencherCampos();
+            AnexarEventoDeAlteracao(this);
+        }
+        private void MarcarComoAlterado(object? sender, EventArgs e)
+        {
+            // Uma vez que algo muda, a bandeira é levantada e permanece assim até salvarmos.
+            if (!_dadosForamAlterados)
+            {
+                _dadosForamAlterados = true;
+                this.Text += "*"; // Opcional: Adiciona um "*" no título para indicar alterações
+            }
+        }
+
+        private void AnexarEventoDeAlteracao(Control parent)
+        {
+            foreach (Control c in parent.Controls)
+            {
+                switch (c)
+                {
+                    case TextBox box: box.TextChanged += MarcarComoAlterado; break;
+                    case ComboBox box: box.SelectedIndexChanged += MarcarComoAlterado; break;
+                    case DateTimePicker dtp: dtp.ValueChanged += MarcarComoAlterado; break;
+                    case CheckBox chk: chk.CheckedChanged += MarcarComoAlterado; break;
+                    case NumericUpDown num: num.ValueChanged += MarcarComoAlterado; break;
+                    case CheckedListBox clb: clb.ItemCheck += (s, e) => MarcarComoAlterado(s, e); break;
+                }
+
+                // Faz o mesmo para controles dentro de outros containers (ex: GroupBox)
+                if (c.HasChildren)
+                {
+                    AnexarEventoDeAlteracao(c);
+                }
+            }
+        }
+        private void frmModificaRecibo_FormClosing(object? sender, FormClosingEventArgs e)
+        {
+            // Se a bandeira de alterações estiver levantada...
+            if (_dadosForamAlterados)
+            {
+                // ...pergunta ao usuário o que fazer.
+                var resultado = MessageBox.Show(
+                    "Você tem alterações não salvas. Deseja fechar e descartar as alterações?",
+                    "Atenção",
+                    MessageBoxButtons.YesNo,
+                    MessageBoxIcon.Warning);
+
+                // Se o usuário escolher "Não", nós cancelamos o fechamento do formulário.
+                if (resultado == DialogResult.No)
+                {
+                    e.Cancel = true;
+                }
+            }
+            // Se a bandeira não estiver levantada, o formulário fecha normalmente sem perguntar nada.
         }
         private void AplicarMascaraMoeda(object sender, EventArgs e)
         {

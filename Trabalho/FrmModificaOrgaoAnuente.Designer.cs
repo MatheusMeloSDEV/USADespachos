@@ -489,6 +489,7 @@
             Controls.Add(TXTpendencia);
             Name = "FrmModificaOrgaoAnuente";
             Text = "LI";
+            FormClosing += frmModificaOrgaoAnuente_FormClosing;
             Load += FrmModificaOrgaoAnuente_Load;
             groupBox1.ResumeLayout(false);
             groupBox1.PerformLayout();

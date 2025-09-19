@@ -12,18 +12,19 @@ namespace CLUSA
         public ObjectId Id { get; set; }
 
         //Não Aparecem
-        [BsonIgnore] // <-- Diz ao MongoDB para NÃO salvar este campo.
-        public List<TipoOrgaoAnuente> OrgaosAnuentesEnvolvidos
+        [BsonIgnore] // Não salva esta propriedade no banco
+        public string OrgaosAnuentesString
         {
             get
             {
-                // Lógica para extrair os órgãos únicos da lista de LIs/LPCOs.
-                if (LI == null || !LI.Any()) return new List<TipoOrgaoAnuente>();
+                // Pega os nomes dos órgãos da sua lista de LIs/LPCOs
+                var orgaos = LI?.SelectMany(li => li.LPCO)
+                                 .Select(lpco => lpco.NomeOrgao)
+                                 .Distinct()
+                                 .ToList();
 
-                return LI.SelectMany(li => li.LPCO)
-                         .Select(lpco => (TipoOrgaoAnuente)Enum.Parse(typeof(TipoOrgaoAnuente), lpco.NomeOrgao))
-                         .Distinct()
-                         .ToList();
+                // Se não houver órgãos, retorna um traço. Se houver, junta os nomes com ", ".
+                return orgaos != null && orgaos.Any() ? string.Join(", ", orgaos) : "-";
             }
         }
         public bool PossuiEmbarque { get; set; } = false;

@@ -333,6 +333,7 @@
             MaximizeBox = false;
             Name = "frmModificaRecibo";
             Text = "Recibo";
+            FormClosing += frmModificaRecibo_FormClosing;
             groupBox1.ResumeLayout(false);
             groupBox1.PerformLayout();
             ResumeLayout(false);

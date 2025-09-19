@@ -30,8 +30,10 @@
         {
             components = new System.ComponentModel.Container();
             groupBox1 = new GroupBox();
+            txtEndereco = new TextBox();
+            label22 = new Label();
             txtFLO = new TextBox();
-            bindingSource1 = new BindingSource(components);
+            BsFatura = new BindingSource(components);
             label21 = new Label();
             txtValRecebidos = new TextBox();
             dtpDataRecebimento = new DateTimePicker();
@@ -158,10 +160,8 @@
             txtTipoFinalizacao = new TextBox();
             label78 = new Label();
             btnCalcularTotal = new Button();
-            txtEndereco = new TextBox();
-            label22 = new Label();
             groupBox1.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)bindingSource1).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)BsFatura).BeginInit();
             groupBox2.SuspendLayout();
             groupBox3.SuspendLayout();
             groupBox4.SuspendLayout();
@@ -197,19 +197,34 @@
             groupBox1.TabStop = false;
             groupBox1.Text = "Dados Principais";
             // 
+            // txtEndereco
+            // 
+            txtEndereco.Location = new Point(381, 27);
+            txtEndereco.Name = "txtEndereco";
+            txtEndereco.Size = new Size(132, 23);
+            txtEndereco.TabIndex = 18;
+            // 
+            // label22
+            // 
+            label22.AutoSize = true;
+            label22.Location = new Point(341, 30);
+            label22.Name = "label22";
+            label22.Size = new Size(34, 15);
+            label22.TabIndex = 19;
+            label22.Text = "CNPJ";
+            // 
             // txtFLO
             // 
-            txtFLO.DataBindings.Add(new Binding("Text", bindingSource1, "FLO", true));
+            txtFLO.DataBindings.Add(new Binding("Text", BsFatura, "FLO", true));
             txtFLO.Location = new Point(519, 66);
             txtFLO.Name = "txtFLO";
             txtFLO.ReadOnly = true;
             txtFLO.Size = new Size(100, 23);
             txtFLO.TabIndex = 16;
             // 
-            // bindingSource1
+            // BsFatura
             // 
-            bindingSource1.DataMember = "ListaFatura";
-            bindingSource1.DataSource = typeof(CLUSA.RepositorioFatura);
+            BsFatura.DataSource = typeof(CLUSA.Fatura);
             // 
             // label21
             // 
@@ -222,7 +237,7 @@
             // 
             // txtValRecebidos
             // 
-            txtValRecebidos.DataBindings.Add(new Binding("Text", bindingSource1, "ValRecebidos", true));
+            txtValRecebidos.DataBindings.Add(new Binding("Text", BsFatura, "ValRecebidos", true));
             txtValRecebidos.Location = new Point(732, 66);
             txtValRecebidos.Name = "txtValRecebidos";
             txtValRecebidos.Size = new Size(100, 23);
@@ -284,7 +299,7 @@
             // 
             // txtMercadoria
             // 
-            txtMercadoria.DataBindings.Add(new Binding("Text", bindingSource1, "Mercadoria", true));
+            txtMercadoria.DataBindings.Add(new Binding("Text", BsFatura, "Mercadoria", true));
             txtMercadoria.Location = new Point(238, 66);
             txtMercadoria.Name = "txtMercadoria";
             txtMercadoria.ReadOnly = true;
@@ -302,7 +317,7 @@
             // 
             // txtQuantidade
             // 
-            txtQuantidade.DataBindings.Add(new Binding("Text", bindingSource1, "Quantidade", true));
+            txtQuantidade.DataBindings.Add(new Binding("Text", BsFatura, "Quantidade", true));
             txtQuantidade.Location = new Point(740, 27);
             txtQuantidade.Name = "txtQuantidade";
             txtQuantidade.Size = new Size(100, 23);
@@ -319,7 +334,7 @@
             // 
             // txtMarca
             // 
-            txtMarca.DataBindings.Add(new Binding("Text", bindingSource1, "Marca", true));
+            txtMarca.DataBindings.Add(new Binding("Text", BsFatura, "Marca", true));
             txtMarca.Location = new Point(559, 27);
             txtMarca.Name = "txtMarca";
             txtMarca.ReadOnly = true;
@@ -355,7 +370,7 @@
             // 
             // txtNavio
             // 
-            txtNavio.DataBindings.Add(new Binding("Text", bindingSource1, "Veiculo", true));
+            txtNavio.DataBindings.Add(new Binding("Text", BsFatura, "Veiculo", true));
             txtNavio.Location = new Point(235, 27);
             txtNavio.Name = "txtNavio";
             txtNavio.ReadOnly = true;
@@ -388,11 +403,10 @@
             groupBox2.TabIndex = 1;
             groupBox2.TabStop = false;
             groupBox2.Text = "Despesas Aduaneiras";
-            groupBox2.Enter += groupBox2_Enter;
             // 
             // txtCONFINS
             // 
-            txtCONFINS.DataBindings.Add(new Binding("Text", bindingSource1, "COFINS", true));
+            txtCONFINS.DataBindings.Add(new Binding("Text", BsFatura, "COFINS", true));
             txtCONFINS.Location = new Point(289, 96);
             txtCONFINS.Name = "txtCONFINS";
             txtCONFINS.Size = new Size(100, 23);
@@ -401,7 +415,7 @@
             // 
             // txtICMS
             // 
-            txtICMS.DataBindings.Add(new Binding("Text", bindingSource1, "ICMS", true));
+            txtICMS.DataBindings.Add(new Binding("Text", BsFatura, "ICMS", true));
             txtICMS.Location = new Point(601, 96);
             txtICMS.Name = "txtICMS";
             txtICMS.Size = new Size(100, 23);
@@ -410,7 +424,7 @@
             // 
             // txtMultaLI
             // 
-            txtMultaLI.DataBindings.Add(new Binding("Text", bindingSource1, "MULTA_LI", true));
+            txtMultaLI.DataBindings.Add(new Binding("Text", BsFatura, "MULTA_LI", true));
             txtMultaLI.Location = new Point(454, 96);
             txtMultaLI.Name = "txtMultaLI";
             txtMultaLI.Size = new Size(100, 23);
@@ -419,7 +433,7 @@
             // 
             // txtPIS
             // 
-            txtPIS.DataBindings.Add(new Binding("Text", bindingSource1, "PIS_PASEP", true));
+            txtPIS.DataBindings.Add(new Binding("Text", BsFatura, "PIS_PASEP", true));
             txtPIS.Location = new Point(722, 59);
             txtPIS.Name = "txtPIS";
             txtPIS.Size = new Size(100, 23);
@@ -428,7 +442,7 @@
             // 
             // txtDI_ADICAO
             // 
-            txtDI_ADICAO.DataBindings.Add(new Binding("Text", bindingSource1, "DI_ADICAO", true));
+            txtDI_ADICAO.DataBindings.Add(new Binding("Text", BsFatura, "DI_ADICAO", true));
             txtDI_ADICAO.Location = new Point(530, 59);
             txtDI_ADICAO.Name = "txtDI_ADICAO";
             txtDI_ADICAO.Size = new Size(100, 23);
@@ -437,7 +451,7 @@
             // 
             // txtIPI
             // 
-            txtIPI.DataBindings.Add(new Binding("Text", bindingSource1, "IPI", true));
+            txtIPI.DataBindings.Add(new Binding("Text", BsFatura, "IPI", true));
             txtIPI.Location = new Point(358, 59);
             txtIPI.Name = "txtIPI";
             txtIPI.Size = new Size(100, 23);
@@ -446,7 +460,7 @@
             // 
             // txtImpostoImportacao
             // 
-            txtImpostoImportacao.DataBindings.Add(new Binding("Text", bindingSource1, "ImpostoImportacao", true));
+            txtImpostoImportacao.DataBindings.Add(new Binding("Text", BsFatura, "ImpostoImportacao", true));
             txtImpostoImportacao.Location = new Point(220, 59);
             txtImpostoImportacao.Name = "txtImpostoImportacao";
             txtImpostoImportacao.Size = new Size(100, 23);
@@ -545,7 +559,7 @@
             // 
             // txtDI
             // 
-            txtDI.DataBindings.Add(new Binding("Text", bindingSource1, "DI", true));
+            txtDI.DataBindings.Add(new Binding("Text", BsFatura, "DI", true));
             txtDI.Location = new Point(336, 22);
             txtDI.Name = "txtDI";
             txtDI.ReadOnly = true;
@@ -598,7 +612,7 @@
             // 
             // txtArmazenagemP
             // 
-            txtArmazenagemP.DataBindings.Add(new Binding("Text", bindingSource1, "ArmazenagemP", true));
+            txtArmazenagemP.DataBindings.Add(new Binding("Text", BsFatura, "ArmazenagemP", true));
             txtArmazenagemP.Location = new Point(874, 66);
             txtArmazenagemP.Name = "txtArmazenagemP";
             txtArmazenagemP.Size = new Size(100, 23);
@@ -607,7 +621,7 @@
             // 
             // txtArmazenagemN
             // 
-            txtArmazenagemN.DataBindings.Add(new Binding("Text", bindingSource1, "ArmazenagemN", true));
+            txtArmazenagemN.DataBindings.Add(new Binding("Text", BsFatura, "ArmazenagemN", true));
             txtArmazenagemN.Location = new Point(874, 37);
             txtArmazenagemN.Name = "txtArmazenagemN";
             txtArmazenagemN.Size = new Size(100, 23);
@@ -650,7 +664,7 @@
             btnOK.TabIndex = 3;
             btnOK.Text = "Salvar";
             btnOK.UseVisualStyleBackColor = true;
-            btnOK.Click += btnSalvar_Click;
+            btnOK.Click += btnOK_Click;
             // 
             // label1
             // 
@@ -750,7 +764,7 @@
             // 
             // txtHDP
             // 
-            txtHDP.DataBindings.Add(new Binding("Text", bindingSource1, "HD", true));
+            txtHDP.DataBindings.Add(new Binding("Text", BsFatura, "HD", true));
             txtHDP.Location = new Point(868, 74);
             txtHDP.Name = "txtHDP";
             txtHDP.Size = new Size(100, 23);
@@ -779,7 +793,7 @@
             // 
             // txtCartorioP
             // 
-            txtCartorioP.DataBindings.Add(new Binding("Text", bindingSource1, "Cartorio", true));
+            txtCartorioP.DataBindings.Add(new Binding("Text", BsFatura, "Cartorio", true));
             txtCartorioP.Location = new Point(868, 116);
             txtCartorioP.Name = "txtCartorioP";
             txtCartorioP.Size = new Size(100, 23);
@@ -808,7 +822,7 @@
             // 
             // txtExpedienteP
             // 
-            txtExpedienteP.DataBindings.Add(new Binding("Text", bindingSource1, "Expediente", true));
+            txtExpedienteP.DataBindings.Add(new Binding("Text", BsFatura, "Expediente", true));
             txtExpedienteP.Location = new Point(868, 32);
             txtExpedienteP.Name = "txtExpedienteP";
             txtExpedienteP.Size = new Size(100, 23);
@@ -837,7 +851,7 @@
             // 
             // txtDespesasDesembaracoP
             // 
-            txtDespesasDesembaracoP.DataBindings.Add(new Binding("Text", bindingSource1, "DespesasDesembaracoP", true));
+            txtDespesasDesembaracoP.DataBindings.Add(new Binding("Text", BsFatura, "DespesasDesembaracoP", true));
             txtDespesasDesembaracoP.Location = new Point(611, 158);
             txtDespesasDesembaracoP.Name = "txtDespesasDesembaracoP";
             txtDespesasDesembaracoP.Size = new Size(100, 23);
@@ -846,7 +860,7 @@
             // 
             // txtDespesasDesembaracoN
             // 
-            txtDespesasDesembaracoN.DataBindings.Add(new Binding("Text", bindingSource1, "DespesasDesembaracoN", true));
+            txtDespesasDesembaracoN.DataBindings.Add(new Binding("Text", BsFatura, "DespesasDesembaracoN", true));
             txtDespesasDesembaracoN.Location = new Point(611, 129);
             txtDespesasDesembaracoN.Name = "txtDespesasDesembaracoN";
             txtDespesasDesembaracoN.Size = new Size(100, 23);
@@ -881,7 +895,7 @@
             // 
             // txtLiP
             // 
-            txtLiP.DataBindings.Add(new Binding("Text", bindingSource1, "LiP", true));
+            txtLiP.DataBindings.Add(new Binding("Text", BsFatura, "LiP", true));
             txtLiP.Location = new Point(868, 158);
             txtLiP.Name = "txtLiP";
             txtLiP.Size = new Size(100, 23);
@@ -910,7 +924,7 @@
             // 
             // txtMotoboyP
             // 
-            txtMotoboyP.DataBindings.Add(new Binding("Text", bindingSource1, "MotoboyP", true));
+            txtMotoboyP.DataBindings.Add(new Binding("Text", BsFatura, "MotoboyP", true));
             txtMotoboyP.Location = new Point(462, 158);
             txtMotoboyP.Name = "txtMotoboyP";
             txtMotoboyP.Size = new Size(100, 23);
@@ -919,7 +933,7 @@
             // 
             // txtMotoboyN
             // 
-            txtMotoboyN.DataBindings.Add(new Binding("Text", bindingSource1, "MotoboyN", true));
+            txtMotoboyN.DataBindings.Add(new Binding("Text", BsFatura, "MotoboyN", true));
             txtMotoboyN.Location = new Point(462, 129);
             txtMotoboyN.Name = "txtMotoboyN";
             txtMotoboyN.Size = new Size(100, 23);
@@ -954,7 +968,7 @@
             // 
             // txtDarfAnvisaP
             // 
-            txtDarfAnvisaP.DataBindings.Add(new Binding("Text", bindingSource1, "DarfAnvisaP", true));
+            txtDarfAnvisaP.DataBindings.Add(new Binding("Text", BsFatura, "DarfAnvisaP", true));
             txtDarfAnvisaP.Location = new Point(312, 158);
             txtDarfAnvisaP.Name = "txtDarfAnvisaP";
             txtDarfAnvisaP.Size = new Size(100, 23);
@@ -963,7 +977,7 @@
             // 
             // txtDarfAnvisaN
             // 
-            txtDarfAnvisaN.DataBindings.Add(new Binding("Text", bindingSource1, "DarfAnvisaN", true));
+            txtDarfAnvisaN.DataBindings.Add(new Binding("Text", BsFatura, "DarfAnvisaN", true));
             txtDarfAnvisaN.Location = new Point(312, 129);
             txtDarfAnvisaN.Name = "txtDarfAnvisaN";
             txtDarfAnvisaN.Size = new Size(100, 23);
@@ -998,7 +1012,7 @@
             // 
             // txtEncaminhamentoAmostrasP
             // 
-            txtEncaminhamentoAmostrasP.DataBindings.Add(new Binding("Text", bindingSource1, "EncaminhamentoAmostrasP", true));
+            txtEncaminhamentoAmostrasP.DataBindings.Add(new Binding("Text", BsFatura, "EncaminhamentoAmostrasP", true));
             txtEncaminhamentoAmostrasP.Location = new Point(163, 158);
             txtEncaminhamentoAmostrasP.Name = "txtEncaminhamentoAmostrasP";
             txtEncaminhamentoAmostrasP.Size = new Size(100, 23);
@@ -1007,7 +1021,7 @@
             // 
             // txtEncaminhamentoAmostrasN
             // 
-            txtEncaminhamentoAmostrasN.DataBindings.Add(new Binding("Text", bindingSource1, "EncaminhamentoAmostrasN", true));
+            txtEncaminhamentoAmostrasN.DataBindings.Add(new Binding("Text", BsFatura, "EncaminhamentoAmostrasN", true));
             txtEncaminhamentoAmostrasN.Location = new Point(163, 129);
             txtEncaminhamentoAmostrasN.Name = "txtEncaminhamentoAmostrasN";
             txtEncaminhamentoAmostrasN.Size = new Size(100, 23);
@@ -1042,7 +1056,7 @@
             // 
             // txtExpedienteLiP
             // 
-            txtExpedienteLiP.DataBindings.Add(new Binding("Text", bindingSource1, "ExpedienteLiCanceladaP", true));
+            txtExpedienteLiP.DataBindings.Add(new Binding("Text", BsFatura, "ExpedienteLiCanceladaP", true));
             txtExpedienteLiP.Location = new Point(680, 66);
             txtExpedienteLiP.Name = "txtExpedienteLiP";
             txtExpedienteLiP.Size = new Size(100, 23);
@@ -1051,7 +1065,7 @@
             // 
             // txtExpedienteLiN
             // 
-            txtExpedienteLiN.DataBindings.Add(new Binding("Text", bindingSource1, "ExpedienteLiCanceladaN", true));
+            txtExpedienteLiN.DataBindings.Add(new Binding("Text", BsFatura, "ExpedienteLiCanceladaN", true));
             txtExpedienteLiN.Location = new Point(680, 37);
             txtExpedienteLiN.Name = "txtExpedienteLiN";
             txtExpedienteLiN.Size = new Size(100, 23);
@@ -1086,7 +1100,7 @@
             // 
             // txtLiCanceladaP
             // 
-            txtLiCanceladaP.DataBindings.Add(new Binding("Text", bindingSource1, "LiCancelada_IndeferidaP", true));
+            txtLiCanceladaP.DataBindings.Add(new Binding("Text", BsFatura, "LiCancelada_IndeferidaP", true));
             txtLiCanceladaP.Location = new Point(531, 66);
             txtLiCanceladaP.Name = "txtLiCanceladaP";
             txtLiCanceladaP.Size = new Size(100, 23);
@@ -1095,7 +1109,7 @@
             // 
             // txtLiCanceladaN
             // 
-            txtLiCanceladaN.DataBindings.Add(new Binding("Text", bindingSource1, "LiCancelada_IndeferidaN", true));
+            txtLiCanceladaN.DataBindings.Add(new Binding("Text", BsFatura, "LiCancelada_IndeferidaN", true));
             txtLiCanceladaN.Location = new Point(531, 37);
             txtLiCanceladaN.Name = "txtLiCanceladaN";
             txtLiCanceladaN.Size = new Size(100, 23);
@@ -1130,7 +1144,7 @@
             // 
             // txtGRUAnvisaP
             // 
-            txtGRUAnvisaP.DataBindings.Add(new Binding("Text", bindingSource1, "GRUANVISAP", true));
+            txtGRUAnvisaP.DataBindings.Add(new Binding("Text", BsFatura, "GRUANVISAP", true));
             txtGRUAnvisaP.Location = new Point(382, 66);
             txtGRUAnvisaP.Name = "txtGRUAnvisaP";
             txtGRUAnvisaP.Size = new Size(100, 23);
@@ -1139,7 +1153,7 @@
             // 
             // txtGRUAnvisaN
             // 
-            txtGRUAnvisaN.DataBindings.Add(new Binding("Text", bindingSource1, "GRUANVISAN", true));
+            txtGRUAnvisaN.DataBindings.Add(new Binding("Text", BsFatura, "GRUANVISAN", true));
             txtGRUAnvisaN.Location = new Point(382, 37);
             txtGRUAnvisaN.Name = "txtGRUAnvisaN";
             txtGRUAnvisaN.Size = new Size(100, 23);
@@ -1174,7 +1188,7 @@
             // 
             // txtMarinhaMercanteP
             // 
-            txtMarinhaMercanteP.DataBindings.Add(new Binding("Text", bindingSource1, "Marinha_MercanteP", true));
+            txtMarinhaMercanteP.DataBindings.Add(new Binding("Text", BsFatura, "Marinha_MercanteP", true));
             txtMarinhaMercanteP.Location = new Point(232, 66);
             txtMarinhaMercanteP.Name = "txtMarinhaMercanteP";
             txtMarinhaMercanteP.Size = new Size(100, 23);
@@ -1183,7 +1197,7 @@
             // 
             // txtMarinhaMercanteN
             // 
-            txtMarinhaMercanteN.DataBindings.Add(new Binding("Text", bindingSource1, "Marinha_MercanteN", true));
+            txtMarinhaMercanteN.DataBindings.Add(new Binding("Text", BsFatura, "Marinha_MercanteN", true));
             txtMarinhaMercanteN.Location = new Point(232, 37);
             txtMarinhaMercanteN.Name = "txtMarinhaMercanteN";
             txtMarinhaMercanteN.Size = new Size(100, 23);
@@ -1218,7 +1232,7 @@
             // 
             // txtFreteMaritimoP
             // 
-            txtFreteMaritimoP.DataBindings.Add(new Binding("Text", bindingSource1, "FreteMaritimoP", true));
+            txtFreteMaritimoP.DataBindings.Add(new Binding("Text", BsFatura, "FreteMaritimoP", true));
             txtFreteMaritimoP.Location = new Point(83, 66);
             txtFreteMaritimoP.Name = "txtFreteMaritimoP";
             txtFreteMaritimoP.Size = new Size(100, 23);
@@ -1227,7 +1241,7 @@
             // 
             // txtFreteMaritimoN
             // 
-            txtFreteMaritimoN.DataBindings.Add(new Binding("Text", bindingSource1, "FreteMaritimoN", true));
+            txtFreteMaritimoN.DataBindings.Add(new Binding("Text", BsFatura, "FreteMaritimoN", true));
             txtFreteMaritimoN.Location = new Point(83, 37);
             txtFreteMaritimoN.Name = "txtFreteMaritimoN";
             txtFreteMaritimoN.Size = new Size(100, 23);
@@ -1271,7 +1285,7 @@
             // 
             // txtN_Ref
             // 
-            txtN_Ref.DataBindings.Add(new Binding("Text", bindingSource1, "Ref_USA", true));
+            txtN_Ref.DataBindings.Add(new Binding("Text", BsFatura, "Ref_USA", true));
             txtN_Ref.Location = new Point(278, 19);
             txtN_Ref.Name = "txtN_Ref";
             txtN_Ref.ReadOnly = true;
@@ -1280,7 +1294,7 @@
             // 
             // txtS_Ref
             // 
-            txtS_Ref.DataBindings.Add(new Binding("Text", bindingSource1, "SR", true));
+            txtS_Ref.DataBindings.Add(new Binding("Text", BsFatura, "SR", true));
             txtS_Ref.Location = new Point(453, 19);
             txtS_Ref.Name = "txtS_Ref";
             txtS_Ref.ReadOnly = true;
@@ -1298,7 +1312,7 @@
             // 
             // txtImportador
             // 
-            txtImportador.DataBindings.Add(new Binding("Text", bindingSource1, "Importador", true));
+            txtImportador.DataBindings.Add(new Binding("Text", BsFatura, "Importador", true));
             txtImportador.Location = new Point(656, 19);
             txtImportador.Name = "txtImportador";
             txtImportador.ReadOnly = true;
@@ -1316,7 +1330,7 @@
             // 
             // txtSaldo
             // 
-            txtSaldo.DataBindings.Add(new Binding("Text", bindingSource1, "Saldo", true));
+            txtSaldo.DataBindings.Add(new Binding("Text", BsFatura, "Saldo", true));
             txtSaldo.ForeColor = SystemColors.WindowText;
             txtSaldo.Location = new Point(623, 756);
             txtSaldo.Name = "txtSaldo";
@@ -1335,7 +1349,7 @@
             // 
             // txtAdiantamento
             // 
-            txtAdiantamento.DataBindings.Add(new Binding("Text", bindingSource1, "Adiantamento", true));
+            txtAdiantamento.DataBindings.Add(new Binding("Text", BsFatura, "Adiantamento", true));
             txtAdiantamento.ForeColor = SystemColors.WindowText;
             txtAdiantamento.Location = new Point(474, 756);
             txtAdiantamento.Name = "txtAdiantamento";
@@ -1354,7 +1368,7 @@
             // 
             // txtSubTotal
             // 
-            txtSubTotal.DataBindings.Add(new Binding("Text", bindingSource1, "SubTotal", true));
+            txtSubTotal.DataBindings.Add(new Binding("Text", BsFatura, "SubTotal", true));
             txtSubTotal.ForeColor = SystemColors.WindowText;
             txtSubTotal.Location = new Point(325, 756);
             txtSubTotal.Name = "txtSubTotal";
@@ -1373,7 +1387,7 @@
             // 
             // txtComissaoP
             // 
-            txtComissaoP.DataBindings.Add(new Binding("Text", bindingSource1, "NComissao", true));
+            txtComissaoP.DataBindings.Add(new Binding("Text", BsFatura, "NComissao", true));
             txtComissaoP.Location = new Point(175, 756);
             txtComissaoP.Name = "txtComissaoP";
             txtComissaoP.Size = new Size(100, 23);
@@ -1391,7 +1405,7 @@
             // 
             // txtTotalDespesas
             // 
-            txtTotalDespesas.DataBindings.Add(new Binding("Text", bindingSource1, "TotalDespesas", true));
+            txtTotalDespesas.DataBindings.Add(new Binding("Text", BsFatura, "TotalDespesas", true));
             txtTotalDespesas.ForeColor = SystemColors.WindowText;
             txtTotalDespesas.Location = new Point(26, 756);
             txtTotalDespesas.Name = "txtTotalDespesas";
@@ -1410,6 +1424,7 @@
             // 
             // txtTipoFinalizacao
             // 
+            txtTipoFinalizacao.DataBindings.Add(new Binding("Text", BsFatura, "TipoFinalizacao", true));
             txtTipoFinalizacao.Location = new Point(778, 756);
             txtTipoFinalizacao.Name = "txtTipoFinalizacao";
             txtTipoFinalizacao.ReadOnly = true;
@@ -1435,23 +1450,6 @@
             btnCalcularTotal.Text = "Calcular";
             btnCalcularTotal.UseVisualStyleBackColor = true;
             btnCalcularTotal.Click += btnCalcularTotal_Click;
-            // 
-            // txtEndereco
-            // 
-            txtEndereco.DataBindings.Add(new Binding("Text", bindingSource1, "Endereco_Importador", true));
-            txtEndereco.Location = new Point(381, 27);
-            txtEndereco.Name = "txtEndereco";
-            txtEndereco.Size = new Size(132, 23);
-            txtEndereco.TabIndex = 18;
-            // 
-            // label22
-            // 
-            label22.AutoSize = true;
-            label22.Location = new Point(341, 30);
-            label22.Name = "label22";
-            label22.Size = new Size(34, 15);
-            label22.TabIndex = 19;
-            label22.Text = "CNPJ";
             // 
             // frmModificaFatura
             // 
@@ -1485,10 +1483,11 @@
             MaximizeBox = false;
             Name = "frmModificaFatura";
             Text = "Fatura";
-            Load += frmModificaFatura_Load;
+            FormClosing += frmModificaFatura_FormClosing;
+            Load += FrmModificaFatura_Load;
             groupBox1.ResumeLayout(false);
             groupBox1.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)bindingSource1).EndInit();
+            ((System.ComponentModel.ISupportInitialize)BsFatura).EndInit();
             groupBox2.ResumeLayout(false);
             groupBox2.PerformLayout();
             groupBox3.ResumeLayout(false);
@@ -1626,7 +1625,6 @@
         private TextBox txtImpostoImportacao;
         private TextBox txtValRecebidos;
         private TextBox txtCONFINS;
-        private BindingSource bindingSource1;
         private Label lblAgencias;
         private FlowLayoutPanel flowLayoutPanel1;
         private Button btnAdicionarAgencia;
@@ -1634,5 +1632,6 @@
         private Label label21;
         private TextBox txtEndereco;
         private Label label22;
+        private BindingSource BsFatura;
     }
 }

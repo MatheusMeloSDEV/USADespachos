@@ -53,6 +53,7 @@
             Name = "FrmFinanceiro";
             Text = "Financeiro";
             WindowState = FormWindowState.Maximized;
+            Shown += FrmFinanceiro_Shown;
             ((System.ComponentModel.ISupportInitialize)_bsFaturas).EndInit();
             ResumeLayout(false);
 
