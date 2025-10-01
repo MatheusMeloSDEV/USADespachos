@@ -13,5 +13,7 @@ namespace CLUSA
         public DateTime? DataRegistroLPCO { get; set; }
         public DateTime? DataDeferimentoLPCO { get; set; }
         public string ParametrizacaoLPCO { get; set; } = string.Empty;
+        public bool EmExigencia { get; set; } = false;
+        public string MotivoExigencia { get; set; } = string.Empty;
     }
 }

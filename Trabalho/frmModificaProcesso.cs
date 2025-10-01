@@ -4,25 +4,49 @@ using System.Diagnostics;
 
 namespace Trabalho
 {
+    public enum OrigemProcesso
+    {
+        Santos, // Para processos gerais
+        Itajai  // Para processos com sufixo ITJ
+    }
     public partial class FrmModificaProcesso : Form
     {
         public Processo processo { get; set; }
         public string Modo { get; set; } = "Adicionar"; // Valor padrão
         public bool Visualização { get; set; } = false;
+        public OrigemProcesso Origem { get; set; }
+        private readonly RepositorioProcesso _repositorio;
         private bool _dadosForamAlterados = false;
 
         public FrmModificaProcesso()
         {
             InitializeComponent();
-            processo = new(); // Garante que 'processo' nunca seja nulo
+            _repositorio = new RepositorioProcesso();
         }
 
         private void FrmModificaProcesso_Load(object? sender, EventArgs e)
         {
             this.Icon = Icon.ExtractAssociatedIcon(Application.ExecutablePath);
+            switch (Origem)
+            {
+                case OrigemProcesso.Itajai:
+                    // 'L' significa Letra, 'I' e 'T' são letras fixas, 'J' é opcional
+                    TXTnr.Mask = @"0000/00\I\TJ";
+                    break;
+                case OrigemProcesso.Santos:
+                default:
+                    TXTnr.Mask = "0000/00";
+                    break;
+            }
             CarregarDadosNosControles();
             ConfigurarFormularioPeloModo();
             AnexarEventoDeAlteracao(this);
+            AtualizarEstadoBotoesLI();
+        }
+        private void AtualizarEstadoBotoesLI()
+        {
+            // O botão de excluir só fica ativo se houver pelo menos uma aba no controle.
+            BtnExcluirLI.Enabled = TCLi.TabCount > 0;
         }
         private void MarcarComoAlterado(object? sender, EventArgs e)
         {
@@ -57,24 +81,20 @@ namespace Trabalho
         }
         private void frmModificaProcesso_FormClosing(object? sender, FormClosingEventArgs e)
         {
-            // Se a bandeira de alterações estiver levantada...
             if (_dadosForamAlterados)
             {
-                // ...pergunta ao usuário o que fazer.
                 var resultado = MessageBox.Show(
-                    "Você tem alterações não salvas. Deseja fechar e descartar as alterações?",
+                    "Você tem alterações não salvas. Deseja fechar e descartar?",
                     "Atenção",
                     MessageBoxButtons.YesNo,
                     MessageBoxIcon.Warning);
 
-                // Se o usuário escolher "Não", nós cancelamos o fechamento do formulário.
                 if (resultado == DialogResult.No)
                 {
-                    e.Cancel = true;
+                    e.Cancel = true; // Cancela o fechamento
                 }
             }
-            // Se a bandeira não estiver levantada, o formulário fecha normalmente sem perguntar nada.
-        }
+        }   
         #region "Configuração, Carregamento e Salvamento"
 
         private void ConfigurarFormularioPeloModo()
@@ -88,10 +108,13 @@ namespace Trabalho
             {
                 btnCapa.Enabled = false;
                 btnRelatorio.Enabled = false;
-                // Inicializa o processo com uma LI em branco para o usuário preencher
-                if (!processo.LI.Any())
+                if (processo.LI == null || !processo.LI.Any())
                 {
-                    processo.LI.Add(new LicencaImportacao());
+                    if (processo.LI == null)
+                    {
+                        processo.LI = new List<LicencaImportacao>();
+                    }
+                    processo.LI.Add(new LicencaImportacao { Numero = "Nova LI" });
                 }
             }
 
@@ -136,6 +159,17 @@ namespace Trabalho
             processo.HistoricoDoProcesso = TXTstatusdoprocesso.Text;
             processo.Pendencia = TXTpendencia.Text;
 
+            if (processo.Capa == null)
+            {
+                processo.Capa = new Capa();
+            }
+
+            // Copia os valores dos campos principais do Processo para os campos correspondentes na Capa.
+            processo.Capa.Container = processo.Container;
+            processo.Capa.Master = processo.Veiculo; // Assumindo que Veículo/Navio vai para o campo Master da Capa
+            processo.Capa.SigvigSelecionado = processo.SIGVIGSelecionado;
+            processo.Capa.SigvigLiberado = processo.SIGVIGLiberado;
+
             // --- (NOVO) Salva os dados das abas dinâmicas de LI e LPCO ---
             foreach (TabPage abaLi in TCLi.TabPages)
             {
@@ -144,6 +178,7 @@ namespace Trabalho
                 // O DataBinding para TxtLi e TxtNCM geralmente funciona, mas vamos garantir.
                 if (abaLi.Controls.Find("TxtLi", true).FirstOrDefault() is TextBox txtLi) li.Numero = txtLi.Text;
                 if (abaLi.Controls.Find("TxtNCM", true).FirstOrDefault() is TextBox txtNcm) li.NCM = txtNcm.Text;
+                if (abaLi.Controls.Find("CbStatusLI", true).FirstOrDefault() is ComboBox cmbStatus) li.StatusLI = cmbStatus.Text;
                 if (abaLi.Controls.Find("DtpDataRegistro", true).FirstOrDefault() is DateTimePicker dtpLi)
                 {
                     li.DataRegistro = dtpLi.Checked ? dtpLi.Value : null;
@@ -158,38 +193,57 @@ namespace Trabalho
                         if (abaLpco.Tag is not LpcoInfo lpco) continue;
 
                         // AGORA ESTA PARTE VAI FUNCIONAR CORRETAMENTE
-                        if (abaLpco.Controls.Find("txtLpcoNum", true).FirstOrDefault() is TextBox txtLpcoNum)
+                        if (abaLpco.Controls.Find("TxtLPCO", true).FirstOrDefault() is TextBox txtLpcoNum)
                             lpco.LPCO = txtLpcoNum.Text;
 
-                        if (abaLpco.Controls.Find("cmbParam", true).FirstOrDefault() is ComboBox cmbParam)
+                        if (abaLpco.Controls.Find("CbParametrizacao", true).FirstOrDefault() is ComboBox cmbParam)
                             lpco.ParametrizacaoLPCO = cmbParam.Text;
 
-                        if (abaLpco.Controls.Find("dtpDataReg", true).FirstOrDefault() is DateTimePicker dtpLpcoReg)
+                        if (abaLpco.Controls.Find("CbEmExigencia", true).FirstOrDefault() is CheckBox CbEmExigencia)
+                            lpco.EmExigencia = CbEmExigencia.Checked;
+
+                        if (abaLpco.Controls.Find("CbMotivoExigencia", true).FirstOrDefault() is ComboBox CbMotivoExigencia)
+                            lpco.MotivoExigencia = CbMotivoExigencia.Text;
+
+                        if (abaLpco.Controls.Find("DtpDataRegistroLPCO", true).FirstOrDefault() is DateTimePicker dtpLpcoReg)
                             lpco.DataRegistroLPCO = dtpLpcoReg.Checked ? dtpLpcoReg.Value : null;
 
-                        if (abaLpco.Controls.Find("dtpDataDef", true).FirstOrDefault() is DateTimePicker dtpLpcoDef)
+                        if (abaLpco.Controls.Find("DtpDataDeferimentoLPCO", true).FirstOrDefault() is DateTimePicker dtpLpcoDef)
                             lpco.DataDeferimentoLPCO = dtpLpcoDef.Checked ? dtpLpcoDef.Value : null;
                     }
                 }
             }
+            processo.LI.RemoveAll(li => string.IsNullOrWhiteSpace(li.Numero) || li.Numero == "Nova LI");
         }
 
-        private void btnAdiciona_Click(object? sender, EventArgs e)
+        private async void btnAdiciona_Click(object? sender, EventArgs e)
         {
-            SalvarDadosDosControles();
-            // Lógica de cálculo dos vencimentos
-            if (processo.DataDeAtracacao.HasValue)
+            try
             {
-                processo.VencimentoFreeTime = processo.DataDeAtracacao.Value.AddDays(processo.FreeTime);
-                processo.VencimentoFMA = processo.DataDeAtracacao.Value.AddDays(85); // Exemplo
-            }
-            if (processo.LI.FirstOrDefault()?.DataRegistro.HasValue ?? false)
-            {
-                processo.VencimentoLI_LPCO = processo.LI.First().DataRegistro.Value.AddDays(85); // Exemplo
-            }
+                SalvarDadosDosControles();
 
-            this.DialogResult = DialogResult.OK;
-            this.Close();
+                if (Modo == "Adicionar")
+                {
+                    await _repositorio.CreateAsync(processo);
+                    Modo = "Editar"; // Depois de criar, o modo muda para edição
+                    TXTnr.Enabled = false;
+                }
+                else // Modo "Editar"
+                {
+                    await _repositorio.UpdateAsync(processo);
+                }
+
+                btnCapa.Enabled = true;
+                btnRelatorio.Enabled = true;
+
+                _dadosForamAlterados = false;
+                this.Text = this.Text.Replace("*", "");
+                MessageBox.Show("Processo salvo com sucesso!", "Sucesso", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Erro ao salvar o processo: {ex.Message}", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
 
         #endregion
@@ -207,63 +261,36 @@ namespace Trabalho
 
         private void AdicionarAbaLi(LicencaImportacao li)
         {
-            var tabPageLi = new TabPage($"LI - {li.Numero}") { Tag = li, BackColor = SystemColors.Control };
-
-            var cbOrgaos = new ComboBox { Location = new Point(415, 6), Width = 184, DropDownStyle = ComboBoxStyle.DropDownList };
-            cbOrgaos.Items.AddRange(Enum.GetNames(typeof(TipoOrgaoAnuente)));
-            var btnNovoLpco = new Button { Text = "Novo LPCO", Location = new Point(604, 6), Width = 129 };
-
-            var tabControlLpco = new TabControl { Location = new Point(6, 3), Size = new Size(730, 137), Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right };
-            btnNovoLpco.Click += (s, e) => BtnNovoLpco_Click(li, cbOrgaos, tabControlLpco);
-
-            var groupBoxDadosLi = new GroupBox { Text = "Dados da LI", Location = new Point(6, 145), Size = new Size(730, 83), Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right };
-            var lblLiNum = new Label { Text = "LI", Font = new Font("Segoe UI", 12F), Location = new Point(193, 19), AutoSize = true, Parent = groupBoxDadosLi };
-            var txtLi = new TextBox { Name = "TxtLi", Location = new Point(137, 43), Width = 134, Parent = groupBoxDadosLi };
-            var lblNcm = new Label { Text = "NCM", Font = new Font("Segoe UI", 12F), Location = new Point(335, 19), AutoSize = true, Parent = groupBoxDadosLi };
-            var txtNcm = new TextBox { Name = "TxtNCM", Location = new Point(285, 43), Width = 147, Parent = groupBoxDadosLi };
-            var lblDataRegLi = new Label { Text = "Data Registro", Font = new Font("Segoe UI", 12F), Location = new Point(463, 19), AutoSize = true, Parent = groupBoxDadosLi };
-            var dtpRegistroLi = new DateTimePicker { Name = "DtpDataRegistro", Location = new Point(446, 43), Width = 135, Format = DateTimePickerFormat.Short, Parent = groupBoxDadosLi };
-
-            txtLi.DataBindings.Add("Text", li, nameof(li.Numero), false, DataSourceUpdateMode.OnPropertyChanged);
-            txtNcm.DataBindings.Add("Text", li, nameof(li.NCM), false, DataSourceUpdateMode.OnPropertyChanged);
-
-            // MUDANÇA: Passando o valor da data diretamente.
-            ConfigurarDatePickerNulavel(dtpRegistroLi, li.DataRegistro);
-
-            txtLi.TextChanged += (s, e) => { tabPageLi.Text = $"LI - {txtLi.Text}"; };
-
-            tabPageLi.Controls.AddRange(new Control[] { cbOrgaos, btnNovoLpco, tabControlLpco, groupBoxDadosLi });
-
-            foreach (var lpco in li.LPCO)
+            // Cria a aba principal da LI.
+            var tabPageLi = new TabPage($"LI - {li.Numero}")
             {
-                AdicionarAbaLpco(tabControlLpco, lpco);
+                Tag = li,
+                BackColor = SystemColors.Control
+            };
+
+            // 1. Cria uma instância do nosso novo UserControl.
+            var editorLi = new LIEditControl
+            {
+                Dock = DockStyle.Fill // Faz ele preencher a aba
+            };
+
+            // 2. Chama o método do UserControl para vincular os dados da LI.
+            editorLi.VincularDados(li);
+
+            // MUDANÇA: Atualiza o texto da aba de forma segura.
+            var txtLiControl = editorLi.Controls.Find("TxtLi", true).FirstOrDefault() as TextBox;
+            if (txtLiControl != null)
+            {
+                txtLiControl.TextChanged += (s, e) => {
+                    tabPageLi.Text = $"LI - {txtLiControl.Text}";
+                };
             }
 
+            // 3. Adiciona o UserControl à aba.
+            tabPageLi.Controls.Add(editorLi);
+
+            // 4. Adiciona a aba de LI ao TabControl principal.
             TCLi.TabPages.Add(tabPageLi);
-        }
-
-        private void AdicionarAbaLpco(TabControl parentTabControl, LpcoInfo lpco)
-        {
-            var tabPageLpco = new TabPage(lpco.NomeOrgao) { Tag = lpco, BackColor = SystemColors.Control };
-
-            var lblLpcoNum = new Label { Text = "LPCO", Location = new Point(46, 28), AutoSize = true, Parent = tabPageLpco };
-            var txtLpcoNum = new TextBox { Name = "txtLpcoNum", Location = new Point(90, 25), Width = 261, Parent = tabPageLpco };
-            var lblParam = new Label { Text = "Parametrização", Location = new Point(46, 62), AutoSize = true, Parent = tabPageLpco };
-            var cmbParam = new ComboBox { Name = "cmbParam", Location = new Point(140, 59), Width = 211, DropDownStyle = ComboBoxStyle.DropDownList, Parent = tabPageLpco };
-            cmbParam.Items.AddRange(new string[] { "", "Documental", "Exame Físico", "Conferência Física", "Coleta de Amostra", "Inspeção Física" });
-
-            var lblDataReg = new Label { Text = "Data Registro", Font = new Font("Segoe UI", 11F), Location = new Point(399, 34), AutoSize = true, Parent = tabPageLpco };
-            var dtpDataReg = new DateTimePicker { Name = "dtpDataReg", Location = new Point(382, 56), Width = 135, Format = DateTimePickerFormat.Short, Parent = tabPageLpco };
-            var lblDataDef = new Label { Text = "Data Deferimento", Font = new Font("Segoe UI", 11F), Location = new Point(534, 34), AutoSize = true, Parent = tabPageLpco };
-            var dtpDataDef = new DateTimePicker { Name = "dtpDataDef", Location = new Point(531, 56), Width = 135, Format = DateTimePickerFormat.Short, Parent = tabPageLpco };
-
-            txtLpcoNum.DataBindings.Add("Text", lpco, nameof(lpco.LPCO), false, DataSourceUpdateMode.OnPropertyChanged);
-            cmbParam.DataBindings.Add("Text", lpco, nameof(lpco.ParametrizacaoLPCO), false, DataSourceUpdateMode.OnPropertyChanged);
-
-            ConfigurarDatePickerNulavel(dtpDataReg, lpco.DataRegistroLPCO);
-            ConfigurarDatePickerNulavel(dtpDataDef, lpco.DataDeferimentoLPCO);
-
-            parentTabControl.TabPages.Add(tabPageLpco);
         }
 
         private void BtnLI_Click(object? sender, EventArgs e)
@@ -272,18 +299,49 @@ namespace Trabalho
             processo.LI.Add(novaLi);
             AdicionarAbaLi(novaLi);
             TCLi.SelectedIndex = TCLi.TabPages.Count - 1;
+            _dadosForamAlterados = true;
+            this.Text += "*";
         }
 
-        private void BtnNovoLpco_Click(LicencaImportacao liPai, ComboBox cbOrgaos, TabControl tabControlLpco)
+        private void BtnExcluirLi_Click(object sender, EventArgs e)
         {
-            string? nomeOrgao = cbOrgaos.SelectedItem?.ToString();
-            if (string.IsNullOrEmpty(nomeOrgao)) { MessageBox.Show("Selecione um órgão anuente."); return; }
-            if (liPai.LPCO.Any(l => l.NomeOrgao == nomeOrgao)) { MessageBox.Show($"Já existe um LPCO para o órgão '{nomeOrgao}' nesta LI."); return; }
+            // 1. Verifica se existe alguma aba de LI selecionada para excluir.
+            if (TCLi.TabCount == 0 || TCLi.SelectedTab == null)
+            {
+                MessageBox.Show("Nenhuma LI selecionada para excluir.", "Aviso", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
 
-            var novoLpco = new LpcoInfo { NomeOrgao = nomeOrgao };
-            liPai.LPCO.Add(novoLpco);
-            AdicionarAbaLpco(tabControlLpco, novoLpco);
-            tabControlLpco.SelectTab(tabControlLpco.TabPages.Count - 1);
+            // 2. Pega a aba e o objeto LicencaImportacao associado a ela.
+            var abaSelecionada = TCLi.SelectedTab;
+            if (abaSelecionada.Tag is not LicencaImportacao liParaExcluir)
+            {
+                MessageBox.Show("Erro ao identificar os dados da LI selecionada.", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+
+            // 3. Pede confirmação ao usuário.
+            var resultado = MessageBox.Show(
+                $"Tem certeza que deseja excluir a LI '{liParaExcluir.Numero}' e todos os seus LPCOs associados?",
+                "Confirmar Exclusão de LI",
+                MessageBoxButtons.YesNo,
+                MessageBoxIcon.Warning);
+
+            if (resultado == DialogResult.No)
+            {
+                return;
+            }
+
+            // 4. Executa a exclusão nos dados e na interface.
+            processo.LI.Remove(liParaExcluir);    // Remove da lista de dados do Processo
+            TCLi.TabPages.Remove(abaSelecionada); // Remove a aba da tela
+
+            // 5. Marca que houve uma alteração nos dados
+            // MarcarComoAlterado(sender, e);
+            MessageBox.Show("LI removida. As alterações serão salvas quando você salvar o processo.", "LI Removida", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            AtualizarEstadoBotoesLI();
+            _dadosForamAlterados = true;
+            this.Text += "*";
         }
 
         #endregion
@@ -301,32 +359,42 @@ namespace Trabalho
             ConfigurarDatePickerNulavel(DTPdatadeatracacao, processo.DataDeAtracacao);
             ConfigurarDatePickerNulavel(DTPdatadeembarque, processo.DataEmbarque);
             ConfigurarDatePickerNulavel(DTPDataRecOriginais, processo.DataRecebOriginais);
+            ConfigurarDatePickerNulavel(dtpVencimentoFMA, processo.VencimentoFMA);
+            ConfigurarDatePickerNulavel(dtpVencimentoFreeTime, processo.VencimentoFreeTime);
+            ConfigurarDatePickerNulavel(dtpVencimentoLI_LPCO, processo.VencimentoLI_LPCO);
         }
 
         private void ConfigurarDatePickerNulavel(DateTimePicker dtp, DateTime? data)
         {
             dtp.ShowCheckBox = true;
 
-            // Carrega o valor inicial
+            // Se já existe uma data salva no banco, usa ela.
             if (data.HasValue)
             {
                 dtp.Checked = true;
                 dtp.Value = data.Value;
                 dtp.Format = DateTimePickerFormat.Short;
             }
-            else
+            else // Se for um objeto novo (data == null)
             {
-                dtp.Checked = false;
+                dtp.Checked = false; // Começa desmarcado
+
+                // MUDANÇA PRINCIPAL: Define o valor subjacente para a data de hoje.
+                // Assim, se o usuário marcar a caixa, a data que aparecerá será a de hoje,
+                // e não uma data antiga do designer.
+                dtp.Value = DateTime.Today;
+
                 dtp.Format = DateTimePickerFormat.Custom;
-                dtp.CustomFormat = " ";
+                dtp.CustomFormat = " "; // Deixa visualmente em branco
             }
 
-            dtp.ValueChanged -= Dtp_ValueChanged; 
-            dtp.ValueChanged += Dtp_ValueChanged;
+            // O evento para formatar a aparência continua o mesmo.
+            dtp.ValueChanged -= Dtp_ValueChanged_Format;
+            dtp.ValueChanged += Dtp_ValueChanged_Format;
         }
 
         // Este evento agora só cuida da FORMATAÇÃO VISUAL.
-        private void Dtp_ValueChanged(object? sender, EventArgs e)
+        private void Dtp_ValueChanged_Format(object? sender, EventArgs e)
         {
             if (sender is DateTimePicker picker)
             {
@@ -412,7 +480,7 @@ namespace Trabalho
         private void SetCamposSomenteLeitura(Control parent)
         {
             // Desabilita botões de ação que não fazem sentido no modo de visualização
-            BtnNovoOrgaoAnuente.Enabled = false; // Exemplo de botão no designer
+            BtnLI.Enabled = false; // Exemplo de botão no designer
                                                  // Adicione outros botões que precisam ser desabilitados
 
             foreach (Control control in parent.Controls)
@@ -452,8 +520,9 @@ namespace Trabalho
             {
                 processo.Capa = frm.capa;
             }
+            _dadosForamAlterados = true;
+            this.Text += "*";
         }
-
         private void btnRelatorio_Click(object? sender, EventArgs e)
         {
             string referencia = TXTnr.Text;

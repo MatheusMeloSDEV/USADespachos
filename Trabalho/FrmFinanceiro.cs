@@ -1,5 +1,8 @@
 ﻿using CLUSA;
+using System.Data;
 using System.Diagnostics;
+using System.Drawing;
+using System.Windows.Forms;
 
 namespace Trabalho
 {
@@ -14,25 +17,70 @@ namespace Trabalho
             _repositorioFatura = new();
             _repositorioRecibo = new();
             _bsFaturas = new BindingSource();
+            _bsRecibos = new BindingSource();
         }
 
-        // MUDANÇA: O carregamento agora é assíncrono.a
         private async void FrmFinanceiro_Shown(object? sender, EventArgs e)
         {
+            ConfigurarGrids();
             await CarregarDadosAsync();
         }
 
+        /// <summary>
+        /// Configura as colunas e o comportamento das duas grades.
+        /// </summary>
+        private void ConfigurarGrids()
+        {
+            // --- Configuração da Grade de Faturamento ---
+            DGVFaturamento.DataSource = _bsFaturas;
+            DGVFaturamento.AutoGenerateColumns = false;
+            DGVFaturamento.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
+            DGVFaturamento.RowHeadersVisible = false;
+            DGVFaturamento.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
+            DGVFaturamento.AllowUserToAddRows = false;
+            DGVFaturamento.ReadOnly = true;
+
+            DGVFaturamento.Columns.Clear();
+            DGVFaturamento.Columns.AddRange(new DataGridViewColumn[]
+            {
+                new DataGridViewTextBoxColumn { DataPropertyName = "Ref_USA", HeaderText = "Ref. USA", FillWeight = 40 },
+                new DataGridViewTextBoxColumn { DataPropertyName = "Importador", HeaderText = "Importador", FillWeight = 100 },
+                new DataGridViewTextBoxColumn { DataPropertyName = "Saldo", HeaderText = "Saldo", FillWeight = 50, DefaultCellStyle = new DataGridViewCellStyle { Format = "C2" } },
+                new DataGridViewTextBoxColumn { DataPropertyName = "TipoFinalizacao", HeaderText = "Tipo", FillWeight = 40 }
+            });
+
+            // --- Configuração da Grade de Recibos ---
+            DGVRecibo.DataSource = _bsRecibos;
+            DGVRecibo.AutoGenerateColumns = false;
+            DGVRecibo.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
+            DGVRecibo.RowHeadersVisible = false;
+            DGVRecibo.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
+            DGVRecibo.AllowUserToAddRows = false;
+            DGVRecibo.ReadOnly = true;
+
+            DGVRecibo.Columns.Clear();
+            DGVRecibo.Columns.AddRange(new DataGridViewColumn[]
+            {
+                new DataGridViewTextBoxColumn { DataPropertyName = "Ref_USA", HeaderText = "Ref. USA", FillWeight = 40 },
+                new DataGridViewTextBoxColumn { DataPropertyName = "Importador", HeaderText = "Importador", FillWeight = 100 },
+                new DataGridViewTextBoxColumn { DataPropertyName = "Total", HeaderText = "Total", FillWeight = 50, DefaultCellStyle = new DataGridViewCellStyle { Format = "C2" } }
+            });
+        }
+
+        /// <summary>
+        /// Busca os dados do banco e os vincula às grades.
+        /// </summary>
         private async Task CarregarDadosAsync()
         {
             try
             {
-                // MUDANÇA: Busca os dados usando os métodos assíncronos.
                 var listaDeFaturas = await _repositorioFatura.FindRefAsync();
-                var listaDeRecibos = await _repositorioRecibo.FindRefAsync();
+                _bsFaturas.DataSource = listaDeFaturas;
+                _bsFaturas.ResetBindings(false);
 
-                // MUDANÇA: Chama um único método genérico para os dois painéis.
-                PreencherPainelGenerico(panelFaturamento, "Faturamento", listaDeFaturas, AbrirDetalhesFatura);
-                PreencherPainelGenerico(panelRecibo, "Recibos", listaDeRecibos, AbrirDetalhesRecibo);
+                var listaDeRecibos = await _repositorioRecibo.FindRefAsync();
+                _bsRecibos.DataSource = listaDeRecibos;
+                _bsRecibos.ResetBindings(false);
             }
             catch (Exception ex)
             {
@@ -40,110 +88,32 @@ namespace Trabalho
             }
         }
 
-        // MUDANÇA: Um único método genérico para preencher qualquer painel.
-        private void PreencherPainelGenerico<T>(Panel panel, string titulo, List<T> itens, Action<T> onButtonClick) where T : IEntidadeBase
+        /// <summary>
+        /// Abre a tela de edição quando o usuário dá um duplo clique em uma fatura.
+        /// </summary>
+        private void DGVFaturamento_CellDoubleClick(object? sender, DataGridViewCellEventArgs e)
         {
-            panel.Controls.Clear();
-            panel.SuspendLayout(); // Otimização para adicionar múltiplos controles
+            if (e.RowIndex < 0 || _bsFaturas.Current is not Fatura faturaSelecionada) return;
 
-            // --- Configurações de Layout ---
-            const int colunas = 3;
-            const int espacoX = 10, espacoY = 10;
-            const int btnWidth = 250, btnHeight = 40;
-            const int panelWidth = btnWidth + 40, panelHeight = btnHeight + 60;
-
-            panel.Width = (panelWidth + espacoX) * colunas;
-
-            // --- Título do Painel ---
-            Label lblTitulo = new Label
-            {
-                Text = titulo,
-                Font = new Font("Arial", 12, FontStyle.Bold),
-                TextAlign = ContentAlignment.MiddleCenter,
-                Dock = DockStyle.Top,
-                Height = 30
-            };
-            panel.Controls.Add(lblTitulo);
-
-            // --- Cria os Itens ---
-            for (int i = 0; i < itens.Count; i++)
-            {
-                var item = itens[i];
-                string referencia = item.Ref_USA ?? "Sem referência";
-                // Assumindo que a entidade T terá uma propriedade Importador.
-                string importador = (item.GetType().GetProperty("Importador")?.GetValue(item) as string) ?? "Desconhecido";
-
-                var lblReferencia = new Label
-                {
-                    Text = referencia,
-                    TextAlign = ContentAlignment.MiddleCenter,
-                    Dock = DockStyle.Top,
-                    Height = 20,
-                    Margin = new Padding(0, 0, 0, 5)
-                };
-
-                var btnImportador = new Button
-                {
-                    Text = importador,
-                    Tag = item, // Armazena o objeto inteiro (Fatura ou Recibo)
-                    Width = btnWidth - 5,
-                    Height = btnHeight,
-                    Anchor = AnchorStyles.None
-                };
-
-                // MUDANÇA: Evento de clique corrigido e simplificado.
-                btnImportador.Click += (sender, e) =>
-                {
-                    if (sender is Button { Tag: T clickedItem })
-                    {
-                        onButtonClick(clickedItem);
-                    }
-                };
-
-                var itemPanel = new Panel
-                {
-                    Width = panelWidth - 15,
-                    Height = panelHeight,
-                    BorderStyle = BorderStyle.FixedSingle,
-                    Margin = new Padding(2)
-                };
-
-                itemPanel.Controls.Add(lblReferencia);
-                itemPanel.Controls.Add(btnImportador);
-                btnImportador.Top = lblReferencia.Bottom + 5;
-                btnImportador.Left = (itemPanel.Width - btnImportador.Width) / 2;
-
-                int x = (i % colunas) * (panelWidth + espacoX);
-                int y = (i / colunas) * (panelHeight + espacoY);
-                itemPanel.Location = new Point(x + 10, y + 35);
-
-                panel.Controls.Add(itemPanel);
-            }
-            panel.ResumeLayout();
+            using var detalhesForm = new DetalhesForm(faturaSelecionada.Ref_USA, faturaSelecionada.Importador, TipoDocumentoFinanceiro.Fatura);
+            detalhesForm.ShowDialog();
+            // Após fechar, pode ser necessário recarregar os dados do painel.
+            _ = CarregarDadosAsync();
         }
 
-        // --- Métodos de Ação (chamados pelo método genérico) ---
-
-        private void AbrirDetalhesFatura(Fatura fatura)
+        /// <summary>
+        /// Abre a tela de edição quando o usuário dá um duplo clique em um recibo.
+        /// </summary>
+        private void DGVRecibo_CellDoubleClick(object? sender, DataGridViewCellEventArgs e)
         {
-            using var detalhesForm = new DetalhesFaturaForm(fatura.Ref_USA, fatura.Importador);
-            var resultado = detalhesForm.ShowDialog();
+            if (e.RowIndex < 0 || _bsRecibos.Current is not Recibo reciboSelecionado) return;
 
-            if (resultado == DialogResult.OK)
-                MessageBox.Show("Lógica para Exportar Fatura foi executada.");
-            else if (resultado == DialogResult.Ignore)
-                MessageBox.Show("Lógica para Editar Fatura foi executada.");
-        }
+            // MUDANÇA: Chama o novo formulário unificado, especificando o tipo.
+            using var detalhesForm = new DetalhesForm(reciboSelecionado.Ref_USA, reciboSelecionado.Importador, TipoDocumentoFinanceiro.Recibo);
+            detalhesForm.ShowDialog();
+            // Após fechar, pode ser necessário recarregar os dados do painel.
+            _ = CarregarDadosAsync();
 
-        private void AbrirDetalhesRecibo(Recibo recibo)
-        {
-            using var detalhesForm = new DetalhesReciboForm(recibo.Ref_USA, recibo.Importador);
-            var resultado = detalhesForm.ShowDialog();
-
-            if (resultado == DialogResult.OK)
-                MessageBox.Show("Lógica para Exportar Recibo foi executada.");
-            else if (resultado == DialogResult.Ignore)
-                MessageBox.Show("Lógica para Editar Recibo foi executada.");
         }
     }
 }

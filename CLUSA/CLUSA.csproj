@@ -1,24 +1,24 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
-    <Platforms>AnyCPU;x86</Platforms>
-  </PropertyGroup>
+	<PropertyGroup>
+		<TargetFramework>net6.0</TargetFramework>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+		<Platforms>AnyCPU;x86</Platforms>
+	</PropertyGroup>
 
-  <ItemGroup>
-    <Compile Remove="Agencias.cs" />
-  </ItemGroup>
+	<ItemGroup>
+		<Compile Remove="Agencias.cs" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <PackageReference Include="Aspose.Cells" Version="24.11.0" />
-    <PackageReference Include="EPPlus" Version="7.5.0" />
-    <PackageReference Include="itext7" Version="8.0.5" />
-    <PackageReference Include="Microsoft.Office.Interop.Excel" Version="15.0.4795.1001" />
-    <PackageReference Include="MongoDB.Bson" Version="3.0.0" />
-    <PackageReference Include="MongoDB.Driver" Version="3.0.0" />
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
-  </ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="Aspose.Cells" Version="24.11.0" />
+		<PackageReference Include="EPPlus" Version="7.5.0" />
+		<PackageReference Include="itext7" Version="8.0.5" />
+		<PackageReference Include="Microsoft.Office.Interop.Excel" Version="15.0.4795.1001" />
+		<PackageReference Include="MongoDB.Bson" Version="3.0.0" />
+		<PackageReference Include="MongoDB.Driver" Version="3.0.0" />
+		<PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+	</ItemGroup>
 
 </Project>

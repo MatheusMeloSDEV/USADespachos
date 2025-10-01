@@ -293,8 +293,8 @@ namespace Trabalho
         {
             var panel = new Panel
             {
-                AutoSize = true,
-                AutoSizeMode = AutoSizeMode.GrowAndShrink,
+                Height = 30,
+                Width = 150,
                 Padding = new Padding(5),
                 Margin = new Padding(3),
                 BorderStyle = BorderStyle.FixedSingle,

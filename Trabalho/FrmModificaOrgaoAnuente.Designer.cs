@@ -47,6 +47,8 @@
             Exportador = new Label();
             TXTexportador = new TextBox();
             groupBox1 = new GroupBox();
+            label1 = new Label();
+            CbStatusLI = new ComboBox();
             label5 = new Label();
             DtpDataRegistro = new DateTimePicker();
             label3 = new Label();
@@ -56,17 +58,20 @@
             groupBox2 = new GroupBox();
             tabControl1 = new TabControl();
             tabPage1 = new TabPage();
-            label13 = new Label();
-            dateTimePicker3 = new DateTimePicker();
-            label12 = new Label();
-            dateTimePicker2 = new DateTimePicker();
-            textBox5 = new TextBox();
-            label6 = new Label();
-            textBox2 = new TextBox();
-            label2 = new Label();
+            CbParametrizacao = new ComboBox();
+            CbMotivoExigencia = new ComboBox();
+            CbEmExigencia = new CheckBox();
+            lblDataDeferimento = new Label();
+            DtpDataDeferimentoLPCO = new DateTimePicker();
+            lblDataRegistro = new Label();
+            DtpDataRegistroLPCO = new DateTimePicker();
+            lblParametrizacao = new Label();
+            TxtLPCO = new TextBox();
+            lblLPCO = new Label();
             tabPage2 = new TabPage();
             BtnNovoOrgaoAnuente = new Button();
             CBOrgaoAnuente = new ComboBox();
+            BtnExcluirLpco = new Button();
             groupBox1.SuspendLayout();
             groupBox2.SuspendLayout();
             tabControl1.SuspendLayout();
@@ -252,6 +257,8 @@
             // 
             // groupBox1
             // 
+            groupBox1.Controls.Add(label1);
+            groupBox1.Controls.Add(CbStatusLI);
             groupBox1.Controls.Add(label5);
             groupBox1.Controls.Add(DtpDataRegistro);
             groupBox1.Controls.Add(label3);
@@ -265,12 +272,32 @@
             groupBox1.TabStop = false;
             groupBox1.Text = "Dados Li";
             // 
+            // label1
+            // 
+            label1.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+            label1.AutoSize = true;
+            label1.Font = new Font("Segoe UI", 11F);
+            label1.Location = new Point(462, 20);
+            label1.Name = "label1";
+            label1.Size = new Size(64, 20);
+            label1.TabIndex = 425;
+            label1.Text = "Status LI";
+            // 
+            // CbStatusLI
+            // 
+            CbStatusLI.FormattingEnabled = true;
+            CbStatusLI.Items.AddRange(new object[] { "Pronto para Entrada", "Pendência Documental", "Entrada Concluída" });
+            CbStatusLI.Location = new Point(427, 43);
+            CbStatusLI.Name = "CbStatusLI";
+            CbStatusLI.Size = new Size(135, 23);
+            CbStatusLI.TabIndex = 424;
+            // 
             // label5
             // 
             label5.Anchor = AnchorStyles.Top | AnchorStyles.Right;
             label5.AutoSize = true;
             label5.Font = new Font("Segoe UI", 11F);
-            label5.Location = new Point(386, 21);
+            label5.Location = new Point(298, 20);
             label5.Name = "label5";
             label5.Size = new Size(100, 20);
             label5.TabIndex = 419;
@@ -279,10 +306,11 @@
             // DtpDataRegistro
             // 
             DtpDataRegistro.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+            DtpDataRegistro.Enabled = false;
             DtpDataRegistro.Format = DateTimePickerFormat.Short;
-            DtpDataRegistro.Location = new Point(369, 45);
+            DtpDataRegistro.Location = new Point(290, 44);
             DtpDataRegistro.Name = "DtpDataRegistro";
-            DtpDataRegistro.Size = new Size(135, 23);
+            DtpDataRegistro.Size = new Size(117, 23);
             DtpDataRegistro.TabIndex = 418;
             // 
             // label3
@@ -290,7 +318,7 @@
             label3.Anchor = AnchorStyles.Top | AnchorStyles.Right;
             label3.AutoSize = true;
             label3.Font = new Font("Segoe UI", 12F);
-            label3.Location = new Point(116, 20);
+            label3.Location = new Point(67, 19);
             label3.Name = "label3";
             label3.Size = new Size(22, 21);
             label3.TabIndex = 420;
@@ -301,7 +329,7 @@
             label4.Anchor = AnchorStyles.Top | AnchorStyles.Right;
             label4.AutoSize = true;
             label4.Font = new Font("Segoe UI", 12F);
-            label4.Location = new Point(258, 21);
+            label4.Location = new Point(189, 20);
             label4.Name = "label4";
             label4.Size = new Size(46, 21);
             label4.TabIndex = 421;
@@ -310,17 +338,17 @@
             // TxtNCM
             // 
             TxtNCM.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-            TxtNCM.Location = new Point(208, 45);
+            TxtNCM.Location = new Point(154, 44);
             TxtNCM.Name = "TxtNCM";
-            TxtNCM.Size = new Size(147, 23);
+            TxtNCM.Size = new Size(117, 23);
             TxtNCM.TabIndex = 419;
             // 
             // TxtLi
             // 
             TxtLi.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-            TxtLi.Location = new Point(60, 45);
+            TxtLi.Location = new Point(20, 44);
             TxtLi.Name = "TxtLi";
-            TxtLi.Size = new Size(134, 23);
+            TxtLi.Size = new Size(117, 23);
             TxtLi.TabIndex = 418;
             // 
             // groupBox2
@@ -348,7 +376,7 @@
             // 
             tabControl1.Controls.Add(tabPage1);
             tabControl1.Controls.Add(tabPage2);
-            tabControl1.Location = new Point(12, 12);
+            tabControl1.Location = new Point(12, 22);
             tabControl1.Name = "tabControl1";
             tabControl1.SelectedIndex = 0;
             tabControl1.Size = new Size(593, 137);
@@ -356,14 +384,16 @@
             // 
             // tabPage1
             // 
-            tabPage1.Controls.Add(label13);
-            tabPage1.Controls.Add(dateTimePicker3);
-            tabPage1.Controls.Add(label12);
-            tabPage1.Controls.Add(dateTimePicker2);
-            tabPage1.Controls.Add(textBox5);
-            tabPage1.Controls.Add(label6);
-            tabPage1.Controls.Add(textBox2);
-            tabPage1.Controls.Add(label2);
+            tabPage1.Controls.Add(CbParametrizacao);
+            tabPage1.Controls.Add(CbMotivoExigencia);
+            tabPage1.Controls.Add(CbEmExigencia);
+            tabPage1.Controls.Add(lblDataDeferimento);
+            tabPage1.Controls.Add(DtpDataDeferimentoLPCO);
+            tabPage1.Controls.Add(lblDataRegistro);
+            tabPage1.Controls.Add(DtpDataRegistroLPCO);
+            tabPage1.Controls.Add(lblParametrizacao);
+            tabPage1.Controls.Add(TxtLPCO);
+            tabPage1.Controls.Add(lblLPCO);
             tabPage1.Location = new Point(4, 24);
             tabPage1.Name = "tabPage1";
             tabPage1.Size = new Size(585, 109);
@@ -371,77 +401,101 @@
             tabPage1.Text = "tabPage1";
             tabPage1.UseVisualStyleBackColor = true;
             // 
-            // label13
+            // CbParametrizacao
             // 
-            label13.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-            label13.AutoSize = true;
-            label13.Font = new Font("Segoe UI", 11F);
-            label13.Location = new Point(421, 30);
-            label13.Name = "label13";
-            label13.Size = new Size(129, 20);
-            label13.TabIndex = 425;
-            label13.Text = "Data Deferimento";
+            CbParametrizacao.Enabled = false;
+            CbParametrizacao.FormattingEnabled = true;
+            CbParametrizacao.Items.AddRange(new object[] { "", "Documental", "Exame Físico", "Conferência Física", "Coleta de Amostra", "nspeção Física" });
+            CbParametrizacao.Location = new Point(106, 62);
+            CbParametrizacao.Name = "CbParametrizacao";
+            CbParametrizacao.Size = new Size(140, 23);
+            CbParametrizacao.TabIndex = 428;
             // 
-            // dateTimePicker3
+            // CbMotivoExigencia
             // 
-            dateTimePicker3.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-            dateTimePicker3.Format = DateTimePickerFormat.Short;
-            dateTimePicker3.Location = new Point(418, 54);
-            dateTimePicker3.Name = "dateTimePicker3";
-            dateTimePicker3.Size = new Size(135, 23);
-            dateTimePicker3.TabIndex = 424;
+            CbMotivoExigencia.Enabled = false;
+            CbMotivoExigencia.FormattingEnabled = true;
+            CbMotivoExigencia.Items.AddRange(new object[] { "PENDENTE", "CUMPRIDA" });
+            CbMotivoExigencia.Location = new Point(400, 73);
+            CbMotivoExigencia.Name = "CbMotivoExigencia";
+            CbMotivoExigencia.Size = new Size(135, 23);
+            CbMotivoExigencia.TabIndex = 427;
+            CbMotivoExigencia.Text = "Motivo da exigência...";
             // 
-            // label12
+            // CbEmExigencia
             // 
-            label12.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-            label12.AutoSize = true;
-            label12.Font = new Font("Segoe UI", 11F);
-            label12.Location = new Point(286, 30);
-            label12.Name = "label12";
-            label12.Size = new Size(100, 20);
-            label12.TabIndex = 423;
-            label12.Text = "Data Registro";
+            CbEmExigencia.AutoSize = true;
+            CbEmExigencia.Location = new Point(294, 75);
+            CbEmExigencia.Name = "CbEmExigencia";
+            CbEmExigencia.Size = new Size(100, 19);
+            CbEmExigencia.TabIndex = 426;
+            CbEmExigencia.Text = "Em exigência?";
+            CbEmExigencia.UseVisualStyleBackColor = true;
             // 
-            // dateTimePicker2
+            // lblDataDeferimento
             // 
-            dateTimePicker2.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-            dateTimePicker2.Format = DateTimePickerFormat.Short;
-            dateTimePicker2.Location = new Point(269, 54);
-            dateTimePicker2.Name = "dateTimePicker2";
-            dateTimePicker2.Size = new Size(135, 23);
-            dateTimePicker2.TabIndex = 422;
+            lblDataDeferimento.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+            lblDataDeferimento.AutoSize = true;
+            lblDataDeferimento.Font = new Font("Segoe UI", 11F);
+            lblDataDeferimento.Location = new Point(423, 17);
+            lblDataDeferimento.Name = "lblDataDeferimento";
+            lblDataDeferimento.Size = new Size(129, 20);
+            lblDataDeferimento.TabIndex = 425;
+            lblDataDeferimento.Text = "Data Deferimento";
             // 
-            // textBox5
+            // DtpDataDeferimentoLPCO
             // 
-            textBox5.Location = new Point(110, 61);
-            textBox5.Name = "textBox5";
-            textBox5.Size = new Size(140, 23);
-            textBox5.TabIndex = 3;
+            DtpDataDeferimentoLPCO.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+            DtpDataDeferimentoLPCO.Format = DateTimePickerFormat.Short;
+            DtpDataDeferimentoLPCO.Location = new Point(420, 41);
+            DtpDataDeferimentoLPCO.Name = "DtpDataDeferimentoLPCO";
+            DtpDataDeferimentoLPCO.Size = new Size(135, 23);
+            DtpDataDeferimentoLPCO.TabIndex = 424;
             // 
-            // label6
+            // lblDataRegistro
             // 
-            label6.AutoSize = true;
-            label6.Location = new Point(16, 64);
-            label6.Name = "label6";
-            label6.Size = new Size(88, 15);
-            label6.TabIndex = 2;
-            label6.Text = "Parametrização";
+            lblDataRegistro.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+            lblDataRegistro.AutoSize = true;
+            lblDataRegistro.Font = new Font("Segoe UI", 11F);
+            lblDataRegistro.Location = new Point(288, 17);
+            lblDataRegistro.Name = "lblDataRegistro";
+            lblDataRegistro.Size = new Size(100, 20);
+            lblDataRegistro.TabIndex = 423;
+            lblDataRegistro.Text = "Data Registro";
             // 
-            // textBox2
+            // DtpDataRegistroLPCO
             // 
-            textBox2.Location = new Point(60, 27);
-            textBox2.Name = "textBox2";
-            textBox2.Size = new Size(190, 23);
-            textBox2.TabIndex = 1;
+            DtpDataRegistroLPCO.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+            DtpDataRegistroLPCO.Format = DateTimePickerFormat.Short;
+            DtpDataRegistroLPCO.Location = new Point(271, 41);
+            DtpDataRegistroLPCO.Name = "DtpDataRegistroLPCO";
+            DtpDataRegistroLPCO.Size = new Size(135, 23);
+            DtpDataRegistroLPCO.TabIndex = 422;
             // 
-            // label2
+            // lblParametrizacao
             // 
-            label2.AutoSize = true;
-            label2.Location = new Point(16, 30);
-            label2.Name = "label2";
-            label2.Size = new Size(37, 15);
-            label2.TabIndex = 0;
-            label2.Text = "LPCO";
+            lblParametrizacao.AutoSize = true;
+            lblParametrizacao.Location = new Point(12, 65);
+            lblParametrizacao.Name = "lblParametrizacao";
+            lblParametrizacao.Size = new Size(88, 15);
+            lblParametrizacao.TabIndex = 2;
+            lblParametrizacao.Text = "Parametrização";
+            // 
+            // TxtLPCO
+            // 
+            TxtLPCO.Location = new Point(56, 28);
+            TxtLPCO.Name = "TxtLPCO";
+            TxtLPCO.Size = new Size(190, 23);
+            TxtLPCO.TabIndex = 1;
+            // 
+            // lblLPCO
+            // 
+            lblLPCO.AutoSize = true;
+            lblLPCO.Location = new Point(12, 31);
+            lblLPCO.Name = "lblLPCO";
+            lblLPCO.Size = new Size(37, 15);
+            lblLPCO.TabIndex = 0;
+            lblLPCO.Text = "LPCO";
             // 
             // tabPage2
             // 
@@ -454,7 +508,7 @@
             // 
             // BtnNovoOrgaoAnuente
             // 
-            BtnNovoOrgaoAnuente.Location = new Point(523, 12);
+            BtnNovoOrgaoAnuente.Location = new Point(445, 8);
             BtnNovoOrgaoAnuente.Name = "BtnNovoOrgaoAnuente";
             BtnNovoOrgaoAnuente.Size = new Size(75, 23);
             BtnNovoOrgaoAnuente.TabIndex = 419;
@@ -465,17 +519,28 @@
             // CBOrgaoAnuente
             // 
             CBOrgaoAnuente.FormattingEnabled = true;
-            CBOrgaoAnuente.Items.AddRange(new object[] { "MAPA", "DECEX", "ANVISA", "IBAMA", "INMETRO" });
-            CBOrgaoAnuente.Location = new Point(396, 12);
+            CBOrgaoAnuente.Items.AddRange(new object[] { "Selecione um Orgão Anuente", "MAPA", "DECEX", "ANVISA", "IBAMA", "INMETRO" });
+            CBOrgaoAnuente.Location = new Point(318, 8);
             CBOrgaoAnuente.Name = "CBOrgaoAnuente";
             CBOrgaoAnuente.Size = new Size(121, 23);
             CBOrgaoAnuente.TabIndex = 420;
+            // 
+            // BtnExcluirLpco
+            // 
+            BtnExcluirLpco.Location = new Point(526, 8);
+            BtnExcluirLpco.Name = "BtnExcluirLpco";
+            BtnExcluirLpco.Size = new Size(75, 23);
+            BtnExcluirLpco.TabIndex = 421;
+            BtnExcluirLpco.Text = "Excluir";
+            BtnExcluirLpco.UseVisualStyleBackColor = true;
+            BtnExcluirLpco.Click += BtnExcluirLpco_Click;
             // 
             // FrmModificaOrgaoAnuente
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(907, 404);
+            Controls.Add(BtnExcluirLpco);
             Controls.Add(CBOrgaoAnuente);
             Controls.Add(BtnNovoOrgaoAnuente);
             Controls.Add(tabControl1);
@@ -533,14 +598,19 @@
         private Button BtnNovoOrgaoAnuente;
         private ComboBox CBOrgaoAnuente;
         private TabPage tabPage1;
-        private TextBox textBox2;
-        private Label label2;
+        private TextBox TxtLPCO;
+        private Label lblLPCO;
         private TabPage tabPage2;
-        private Label label13;
-        private DateTimePicker dateTimePicker3;
-        private Label label12;
-        private DateTimePicker dateTimePicker2;
-        private TextBox textBox5;
-        private Label label6;
+        private Label lblDataDeferimento;
+        private DateTimePicker DtpDataDeferimentoLPCO;
+        private Label lblDataRegistro;
+        private DateTimePicker DtpDataRegistroLPCO;
+        private Label lblParametrizacao;
+        private Button BtnExcluirLpco;
+        private ComboBox CbMotivoExigencia;
+        private CheckBox CbEmExigencia;
+        private ComboBox CbParametrizacao;
+        private Label label1;
+        private ComboBox CbStatusLI;
     }
 }

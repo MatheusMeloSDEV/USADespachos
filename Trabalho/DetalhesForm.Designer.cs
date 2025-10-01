@@ -1,6 +1,6 @@
 ﻿namespace Trabalho
 {
-    partial class DetalhesFaturaForm
+    partial class DetalhesForm
     {
         /// <summary>
         /// Required designer variable.
@@ -63,7 +63,7 @@
             btnEditar.UseVisualStyleBackColor = true;
             btnEditar.Click += btnEditar_Click;
             // 
-            // DetalhesFaturaForm
+            // DetalhesForm
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
@@ -74,9 +74,10 @@
             FormBorderStyle = FormBorderStyle.FixedDialog;
             MaximizeBox = false;
             MinimizeBox = false;
-            Name = "DetalhesFaturaForm";
+            Name = "DetalhesForm";
             StartPosition = FormStartPosition.CenterParent;
             Text = "Detalhes da Fatura";
+            Load += this.DetalhesForm_Load;
             ResumeLayout(false);
             PerformLayout();
         }

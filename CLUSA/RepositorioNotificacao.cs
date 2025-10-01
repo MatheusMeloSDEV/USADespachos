@@ -13,6 +13,18 @@ namespace CLUSA
         {
             _colecao = database.GetCollection<Notificacao>("Notificacao");
         }
+        public async Task<List<Notificacao>> GetAllAsync()
+        {
+            return await _colecao.Find(FilterDefinition<Notificacao>.Empty).ToListAsync();
+        }
+        public async Task InsertManyAsync(List<Notificacao> notificacoes)
+        {
+            if (notificacoes == null || !notificacoes.Any())
+            {
+                return;
+            }
+            await _colecao.InsertManyAsync(notificacoes);
+        }
         public async Task<bool> ExisteNotificacaoAsync(string refUsa, string mensagem)
         {
             var filtro = Builders<Notificacao>.Filter.And(

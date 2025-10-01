@@ -4,7 +4,8 @@ namespace CLUSA
     {
         public string Master { get; set; } = string.Empty; 
         public string Container { get; set; } = string.Empty;
-        public string Sigvig { get; set; } = string.Empty;
+        public bool SigvigSelecionado { get; set; }
+        public bool SigvigLiberado { get; set; }
         public DateTime? SigvigData { get; set; }
         public string Incoterm { get; set; } = string.Empty;
         public string[] Numerario { get; set; } = Array.Empty<string>();

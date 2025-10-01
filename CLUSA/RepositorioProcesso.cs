@@ -125,11 +125,12 @@ namespace CLUSA
                 DataChegada = processo.DataDeAtracacao,
                 HistoricoDoProcesso = processo.HistoricoDoProcesso,
                 Pendencia = processo.Pendencia,
-                // Dados vindos da própria LI
+                
                 Numero = li.Numero,
                 NCM = li.NCM,
                 DataRegistro = li.DataRegistro,
                 LPCO = li.LPCO,
+                StatusLI = li.StatusLI,
             };
         }
 

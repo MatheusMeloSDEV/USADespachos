@@ -16,434 +16,360 @@ namespace Trabalho
 {
     public partial class FrmPrincipal : Form
     {
-        private readonly string _connectionString = "mongodb+srv://dev:dev@testeusa.kt5go1v.mongodb.net/";
-        private readonly string _databaseName = "Trabalho";
-        private readonly IMongoCollection<BsonDocument> _processoCollection;
+        private readonly RepositorioProcesso _repositorioProcesso;
         private readonly RepositorioNotificacao _notificacaoRepo;
-        private Logado _logadoUsuario;
-        // Mantém instâncias únicas dos formulários filhos
+
+        private readonly Logado _logadoUsuario;
         private readonly Dictionary<Type, Form> _forms = new();
         private bool _logoutPeloMenu = false;
+        
+        private readonly HashSet<TabPage> _abasJaCarregadas = new HashSet<TabPage>();
 
         public FrmPrincipal(Logado logadoUsuario)
         {
             InitializeComponent();
-
             _logadoUsuario = logadoUsuario ?? throw new ArgumentNullException(nameof(logadoUsuario));
 
-            this.Shown += FrmPrincipal_Shown;
-            // Inicializa e dispara o timer para habilitar o Exit após 3s
-            timerReleaseExit = new System.Windows.Forms.Timer { Interval = 3000 };
-            timerReleaseExit.Tick += TimerReleaseExit_Tick;
-            MenuItemExit.Enabled = false;
-            timerReleaseExit.Start();
+            // Inicializa os repositórios
+            _repositorioProcesso = new RepositorioProcesso();
 
-
-            if (!_logadoUsuario.admin)
-            {
-                MenuItemAdmin.Visible = false;
-            }
-
-            // Inicializa acesso ao MongoDB
-            var client = new MongoClient(_connectionString);
-            var database = client.GetDatabase(_databaseName);
-            _processoCollection = database.GetCollection<BsonDocument>("PROCESSO");
+            // O RepositorioProcesso já cria o RepositorioNotificacao, podemos pegá-lo de lá
+            // ou criar uma instância separada se preferir.
+            var client = new MongoClient(ConfigDatabase.MongoConnectionString);
+            var database = client.GetDatabase(ConfigDatabase.MongoDatabaseName);
             _notificacaoRepo = new RepositorioNotificacao(database);
 
-            // Se estiver usando tema escuro:
-            if (FrmLogin.Instance.Escuro)
-                AplicarModoEscuro();
+            // Assinatura dos eventos
+            this.Shown += FrmPrincipal_Shown;
+            TCabas.SelectedIndexChanged += TCabas_SelectedIndexChanged; // <-- Evento para carregar abas sob demanda
         }
+
+
+        #region "Eventos Principais do Formulário"
+
         private async void FrmPrincipal_Shown(object? sender, EventArgs e)
         {
-            // Aqui o form já apareceu na tela, podemos carregar sem bloquear a pintura
+            // O formulário já está visível, agora carregamos os dados sem travar.
             await CarregarDadosProcessos();
-            TCabas.Visible = true;  // se você ainda quiser mostrar as abas só após o load
+            TCabas.Visible = true;
         }
+
         private void FrmPrincipal_Load(object sender, EventArgs e)
         {
             this.Icon = Icon.ExtractAssociatedIcon(Application.ExecutablePath);
-            // não chame aqui o CarregarDadosProcessos
-            TCabas.Visible = false;   // se quiser só mostrar após o CarregarDados
-        }
-
-        private void TimerReleaseExit_Tick(object sender, EventArgs e)
-        {
-            timerReleaseExit.Stop();
-            MenuItemExit.Enabled = true;
-        }
-
-        private void AplicarModoEscuro()
-        {
-            MenuItemNotifications.BackColor = SystemColors.ControlDark;
-            // configure outros componentes se necessário...
-        }
-
-        private async Task CarregarDadosProcessos()
-        {
-            Cursor = Cursors.WaitCursor;
-            try
-            {
-                var processos = await _processoCollection
-                    .Find(FilterDefinition<BsonDocument>.Empty)
-                    .ToListAsync();
-
-                MontarTabsProcessos(processos);
-                GerarNotificacoes(processos);
-                AtualizarNotificacoes();
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Erro ao carregar processos: {ex.Message}", "Erro",
-                                MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-            finally
-            {
-                Cursor = Cursors.Default;
-            }
-        }
-        private void MontarTabsProcessos(List<BsonDocument> processos)
-        {
-            MontarTabDataDeAtracacao(processos);
-            MontarTabOrgaoAnuentes(processos);
-            MontarTabFinalizados(processos);
-        }
-        private TabPage GetOrCreateTab(string name, string title)
-        {
-            var tabPage = TCabas.TabPages[name];
-            if (tabPage == null)
-            {
-                tabPage = new TabPage(title) { Name = name };
-                TCabas.TabPages.Add(tabPage);
-            }
-            return tabPage;
-        }
-
-        private TableLayoutPanel CriarTabela()
-        {
-            return new TableLayoutPanel
-            {
-                Dock = DockStyle.Fill,
-                AutoSize = true,
-                ColumnCount = 1
-            };
-        }
-
-        private Label CriarLabel(string texto)
-        {
-            return new Label
-            {
-                AutoSize = true,
-                Font = new Font("Segoe UI", 10F),
-                Margin = new Padding(5),
-                Text = texto
-            };
-        }
-        private bool EhFinalizado(BsonDocument p)
-        {
-            return p.Contains("DataCarregamentoDI") && p["DataCarregamentoDI"] != BsonNull.Value && !string.IsNullOrEmpty(p["DataCarregamentoDI"].ToString());
-        }
-        private void MontarTabDataDeAtracacao(List<BsonDocument> processos)
-        {
-            var tabPage = GetOrCreateTab("DataDeAtracacao", "Data de Atracação");
-            tabPage.Controls.Clear();
-
-            var table = CriarTabela();
-
-            foreach (var p in processos)
-            {
-                if (EhFinalizado(p)) continue; // pula se for finalizado
-
-                var refUsa = p.GetValue("Ref_USA", BsonNull.Value).ToString();
-                var sr = p.GetValue("SR", BsonNull.Value).ToString();
-
-                DateTime dt;
-                var bval = p.GetValue("DataDeAtracacao", BsonNull.Value);
-                if (bval.IsValidDateTime)
-                    dt = bval.ToUniversalTime().ToLocalTime();
-                else if (!DateTime.TryParse(bval.ToString(), out dt))
-                    dt = DateTime.MinValue;
-
-                var dataFmt = dt != DateTime.MinValue ? dt.ToString("dd/MM/yyyy") : "N/A";
-                var dias = dt != DateTime.MinValue ? (dt.Date - DateTime.Today).Days : 0;
-                var restantes = dt != DateTime.MinValue ? $"{dias} dia(s)" : "";
-
-                table.Controls.Add(CriarLabel($"{refUsa} — {sr} — {dataFmt} — {restantes}"));
-            }
-
-            tabPage.Controls.Add(table);
-        }
-        private void MontarTabOrgaoAnuentes(List<BsonDocument> processos)
-        {
-            var tabPage = GetOrCreateTab("OrgaoAnuentes", "Órgãos Anuentes");
-            tabPage.Controls.Clear();
-
-            var table = CriarTabela();
-
-            foreach (var p in processos)
-            {
-                if (EhFinalizado(p)) continue;
-
-                var refUsa = p.GetValue("Ref_USA", BsonNull.Value).ToString();
-                var importador = p.GetValue("Importador", BsonNull.Value).ToString();
-
-                var orgaos = new Dictionary<string, string>
-                {
-                    { "TMapa", "MAPA" },
-                    { "TDecex", "DECEX" },
-                    { "TAnvisa", "ANVISA" },
-                    { "TIbama", "IBAMA" },
-                    { "TInmetro", "INMETRO" }
-                };
-
-                foreach (var kvp in orgaos)
-                {
-                    if (p.TryGetValue(kvp.Key, out var valor) && valor.IsBoolean && valor.AsBoolean)
-                    {
-                        table.Controls.Add(CriarLabel($"{refUsa} — {importador} — {kvp.Value}"));
-                    }
-                }
-            }
-
-            tabPage.Controls.Add(table);
-        }
-
-
-        private void MontarTabFinalizados(List<BsonDocument> processos)
-        {
-            var tabPage = GetOrCreateTab("Finalizados", "Finalizados");
-            tabPage.Controls.Clear();
-
-            var table = CriarTabela();
-
-            foreach (var p in processos)
-            {
-                if (!EhFinalizado(p)) continue;
-
-                var refUsa = p.GetValue("Ref_USA", BsonNull.Value).ToString();
-
-                string dataFormatada = "N/A";
-                if (p.TryGetValue("DataCarregamentoDI", out var dataVal))
-                {
-                    if (dataVal.IsValidDateTime)
-                    {
-                        var dt = dataVal.ToUniversalTime().ToLocalTime();
-                        dataFormatada = dt.ToString("dd/MM/yyyy");
-                    }
-                    else if (DateTime.TryParse(dataVal.ToString(), out var dtParsed))
-                    {
-                        dataFormatada = dtParsed.ToString("dd/MM/yyyy");
-                    }
-                }
-
-                table.Controls.Add(CriarLabel($"{refUsa} — Finalizado em: {dataFormatada}"));
-            }
-
-            tabPage.Controls.Add(table);
-        }
-
-
-        public async Task GerarNotificacoes(List<BsonDocument> processos)
-        {
-            var novas = new List<Notificacao>();
-
-            foreach (var p in processos)
-            {
-                // ... (lógica inicial sem alteração) ...
-                string refUsa = p.GetValue("Ref_USA", BsonNull.Value)?.ToString() ?? "";
-                if (!DateTime.TryParse(p.GetValue("DataDeAtracacao", BsonNull.Value)?.ToString(), out var dataAtracacao))
-                    continue;
-
-                int dias = (dataAtracacao - DateTime.Today).Days;
-
-                if (dias is >= 0 and <= 15)
-                    // MUDANÇA: Adicionado 'await' para a chamada assíncrona
-                    await TentarAdicionarNotificacao(novas, refUsa, $"Processo {refUsa}: Dar entrada no Mapa/Anvisa");
-
-                if (dias is >= 0 and <= 5)
-                    // MUDANÇA: Adicionado 'await' para a chamada assíncrona
-                    await TentarAdicionarNotificacao(novas, refUsa, $"Processo {refUsa}: Redestinar container ao terminal");
-
-                // ...
-                VerificarVencimento(p, "VencimentoFreeTime", "Free Time", refUsa, novas);
-                VerificarVencimento(p, "VencimentoFMA", "FMA", refUsa, novas);
-                VerificarVencimento(p, "VencimentoLI_LPCO", "LI/LPCO", refUsa, novas);
-            }
-
-            foreach (var n in novas)
-            {
-                // MUDANÇA: Usando 'await' e o novo nome 'SalvarNotificacaoAsync'
-                await _notificacaoRepo.SalvarNotificacaoAsync(n);
-            }
-        }
-
-        private void VerificarVencimento(BsonDocument doc, string campo, string nomeExibicao, string refUsa, List<Notificacao> lista)
-        {
-            if (!doc.Contains(campo) || !DateTime.TryParse(doc[campo]?.ToString(), out var vencimento))
-                return;
-
-            int dias = (vencimento - DateTime.Today).Days;
-            if (dias is >= 0 and <= 5)
-            {
-                string msg = $"Processo {refUsa}: {nomeExibicao} vence em {dias} dia(s)";
-                // MUDANÇA: A chamada aqui é para um método local que agora é async, mas como não precisamos
-                // esperar o resultado aqui, podemos simplesmente chamar e deixar rodar.
-                // Se a ordem de adição for crítica, este método também precisaria se tornar async.
-                // Para este caso, está OK.
-                TentarAdicionarNotificacao(lista, refUsa, msg);
-            }
-        }
-
-        private async Task TentarAdicionarNotificacao(List<Notificacao> lista, string refUsa, string mensagem)
-        {
-            // MUDANÇA: Usando 'await' e o novo nome 'ExisteNotificacaoAsync'
-            if (!await _notificacaoRepo.ExisteNotificacaoAsync(refUsa, mensagem))
-            {
-                lista.Add(new Notificacao
-                {
-                    RefUsa = refUsa,
-                    Mensagem = mensagem,
-                    DataCriacao = DateTime.Now,
-                    Visualizado = false
-                });
-            }
-        }
-        private async void AtualizarNotificacoes()
-        {
-            MenuItemNotifications.DropDownItems.Clear();
-
-            var pendentes = await _notificacaoRepo.ObterNotificacoesNaoVisualizadasAsync();
-
-            // Atualiza o texto do menu com a contagem
-            int qtd = pendentes.Count;
-            MenuItemNotifications.Text = qtd > 0
-                ? $"Notificações ({qtd})"
-                : "Notificações";
-
-            if (!pendentes.Any())
-            {
-                MenuItemNotifications.DropDownItems.Add(new ToolStripMenuItem
-                {
-                    Text = "Sem notificações",
-                    Enabled = false
-                });
-                return;
-            }
-
-            foreach (var notif in pendentes)
-            {
-                var item = new ToolStripMenuItem
-                {
-                    Text = notif.Mensagem ?? "",
-                    Tag = notif.RefUsa
-                };
-                item.MouseDown += async (sender, e) =>
-                {
-                    if (e.Button == MouseButtons.Right &&
-                        sender is ToolStripMenuItem mnu &&
-                        mnu.Tag is string refUsa &&
-                        !string.IsNullOrEmpty(refUsa))
-                    {
-                        var resp = MessageBox.Show(
-                            $"Deseja finalizar a notificação {refUsa}?",
-                            "Confirmação",
-                            MessageBoxButtons.YesNo,
-                            MessageBoxIcon.Question);
-
-                        if (resp == DialogResult.Yes)
-                        {
-                            await _notificacaoRepo.MarcarComoVisualizadoAsync(refUsa, mnu.Text);
-                            AtualizarNotificacoes();
-                            MessageBox.Show("Notificação finalizada.", "Sucesso",
-                                            MessageBoxButtons.OK, MessageBoxIcon.Information);
-                        }
-                    }
-                };
-                MenuItemNotifications.DropDownItems.Add(item);
-            }
+            TCabas.Visible = false; // Esconde as abas até os dados serem carregados
         }
 
         private void FrmPrincipal_FormClosing(object sender, FormClosingEventArgs e)
         {
             if (!_logoutPeloMenu && e.CloseReason == CloseReason.UserClosing)
             {
-                // Usuário clicou no X: fecha tudo mesmo
-                Application.Exit(); // encerra a aplicação inteira
-            }
-            else if (_logoutPeloMenu)
-            {
-                // Logout via menu: deixa fechar normalmente e volta para o login
-                this.DialogResult = DialogResult.OK;
+                Application.Exit();
             }
         }
+        #endregion
 
-        private void MenuItemExit_Click(object sender, EventArgs e)
+        #region "Carregamento de Dados e Abas (Lógica Otimizada)"
+
+        private async Task CarregarDadosProcessos()
         {
-            _logoutPeloMenu = true; // sinaliza que é logout via menu
-            new FrmLogin().Show();
-            this.Close();
-        }
-        // exemplos de handlers de menu
-        private void MenuItemHome_Click(object sender, EventArgs e)
-        {
-            TCabas.Visible = true;
-            foreach (var f in MdiChildren) f.Close();
-            _ = CarregarDadosProcessos();
-        }
-        private T ShowSingleFormOfType<T>() where T : Form, new()
-        {
-            TCabas.Visible = false;
-
-            foreach (var kvp in _forms.ToList())
-            {
-                if (kvp.Key != typeof(T))
-                {
-                    kvp.Value.Close();
-                    _forms.Remove(kvp.Key);
-                }
-            }
-
-            if (_forms.TryGetValue(typeof(T), out var form) && form != null && !form.IsDisposed)
-            {
-                form.WindowState = FormWindowState.Maximized;
-                if (!form.Visible)
-                    form.Show();
-                form.BringToFront();
-                return (T)form;
-            }
-
-
+            Cursor = Cursors.WaitCursor;
             try
             {
-                Debug.WriteLine($"Tentando criar o formulário {typeof(T).Name}...");
-                var novo = new T();
-                Debug.WriteLine($"Formulário {typeof(T).Name} criado com sucesso.");
-                novo.MdiParent = this;
-                novo.Show();
-                _forms[typeof(T)] = novo;
-                return novo;
+                // 1. Busca os dados do banco (rápido e assíncrono)
+                var processos = await _repositorioProcesso.ListarTodosAsync();
+
+                // 2. Monta as abas VAZIAS (operação instantânea)
+                MontarTabsProcessos(processos);
+
+                // 3. Processa as notificações em segundo plano
+                await GerarNotificacoes(processos);
+
+                // 4. Atualiza o menu de notificações
+                await AtualizarNotificacoes();
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Erro ao abrir o formulário {typeof(T).Name}:\n{ex}", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return null;
+                MessageBox.Show($"Erro ao carregar processos: {ex.Message}", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
-
+            finally
+            {
+                Cursor = Cursors.Default;
+            }
         }
 
-        private void MenuItemMaximize_Click(object sender, EventArgs e)
-            => this.WindowState = FormWindowState.Maximized;
-        private void MenuItemMinimize_Click(Object sender, EventArgs e)
-            => this.WindowState = FormWindowState.Minimized;
-        private void MenuItemAdmin_Click(object sender, EventArgs e)
-            => ShowSingleFormOfType<FrmAdmin>();
-        private void MenuItemFinanceiro_Click(object sender, EventArgs e)
-            => ShowSingleFormOfType<FrmFinanceiro>();
-        private void MenuItemProcessoSantos_Click(object sender, EventArgs e)
-        => ShowSingleFormOfType<frmSantos>();
-        private void MenuItemProcessosItajai_Click(object sender, EventArgs e)
-         => ShowSingleFormOfType<FrmItajaí>();
-        private void MenuItemOrgaoAnuente_Click(object sender, EventArgs e)
-         => ShowSingleFormOfType<FrmOrgaoAnuente>();
+        /// <summary>
+        /// Cria as abas rapidamente, sem preencher o conteúdo.
+        /// </summary>
+        private void MontarTabsProcessos(List<Processo> processos)
+        {
+            TCabas.SuspendLayout();
+            TCabas.TabPages.Clear();
+            _abasJaCarregadas.Clear();
+
+            // Adiciona as 3 abas principais
+            TCabas.TabPages.Add(new TabPage("Data de Atracação") { Name = "DataDeAtracacao", Tag = processos });
+            TCabas.TabPages.Add(new TabPage("Órgãos Anuentes") { Name = "OrgaoAnuentes", Tag = processos });
+            TCabas.TabPages.Add(new TabPage("Finalizados") { Name = "Finalizados", Tag = processos });
+
+            TCabas.ResumeLayout();
+
+            // Força o carregamento da primeira aba visível
+            if (TCabas.TabPages.Count > 0)
+            {
+                TCabas_SelectedIndexChanged(TCabas, EventArgs.Empty);
+            }
+        }
+
+        /// <summary>
+        /// Evento disparado QUANDO o usuário clica em uma aba.
+        /// </summary>
+        private void TCabas_SelectedIndexChanged(object? sender, EventArgs e)
+        {
+            if (TCabas.SelectedTab == null) return;
+            var abaSelecionada = TCabas.SelectedTab;
+
+            // Se o conteúdo desta aba já foi criado, não faz nada.
+            if (_abasJaCarregadas.Contains(abaSelecionada)) return;
+
+            // Se for a primeira vez, cria o conteúdo.
+            if (abaSelecionada.Tag is List<Processo> processos)
+            {
+                PopularAbaComControles(abaSelecionada, processos);
+                _abasJaCarregadas.Add(abaSelecionada);
+            }
+        }
+
+        /// <summary>
+        /// O "trabalho pesado": cria os controles para UMA aba específica.
+        /// </summary>
+        private void PopularAbaComControles(TabPage aba, List<Processo> processos)
+        {
+            Cursor = Cursors.WaitCursor;
+            aba.SuspendLayout();
+
+            var table = CriarTabela();
+            aba.Controls.Add(table);
+
+            // Filtra a lista de processos com base na aba clicada
+            List<string> textosParaLabels = new List<string>();
+            switch (aba.Name)
+            {
+                case "DataDeAtracacao":
+                    textosParaLabels = processos.Where(p => p.Status != "Finalizado")
+                        .Select(p => $"{p.Ref_USA} — {p.SR} — {(p.DataDeAtracacao.HasValue ? p.DataDeAtracacao.Value.ToString("dd/MM/yyyy") : "N/A")}").ToList();
+                    break;
+
+                case "OrgaoAnuentes":
+                    textosParaLabels = processos.Where(p => p.Status != "Finalizado")
+                       .Select(p => $"{p.Ref_USA} — {p.Importador} — {p.OrgaosAnuentesString}").ToList();
+                    break;
+
+                case "Finalizados":
+                    textosParaLabels = processos.Where(p => p.Status == "Finalizado")
+                        .Select(p => $"{p.Ref_USA} — Finalizado em: {(p.DataCarregamentoDI.HasValue ? p.DataCarregamentoDI.Value.ToString("dd/MM/yyyy") : "N/A")}").ToList();
+                    break;
+            }
+
+            table.Controls.AddRange(textosParaLabels.Select(CriarLabel).ToArray());
+
+            aba.ResumeLayout();
+            Cursor = Cursors.Default;
+        }
+
+        #endregion
+
+        #region "Lógica de Notificações (Otimizada)"
+
+        public async Task GerarNotificacoes(List<Processo> processos)
+        {
+            var notificacoesExistentes = await _notificacaoRepo.GetAllAsync();
+            var lookupExistentes = notificacoesExistentes.Select(n => $"{n.RefUsa}|{n.Mensagem}").ToHashSet();
+            var novasNotificacoes = new List<Notificacao>();
+
+            foreach (var p in processos)
+            {
+                if (p.DataDeAtracacao.HasValue)
+                {
+                    int dias = (p.DataDeAtracacao.Value - DateTime.Today).Days;
+                    if (dias is >= 0 and <= 15)
+                        TentarAdicionarNotificacao(novasNotificacoes, lookupExistentes, p.Ref_USA, $"Processo {p.Ref_USA}: Dar entrada no Mapa/Anvisa");
+                    if (dias is >= 0 and <= 5)
+                        TentarAdicionarNotificacao(novasNotificacoes, lookupExistentes, p.Ref_USA, $"Processo {p.Ref_USA}: Redestinar container ao terminal");
+                }
+                VerificarVencimento(p, p.VencimentoFreeTime, "Free Time", novasNotificacoes, lookupExistentes);
+                VerificarVencimento(p, p.VencimentoFMA, "FMA", novasNotificacoes, lookupExistentes);
+                VerificarVencimento(p, p.VencimentoLI_LPCO, "LI/LPCO", novasNotificacoes, lookupExistentes);
+            }
+
+            if (novasNotificacoes.Any())
+            {
+                await _notificacaoRepo.InsertManyAsync(novasNotificacoes); // Supondo que você tenha um InsertMany
+            }
+        }
+
+        private void VerificarVencimento(Processo doc, DateTime? vencimento, string nomeExibicao, List<Notificacao> lista, HashSet<string> lookup)
+        {
+            if (!vencimento.HasValue) return;
+            int dias = (vencimento.Value - DateTime.Today).Days;
+            if (dias is >= 0 and <= 5)
+            {
+                string msg = $"Processo {doc.Ref_USA}: {nomeExibicao} vence em {dias} dia(s)";
+                TentarAdicionarNotificacao(lista, lookup, doc.Ref_USA, msg);
+            }
+        }
+
+        private void TentarAdicionarNotificacao(List<Notificacao> listaNovas, HashSet<string> lookup, string refUsa, string mensagem)
+        {
+            var chave = $"{refUsa}|{mensagem}";
+            if (!lookup.Contains(chave))
+            {
+                listaNovas.Add(new Notificacao { RefUsa = refUsa, Mensagem = mensagem, DataCriacao = DateTime.Now, Visualizado = false });
+                lookup.Add(chave);
+            }
+        }
+
+
+        /// <summary>
+        /// Busca as notificações não visualizadas no banco e atualiza o menu de notificações na tela.
+        /// </summary>
+        private async Task AtualizarNotificacoes() // <-- MUDANÇA AQUI: de 'void' para 'Task'
+        {
+            // Limpa os itens antigos do menu dropdown.
+            MenuItemNotifications.DropDownItems.Clear();
+
+            // Busca a lista de notificações pendentes no banco de dados.
+            var pendentes = await _notificacaoRepo.ObterNotificacoesNaoVisualizadasAsync();
+
+            int quantidade = pendentes.Count;
+
+            // Atualiza o texto do menu principal com a contagem de notificações.
+            MenuItemNotifications.Text = quantidade > 0
+                ? $"Notificações ({quantidade})"
+                : "Notificações";
+
+            // Se não houver notificações, adiciona um item "Sem notificações" e encerra.
+            if (quantidade == 0)
+            {
+                MenuItemNotifications.DropDownItems.Add(new ToolStripMenuItem
+                {
+                    Text = "Nenhuma notificação nova",
+                    Enabled = false
+                });
+                return;
+            }
+
+            // Se houver notificações, cria um item de menu para cada uma.
+            foreach (var notif in pendentes)
+            {
+                var itemMenu = new ToolStripMenuItem
+                {
+                    Text = notif.Mensagem ?? "[Mensagem vazia]",
+                    Tag = notif.RefUsa
+                };
+
+                // Adiciona um evento de clique de mouse para cada item criado.
+                itemMenu.MouseDown += async (sender, e) =>
+                {
+                    if (e.Button == MouseButtons.Right && sender is ToolStripMenuItem menuItem && menuItem.Tag is string refUsa)
+                    {
+                        var resposta = MessageBox.Show(
+                            $"Deseja marcar esta notificação como lida?\n\n'{menuItem.Text}'",
+                            "Finalizar Notificação",
+                            MessageBoxButtons.YesNo,
+                            MessageBoxIcon.Question);
+
+                        if (resposta == DialogResult.Yes)
+                        {
+                            try
+                            {
+                                await _notificacaoRepo.MarcarComoVisualizadoAsync(refUsa, menuItem.Text);
+                                // Chama a versão 'void' para não dar erro de await dentro do evento
+                                AtualizarNotificacoesVoid();
+                            }
+                            catch (Exception ex)
+                            {
+                                MessageBox.Show($"Erro ao finalizar notificação: {ex.Message}", "Erro");
+                            }
+                        }
+                    }
+                };
+
+                MenuItemNotifications.DropDownItems.Add(itemMenu);
+            }
+        }
+
+        // Crie este método wrapper 'void' para ser chamado de dentro do evento de clique.
+        private async void AtualizarNotificacoesVoid()
+        {
+            await AtualizarNotificacoes();
+        }
+
+        #endregion
+
+        #region "Métodos Auxiliares de UI"
+
+        private TableLayoutPanel CriarTabela() => new TableLayoutPanel { Dock = DockStyle.Fill, AutoSize = true, ColumnCount = 1, AutoScroll = true };
+        private Label CriarLabel(string texto) => new Label { AutoSize = true, Font = new Font("Segoe UI", 10F), Margin = new Padding(5), Text = texto };
+        #endregion
+
+        #region "Gerenciamento de Janelas MDI e Eventos de Menu"
+
+        private void MenuItemHome_Click(object? sender, EventArgs e)
+        {
+            foreach (var f in MdiChildren) f.Close();
+            _forms.Clear();
+            TCabas.Visible = true;
+            _ = CarregarDadosProcessos(); // Dispara a atualização sem esperar
+        }
+
+        private T? ShowSingleFormOfType<T>() where T : Form, new()
+        {
+            TCabas.Visible = false;
+            if (_forms.TryGetValue(typeof(T), out var form) && !form.IsDisposed)
+            {
+                form.WindowState = FormWindowState.Normal;
+                form.Activate();
+                return (T)form;
+            }
+
+            foreach (var f in MdiChildren) f.Close();
+            _forms.Clear();
+
+            try
+            {
+                var novoForm = new T
+                {
+                    MdiParent = this,
+                    WindowState = FormWindowState.Maximized
+                };
+                novoForm.FormClosed += (s, args) => _forms.Remove(typeof(T));
+                novoForm.Show();
+                _forms[typeof(T)] = novoForm;
+                return novoForm;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Erro ao abrir o formulário {typeof(T).Name}:\n{ex.Message}", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return null;
+            }
+        }
+
+        private void MenuItemExit_Click(object? sender, EventArgs e)
+        {
+            _logoutPeloMenu = true;
+            this.Close();
+            FrmLogin.Instance?.Show();
+        }
+
+        private void MenuItemProcessoSantos_Click(object? sender, EventArgs e) => ShowSingleFormOfType<frmSantos>();
+        private void MenuItemProcessosItajai_Click(object? sender, EventArgs e) => ShowSingleFormOfType<FrmItajaí>();
+        private void MenuItemOrgaoAnuente_Click(object? sender, EventArgs e) => ShowSingleFormOfType<FrmOrgaoAnuente>();
+        private void MenuItemFinanceiro_Click(object? sender, EventArgs e) => ShowSingleFormOfType<FrmFinanceiro>();
+        private void MenuItemAdmin_Click(object? sender, EventArgs e) => ShowSingleFormOfType<FrmAdmin>();
+        private void MenuItemMaximize_Click(object? sender, EventArgs e) => this.WindowState = FormWindowState.Maximized;
+        private void MenuItemMinimize_Click(object? sender, EventArgs e) => this.WindowState = FormWindowState.Minimized;
+
+        #endregion
     }
 }

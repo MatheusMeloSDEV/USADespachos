@@ -61,25 +61,17 @@ namespace CLUSA
 
         public string DI { get; set; } = string.Empty;
         public DateTime? DataRegistroDI { get; set; } = (DateTime?)null;
-        public bool CheckDataRegistroDI { get; set; } = false;
         public DateTime? DataDesembaracoDI { get; set; } = (DateTime?)null;
-        public bool CheckDataDesembaracoDI { get; set; } = false;
         public DateTime? DataCarregamentoDI { get; set; } = (DateTime?)null;
-        public bool CheckDataCarregamentoDI { get; set; } = false;
         public DateTime? DataMinutaDI { get; set; } = (DateTime?)null;
-        public bool CheckDataMinutaDI { get; set; } = false;
         public string ParametrizacaoDI { get; set; } = string.Empty;
 
 
         public DateTime? DataDeAtracacao { get; set; } = (DateTime?)null;
-        public bool CheckDataDeAtracacao { get; set; } = false;
         public DateTime? Inspecao { get; set; } = (DateTime?)null;
-        public bool CheckInspecao { get; set; } = false;
         public DateTime? DataEmbarque { get; set; } = (DateTime?)null;
-        public bool CheckDataEmbarque { get; set; } = false;
 
         public DateTime? DataRecebOriginais { get; set; } = (DateTime?)null;
-        public bool CheckDataRecebOriginais { get; set; } = false;
         public string FormaRecOriginais { get; set; } = string.Empty; // Seletor Vários - DHL, UPS, Correio, Fedex, Daytona, 
         public string[] DocRecebidos { get; set; } = Array.Empty<string>(); // Seletor Varios -  BL, Fatura, Packing List, CO, Fito, CSI, CA, CF (String Concat)
 

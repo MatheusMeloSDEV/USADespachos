@@ -22,6 +22,8 @@ namespace CLUSA
         public string Produto { get; set; } = string.Empty;
         public DateTime? Inspecao { get; set; }
         public DateTime? DataChegada { get; set; }
+        public string StatusLI { get; set; } = string.Empty;
+        public string MotivoExigencia { get; set; } = string.Empty;
         public string Pendencia { get; set; } = string.Empty;
         public string HistoricoDoProcesso { get; set; } = string.Empty;
     }

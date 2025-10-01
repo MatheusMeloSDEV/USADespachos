@@ -34,14 +34,17 @@
             DataGridViewCellStyle dataGridViewCellStyle3 = new DataGridViewCellStyle();
             TsMenu = new ToolStrip();
             BtnEditar = new ToolStripButton();
+            BtnAjuda = new ToolStripButton();
             BtnCancelar = new ToolStripButton();
             BtnPesquisar = new ToolStripButton();
             toolStripSeparator2 = new ToolStripSeparator();
             CbPesquisa = new ToolStripComboBox();
             TxtPesquisa = new ToolStripTextBox();
             DgvOrgaoAnuente = new DataGridView();
+            panel1 = new Panel();
             TsMenu.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)DgvOrgaoAnuente).BeginInit();
+            panel1.SuspendLayout();
             SuspendLayout();
             // 
             // TsMenu
@@ -49,7 +52,7 @@
             TsMenu.AutoSize = false;
             TsMenu.BackColor = Color.WhiteSmoke;
             TsMenu.GripStyle = ToolStripGripStyle.Hidden;
-            TsMenu.Items.AddRange(new ToolStripItem[] { BtnEditar, BtnCancelar, BtnPesquisar, toolStripSeparator2, CbPesquisa, TxtPesquisa });
+            TsMenu.Items.AddRange(new ToolStripItem[] { BtnEditar, BtnAjuda, BtnCancelar, BtnPesquisar, toolStripSeparator2, CbPesquisa, TxtPesquisa });
             TsMenu.Location = new Point(0, 0);
             TsMenu.Name = "TsMenu";
             TsMenu.Padding = new Padding(5);
@@ -69,13 +72,26 @@
             BtnEditar.Text = "Editar";
             BtnEditar.Click += BtnEditar_Click;
             // 
+            // BtnAjuda
+            // 
+            BtnAjuda.Alignment = ToolStripItemAlignment.Right;
+            BtnAjuda.DisplayStyle = ToolStripItemDisplayStyle.Text;
+            BtnAjuda.Font = new Font("Segoe UI", 13F, FontStyle.Bold);
+            BtnAjuda.Image = (Image)resources.GetObject("BtnAjuda.Image");
+            BtnAjuda.ImageTransparentColor = Color.Magenta;
+            BtnAjuda.Margin = new Padding(0, 1, 7, 2);
+            BtnAjuda.Name = "BtnAjuda";
+            BtnAjuda.Size = new Size(24, 27);
+            BtnAjuda.Text = "?";
+            BtnAjuda.Click += BtnAjuda_Click;
+            // 
             // BtnCancelar
             // 
             BtnCancelar.Alignment = ToolStripItemAlignment.Right;
             BtnCancelar.DisplayStyle = ToolStripItemDisplayStyle.Image;
             BtnCancelar.Image = (Image)resources.GetObject("BtnCancelar.Image");
             BtnCancelar.ImageTransparentColor = Color.Magenta;
-            BtnCancelar.Margin = new Padding(0, 0, 7, 0);
+            BtnCancelar.Margin = new Padding(0);
             BtnCancelar.Name = "BtnCancelar";
             BtnCancelar.Size = new Size(23, 30);
             BtnCancelar.Text = "Cancelar";
@@ -124,7 +140,6 @@
             DgvOrgaoAnuente.AllowUserToResizeRows = false;
             dataGridViewCellStyle1.BackColor = Color.WhiteSmoke;
             DgvOrgaoAnuente.AlternatingRowsDefaultCellStyle = dataGridViewCellStyle1;
-            DgvOrgaoAnuente.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             DgvOrgaoAnuente.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
             DgvOrgaoAnuente.BackgroundColor = Color.White;
             dataGridViewCellStyle2.Alignment = DataGridViewContentAlignment.MiddleLeft;
@@ -144,14 +159,27 @@
             dataGridViewCellStyle3.SelectionForeColor = Color.Black;
             dataGridViewCellStyle3.WrapMode = DataGridViewTriState.False;
             DgvOrgaoAnuente.DefaultCellStyle = dataGridViewCellStyle3;
+            DgvOrgaoAnuente.Dock = DockStyle.Fill;
             DgvOrgaoAnuente.EnableHeadersVisualStyles = false;
-            DgvOrgaoAnuente.Location = new Point(12, 43);
+            DgvOrgaoAnuente.Location = new Point(0, 0);
             DgvOrgaoAnuente.Name = "DgvOrgaoAnuente";
             DgvOrgaoAnuente.ReadOnly = true;
             DgvOrgaoAnuente.RowHeadersVisible = false;
             DgvOrgaoAnuente.RowTemplate.Height = 25;
-            DgvOrgaoAnuente.Size = new Size(776, 395);
+            DgvOrgaoAnuente.Size = new Size(800, 407);
             DgvOrgaoAnuente.TabIndex = 2;
+            DgvOrgaoAnuente.CellDoubleClick += DgvOrgaoAnuente_CellDoubleClick;
+            DgvOrgaoAnuente.ColumnHeaderMouseClick += DgvOrgaoAnuente_ColumnHeaderMouseClick;
+            DgvOrgaoAnuente.DataBindingComplete += DgvOrgaoAnuente_DataBindingComplete;
+            // 
+            // panel1
+            // 
+            panel1.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            panel1.Controls.Add(DgvOrgaoAnuente);
+            panel1.Location = new Point(0, 43);
+            panel1.Name = "panel1";
+            panel1.Size = new Size(800, 407);
+            panel1.TabIndex = 3;
             // 
             // FrmOrgaoAnuente
             // 
@@ -159,15 +187,17 @@
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(800, 450);
             ControlBox = false;
-            Controls.Add(DgvOrgaoAnuente);
+            Controls.Add(panel1);
             Controls.Add(TsMenu);
             Name = "FrmOrgaoAnuente";
             Text = "Gerenciamento Orgãos Anuentes";
             WindowState = FormWindowState.Maximized;
+            Load += FrmOrgaoAnuente_Load;
             Shown += FrmOrgaoAnuente_Shown;
             TsMenu.ResumeLayout(false);
             TsMenu.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)DgvOrgaoAnuente).EndInit();
+            panel1.ResumeLayout(false);
             ResumeLayout(false);
         }
 
@@ -180,5 +210,7 @@
         private ToolStripComboBox CbPesquisa;
         private ToolStripTextBox TxtPesquisa;
         private DataGridView DgvOrgaoAnuente;
+        private Panel panel1;
+        private ToolStripButton BtnAjuda;
     }
 }

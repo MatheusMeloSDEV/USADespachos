@@ -24,9 +24,9 @@ namespace Trabalho
         {
             components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(frmSantos));
-            DataGridViewCellStyle dataGridViewCellStyle1 = new DataGridViewCellStyle();
-            DataGridViewCellStyle dataGridViewCellStyle2 = new DataGridViewCellStyle();
-            DataGridViewCellStyle dataGridViewCellStyle3 = new DataGridViewCellStyle();
+            DataGridViewCellStyle dataGridViewCellStyle4 = new DataGridViewCellStyle();
+            DataGridViewCellStyle dataGridViewCellStyle5 = new DataGridViewCellStyle();
+            DataGridViewCellStyle dataGridViewCellStyle6 = new DataGridViewCellStyle();
             BsProcesso = new BindingSource(components);
             TSMenuItajai = new ToolStrip();
             BtnAdicionar = new ToolStripButton();
@@ -36,21 +36,24 @@ namespace Trabalho
             BtnRemover = new ToolStripButton();
             toolStripSeparator3 = new ToolStripSeparator();
             BtnExportar = new ToolStripButton();
+            BtnAjuda = new ToolStripButton();
             BtnCancelar = new ToolStripButton();
             BtnPesquisar = new ToolStripButton();
             toolStripSeparator1 = new ToolStripSeparator();
             CmbPesquisar = new ToolStripComboBox();
             TxtPesquisar = new ToolStripTextBox();
             DGVSantos = new DataGridView();
+            panel1 = new Panel();
             ((System.ComponentModel.ISupportInitialize)BsProcesso).BeginInit();
             TSMenuItajai.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)DGVSantos).BeginInit();
+            panel1.SuspendLayout();
             SuspendLayout();
             // 
             // TSMenuItajai
             // 
             TSMenuItajai.AutoSize = false;
-            TSMenuItajai.Items.AddRange(new ToolStripItem[] { BtnAdicionar, toolStripSeparator2, toolStripButton1, toolStripSeparator4, BtnRemover, toolStripSeparator3, BtnExportar, BtnCancelar, BtnPesquisar, toolStripSeparator1, CmbPesquisar, TxtPesquisar });
+            TSMenuItajai.Items.AddRange(new ToolStripItem[] { BtnAdicionar, toolStripSeparator2, toolStripButton1, toolStripSeparator4, BtnRemover, toolStripSeparator3, BtnExportar, BtnAjuda, BtnCancelar, BtnPesquisar, toolStripSeparator1, CmbPesquisar, TxtPesquisar });
             TSMenuItajai.Location = new Point(0, 0);
             TSMenuItajai.Name = "TSMenuItajai";
             TSMenuItajai.Size = new Size(800, 40);
@@ -115,13 +118,25 @@ namespace Trabalho
             BtnExportar.Text = "Exportar";
             BtnExportar.Click += BtnExportar_Click;
             // 
+            // BtnAjuda
+            // 
+            BtnAjuda.Alignment = ToolStripItemAlignment.Right;
+            BtnAjuda.DisplayStyle = ToolStripItemDisplayStyle.Text;
+            BtnAjuda.Font = new Font("Segoe UI", 13F, FontStyle.Bold);
+            BtnAjuda.Image = (Image)resources.GetObject("BtnAjuda.Image");
+            BtnAjuda.ImageTransparentColor = Color.Magenta;
+            BtnAjuda.Margin = new Padding(0, 1, 7, 2);
+            BtnAjuda.Name = "BtnAjuda";
+            BtnAjuda.Size = new Size(24, 37);
+            BtnAjuda.Text = "?";
+            BtnAjuda.Click += BtnAjuda_Click;
+            // 
             // BtnCancelar
             // 
             BtnCancelar.Alignment = ToolStripItemAlignment.Right;
             BtnCancelar.DisplayStyle = ToolStripItemDisplayStyle.Image;
             BtnCancelar.Image = (Image)resources.GetObject("BtnCancelar.Image");
             BtnCancelar.ImageTransparentColor = Color.Magenta;
-            BtnCancelar.Margin = new Padding(0, 1, 7, 2);
             BtnCancelar.Name = "BtnCancelar";
             BtnCancelar.Size = new Size(23, 37);
             BtnCancelar.Text = "toolStripButton4";
@@ -164,39 +179,49 @@ namespace Trabalho
             // 
             DGVSantos.AllowUserToAddRows = false;
             DGVSantos.AllowUserToDeleteRows = false;
-            DGVSantos.AllowUserToResizeColumns = false;
             DGVSantos.AllowUserToResizeRows = false;
-            dataGridViewCellStyle1.BackColor = Color.WhiteSmoke;
-            DGVSantos.AlternatingRowsDefaultCellStyle = dataGridViewCellStyle1;
-            DGVSantos.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
-            DGVSantos.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
+            dataGridViewCellStyle4.BackColor = Color.WhiteSmoke;
+            DGVSantos.AlternatingRowsDefaultCellStyle = dataGridViewCellStyle4;
             DGVSantos.BackgroundColor = Color.White;
-            dataGridViewCellStyle2.Alignment = DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle2.BackColor = Color.DarkGray;
-            dataGridViewCellStyle2.Font = new Font("Segoe UI", 9.75F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            dataGridViewCellStyle2.ForeColor = Color.White;
-            dataGridViewCellStyle2.SelectionBackColor = SystemColors.Highlight;
-            dataGridViewCellStyle2.SelectionForeColor = SystemColors.HighlightText;
-            dataGridViewCellStyle2.WrapMode = DataGridViewTriState.True;
-            DGVSantos.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle2;
+            dataGridViewCellStyle5.Alignment = DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle5.BackColor = Color.DarkGray;
+            dataGridViewCellStyle5.Font = new Font("Segoe UI", 9.75F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            dataGridViewCellStyle5.ForeColor = Color.White;
+            dataGridViewCellStyle5.SelectionBackColor = SystemColors.Highlight;
+            dataGridViewCellStyle5.SelectionForeColor = SystemColors.HighlightText;
+            dataGridViewCellStyle5.WrapMode = DataGridViewTriState.True;
+            DGVSantos.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle5;
             DGVSantos.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            dataGridViewCellStyle3.Alignment = DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle3.BackColor = Color.White;
-            dataGridViewCellStyle3.Font = new Font("Segoe UI", 9.75F, FontStyle.Regular, GraphicsUnit.Point, 0);
-            dataGridViewCellStyle3.ForeColor = Color.Black;
-            dataGridViewCellStyle3.SelectionBackColor = Color.LightBlue;
-            dataGridViewCellStyle3.SelectionForeColor = Color.Black;
-            dataGridViewCellStyle3.WrapMode = DataGridViewTriState.False;
-            DGVSantos.DefaultCellStyle = dataGridViewCellStyle3;
+            dataGridViewCellStyle6.Alignment = DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle6.BackColor = Color.White;
+            dataGridViewCellStyle6.Font = new Font("Segoe UI", 9.75F, FontStyle.Regular, GraphicsUnit.Point, 0);
+            dataGridViewCellStyle6.ForeColor = Color.Black;
+            dataGridViewCellStyle6.SelectionBackColor = Color.LightBlue;
+            dataGridViewCellStyle6.SelectionForeColor = Color.Black;
+            dataGridViewCellStyle6.WrapMode = DataGridViewTriState.False;
+            DGVSantos.DefaultCellStyle = dataGridViewCellStyle6;
+            DGVSantos.Dock = DockStyle.Fill;
             DGVSantos.EnableHeadersVisualStyles = false;
-            DGVSantos.Location = new Point(12, 49);
+            DGVSantos.Location = new Point(0, 0);
+            DGVSantos.MultiSelect = false;
             DGVSantos.Name = "DGVSantos";
             DGVSantos.ReadOnly = true;
             DGVSantos.RowHeadersVisible = false;
             DGVSantos.RowTemplate.Height = 25;
-            DGVSantos.Size = new Size(776, 395);
+            DGVSantos.Size = new Size(800, 409);
             DGVSantos.TabIndex = 2;
-            DGVSantos.ColumnHeaderMouseClick += DGVSantos_ColumnHeaderMouseClick;
+            DGVSantos.CellDoubleClick += DGVSantos_CellDoubleClick;
+            DGVSantos.ColumnHeaderMouseClick += DGV_ColumnHeaderMouseClick;
+            // 
+            // panel1
+            // 
+            panel1.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            panel1.AutoSizeMode = AutoSizeMode.GrowAndShrink;
+            panel1.Controls.Add(DGVSantos);
+            panel1.Location = new Point(0, 43);
+            panel1.Name = "panel1";
+            panel1.Size = new Size(800, 409);
+            panel1.TabIndex = 4;
             // 
             // frmSantos
             // 
@@ -205,16 +230,16 @@ namespace Trabalho
             ClientSize = new Size(800, 450);
             ControlBox = false;
             Controls.Add(TSMenuItajai);
-            Controls.Add(DGVSantos);
+            Controls.Add(panel1);
             Name = "frmSantos";
             Text = "Gerenciamento de Processos";
-            WindowState = FormWindowState.Maximized;
-            Load += FrmProcesso_Load;
+            Shown += FrmSantos_Shown;
             KeyDown += FrmProcesso_KeyDown;
             ((System.ComponentModel.ISupportInitialize)BsProcesso).EndInit();
             TSMenuItajai.ResumeLayout(false);
             TSMenuItajai.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)DGVSantos).EndInit();
+            panel1.ResumeLayout(false);
             ResumeLayout(false);
 
         }
@@ -232,5 +257,7 @@ namespace Trabalho
         private DataGridView DGVSantos;
         private ToolStripButton toolStripButton1;
         private ToolStripSeparator toolStripSeparator4;
+        private Panel panel1;
+        private ToolStripButton BtnAjuda;
     }
 }

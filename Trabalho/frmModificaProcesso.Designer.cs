@@ -91,32 +91,6 @@
             btnCapa = new Button();
             btnRelatorio = new Button();
             TCLi = new TabControl();
-            tabPage1 = new TabPage();
-            BtnNovoOrgaoAnuente = new Button();
-            groupBox5 = new GroupBox();
-            label39 = new Label();
-            DtpDataRegistro = new DateTimePicker();
-            label40 = new Label();
-            label41 = new Label();
-            TxtNCM = new TextBox();
-            TxtLi = new TextBox();
-            CBOrgaoAnuente = new ComboBox();
-            tabControl2 = new TabControl();
-            tabPage3 = new TabPage();
-            label42 = new Label();
-            DtpDataDefrimentoLPCO = new DateTimePicker();
-            label43 = new Label();
-            DtpDataRegsitroLPCO = new DateTimePicker();
-            label28 = new Label();
-            dateTimePicker3 = new DateTimePicker();
-            label29 = new Label();
-            dateTimePicker2 = new DateTimePicker();
-            TxtParametrizacaoLPCO = new TextBox();
-            label30 = new Label();
-            TxtLPCO = new TextBox();
-            label31 = new Label();
-            tabPage4 = new TabPage();
-            tabPage2 = new TabPage();
             label32 = new Label();
             CbStatus = new ComboBox();
             LBLdatadeatracacao = new Label();
@@ -138,25 +112,29 @@
             groupBox6 = new GroupBox();
             groupBox7 = new GroupBox();
             BtnLI = new Button();
+            BtnExcluirLI = new Button();
+            flowLayoutPanel1 = new FlowLayoutPanel();
+            groupBox8 = new GroupBox();
+            groupBox9 = new GroupBox();
+            groupBox10 = new GroupBox();
             groupBox2.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)BsModificaProcesso).BeginInit();
             ((System.ComponentModel.ISupportInitialize)NUMfreetime).BeginInit();
             groupBox3.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)numMarca).BeginInit();
-            TCLi.SuspendLayout();
-            tabPage1.SuspendLayout();
-            groupBox5.SuspendLayout();
-            tabControl2.SuspendLayout();
-            tabPage3.SuspendLayout();
             groupBox1.SuspendLayout();
             groupBox4.SuspendLayout();
             groupBox6.SuspendLayout();
             groupBox7.SuspendLayout();
+            groupBox8.SuspendLayout();
+            groupBox9.SuspendLayout();
+            groupBox10.SuspendLayout();
             SuspendLayout();
             // 
             // groupBox2
             // 
-            groupBox2.Anchor = AnchorStyles.None;
+            groupBox2.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Right;
+            groupBox2.AutoSizeMode = AutoSizeMode.GrowAndShrink;
             groupBox2.Controls.Add(label18);
             groupBox2.Controls.Add(dtpDataMinuta);
             groupBox2.Controls.Add(label19);
@@ -171,7 +149,7 @@
             groupBox2.Controls.Add(label6);
             groupBox2.Controls.Add(CBparametrizacaodi);
             groupBox2.Controls.Add(DTPdatadecarregamentodi);
-            groupBox2.Location = new Point(1113, 266);
+            groupBox2.Location = new Point(1113, 274);
             groupBox2.Name = "groupBox2";
             groupBox2.Size = new Size(318, 228);
             groupBox2.TabIndex = 17;
@@ -180,7 +158,7 @@
             // 
             // label18
             // 
-            label18.Anchor = AnchorStyles.None;
+            label18.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             label18.AutoSize = true;
             label18.Font = new Font("Microsoft Sans Serif", 9.75F);
             label18.Location = new Point(185, 161);
@@ -191,7 +169,7 @@
             // 
             // dtpDataMinuta
             // 
-            dtpDataMinuta.Anchor = AnchorStyles.None;
+            dtpDataMinuta.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             dtpDataMinuta.Format = DateTimePickerFormat.Short;
             dtpDataMinuta.Location = new Point(166, 180);
             dtpDataMinuta.MinDate = new DateTime(2023, 8, 22, 0, 0, 0, 0);
@@ -202,7 +180,7 @@
             // 
             // label19
             // 
-            label19.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+            label19.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             label19.AutoSize = true;
             label19.Font = new Font("Microsoft Sans Serif", 9.75F);
             label19.Location = new Point(16, 115);
@@ -213,7 +191,7 @@
             // 
             // label1
             // 
-            label1.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+            label1.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             label1.AutoSize = true;
             label1.Font = new Font("Microsoft Sans Serif", 9.75F);
             label1.Location = new Point(34, 64);
@@ -224,7 +202,7 @@
             // 
             // DTPdatadedesembaracodi
             // 
-            DTPdatadedesembaracodi.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+            DTPdatadedesembaracodi.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             DTPdatadedesembaracodi.Format = DateTimePickerFormat.Short;
             DTPdatadedesembaracodi.Location = new Point(21, 134);
             DTPdatadedesembaracodi.MinDate = new DateTime(2024, 10, 17, 0, 0, 0, 0);
@@ -235,7 +213,7 @@
             // 
             // DTPdataderegistrodi
             // 
-            DTPdataderegistrodi.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+            DTPdataderegistrodi.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             DTPdataderegistrodi.Format = DateTimePickerFormat.Short;
             DTPdataderegistrodi.Location = new Point(21, 86);
             DTPdataderegistrodi.MinDate = new DateTime(2024, 10, 17, 0, 0, 0, 0);
@@ -246,7 +224,7 @@
             // 
             // LBLinspecao
             // 
-            LBLinspecao.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+            LBLinspecao.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             LBLinspecao.AutoSize = true;
             LBLinspecao.Font = new Font("Microsoft Sans Serif", 9.75F);
             LBLinspecao.Location = new Point(57, 161);
@@ -257,7 +235,7 @@
             // 
             // TXTdi
             // 
-            TXTdi.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+            TXTdi.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             TXTdi.Cursor = Cursors.IBeam;
             TXTdi.DataBindings.Add(new Binding("Text", BsModificaProcesso, "DI", true));
             TXTdi.Location = new Point(93, 38);
@@ -271,7 +249,7 @@
             // 
             // label21
             // 
-            label21.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+            label21.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             label21.AutoSize = true;
             label21.Font = new Font("Microsoft Sans Serif", 9.75F);
             label21.Location = new Point(150, 19);
@@ -282,7 +260,7 @@
             // 
             // label23
             // 
-            label23.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+            label23.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             label23.AutoSize = true;
             label23.Font = new Font("Microsoft Sans Serif", 9.75F);
             label23.Location = new Point(182, 66);
@@ -293,7 +271,7 @@
             // 
             // DTPdatadeinspecao
             // 
-            DTPdatadeinspecao.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+            DTPdatadeinspecao.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             DTPdatadeinspecao.Format = DateTimePickerFormat.Short;
             DTPdatadeinspecao.Location = new Point(21, 180);
             DTPdatadeinspecao.MinDate = new DateTime(2023, 8, 22, 0, 0, 0, 0);
@@ -304,7 +282,7 @@
             // 
             // label6
             // 
-            label6.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+            label6.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             label6.AutoSize = true;
             label6.Font = new Font("Microsoft Sans Serif", 9.75F);
             label6.Location = new Point(161, 115);
@@ -315,6 +293,7 @@
             // 
             // CBparametrizacaodi
             // 
+            CBparametrizacaodi.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             CBparametrizacaodi.AutoCompleteMode = AutoCompleteMode.Suggest;
             CBparametrizacaodi.DataBindings.Add(new Binding("Text", BsModificaProcesso, "ParametrizacaoDI", true));
             CBparametrizacaodi.FormattingEnabled = true;
@@ -326,7 +305,7 @@
             // 
             // DTPdatadecarregamentodi
             // 
-            DTPdatadecarregamentodi.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+            DTPdatadecarregamentodi.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             DTPdatadecarregamentodi.Format = DateTimePickerFormat.Short;
             DTPdatadecarregamentodi.Location = new Point(166, 134);
             DTPdatadecarregamentodi.MinDate = new DateTime(2024, 10, 17, 0, 0, 0, 0);
@@ -337,7 +316,7 @@
             // 
             // CBamostra
             // 
-            CBamostra.Anchor = AnchorStyles.None;
+            CBamostra.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             CBamostra.AutoSize = true;
             CBamostra.DataBindings.Add(new Binding("Checked", BsModificaProcesso, "Amostra", true));
             CBamostra.Font = new Font("Microsoft Sans Serif", 9.75F);
@@ -350,7 +329,7 @@
             // 
             // CBdesovado
             // 
-            CBdesovado.Anchor = AnchorStyles.None;
+            CBdesovado.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             CBdesovado.AutoSize = true;
             CBdesovado.DataBindings.Add(new Binding("Checked", BsModificaProcesso, "Desovado", true));
             CBdesovado.Font = new Font("Microsoft Sans Serif", 9.75F);
@@ -363,19 +342,19 @@
             // 
             // btnAdiciona
             // 
-            btnAdiciona.Anchor = AnchorStyles.None;
+            btnAdiciona.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
             btnAdiciona.Cursor = Cursors.Hand;
-            btnAdiciona.Location = new Point(888, 592);
+            btnAdiciona.Location = new Point(10, 134);
             btnAdiciona.Name = "btnAdiciona";
-            btnAdiciona.Size = new Size(219, 35);
+            btnAdiciona.Size = new Size(200, 29);
             btnAdiciona.TabIndex = 28;
-            btnAdiciona.Text = "Ok";
+            btnAdiciona.Text = "Salvar";
             btnAdiciona.UseVisualStyleBackColor = true;
             btnAdiciona.Click += btnAdiciona_Click;
             // 
             // NUMfreetime
             // 
-            NUMfreetime.Anchor = AnchorStyles.None;
+            NUMfreetime.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             NUMfreetime.DataBindings.Add(new Binding("Value", BsModificaProcesso, "FreeTime", true));
             NUMfreetime.Location = new Point(986, 17);
             NUMfreetime.Name = "NUMfreetime";
@@ -384,7 +363,7 @@
             // 
             // label17
             // 
-            label17.Anchor = AnchorStyles.None;
+            label17.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             label17.AutoSize = true;
             label17.Font = new Font("Microsoft Sans Serif", 9.75F);
             label17.Location = new Point(15, 62);
@@ -395,7 +374,7 @@
             // 
             // TXTimportador
             // 
-            TXTimportador.Anchor = AnchorStyles.None;
+            TXTimportador.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             TXTimportador.Cursor = Cursors.IBeam;
             TXTimportador.DataBindings.Add(new Binding("Text", BsModificaProcesso, "Importador", true));
             TXTimportador.Location = new Point(104, 60);
@@ -405,7 +384,7 @@
             // 
             // label15
             // 
-            label15.Anchor = AnchorStyles.None;
+            label15.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             label15.AutoSize = true;
             label15.Font = new Font("Microsoft Sans Serif", 9.75F);
             label15.Location = new Point(911, 19);
@@ -416,7 +395,7 @@
             // 
             // label12
             // 
-            label12.Anchor = AnchorStyles.None;
+            label12.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             label12.AutoSize = true;
             label12.Font = new Font("Microsoft Sans Serif", 9.75F);
             label12.Location = new Point(282, 91);
@@ -427,7 +406,7 @@
             // 
             // label11
             // 
-            label11.Anchor = AnchorStyles.None;
+            label11.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             label11.AutoSize = true;
             label11.Font = new Font("Microsoft Sans Serif", 9.75F);
             label11.Location = new Point(197, 33);
@@ -438,7 +417,7 @@
             // 
             // label9
             // 
-            label9.Anchor = AnchorStyles.None;
+            label9.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             label9.AutoSize = true;
             label9.Font = new Font("Microsoft Sans Serif", 9.75F);
             label9.Location = new Point(15, 33);
@@ -449,7 +428,7 @@
             // 
             // TXTsr
             // 
-            TXTsr.Anchor = AnchorStyles.None;
+            TXTsr.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             TXTsr.Cursor = Cursors.IBeam;
             TXTsr.DataBindings.Add(new Binding("Text", BsModificaProcesso, "SR", true));
             TXTsr.Location = new Point(250, 31);
@@ -459,7 +438,7 @@
             // 
             // label5
             // 
-            label5.Anchor = AnchorStyles.None;
+            label5.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             label5.AutoSize = true;
             label5.Font = new Font("Microsoft Sans Serif", 9.75F);
             label5.Location = new Point(550, 62);
@@ -470,7 +449,7 @@
             // 
             // txtConhecimento
             // 
-            txtConhecimento.Anchor = AnchorStyles.None;
+            txtConhecimento.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             txtConhecimento.Cursor = Cursors.IBeam;
             txtConhecimento.DataBindings.Add(new Binding("Text", BsModificaProcesso, "Conhecimento", true));
             txtConhecimento.Location = new Point(667, 60);
@@ -480,7 +459,7 @@
             // 
             // txtArmador
             // 
-            txtArmador.Anchor = AnchorStyles.None;
+            txtArmador.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             txtArmador.Cursor = Cursors.IBeam;
             txtArmador.DataBindings.Add(new Binding("Text", BsModificaProcesso, "Armador", true));
             txtArmador.Location = new Point(360, 89);
@@ -490,7 +469,7 @@
             // 
             // label7
             // 
-            label7.Anchor = AnchorStyles.None;
+            label7.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             label7.AutoSize = true;
             label7.Font = new Font("Microsoft Sans Serif", 9.75F);
             label7.Location = new Point(15, 120);
@@ -501,7 +480,7 @@
             // 
             // TXTProduto
             // 
-            TXTProduto.Anchor = AnchorStyles.None;
+            TXTProduto.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             TXTProduto.Cursor = Cursors.IBeam;
             TXTProduto.DataBindings.Add(new Binding("Text", BsModificaProcesso, "Produto", true));
             TXTProduto.Location = new Point(87, 118);
@@ -511,7 +490,7 @@
             // 
             // label2
             // 
-            label2.Anchor = AnchorStyles.None;
+            label2.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             label2.AutoSize = true;
             label2.Font = new Font("Microsoft Sans Serif", 9.75F);
             label2.Location = new Point(638, 120);
@@ -522,7 +501,7 @@
             // 
             // TXTflo
             // 
-            TXTflo.Anchor = AnchorStyles.None;
+            TXTflo.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             TXTflo.Cursor = Cursors.IBeam;
             TXTflo.DataBindings.Add(new Binding("Text", BsModificaProcesso, "FLO", true));
             TXTflo.Location = new Point(688, 118);
@@ -532,7 +511,7 @@
             // 
             // Exportador
             // 
-            Exportador.Anchor = AnchorStyles.None;
+            Exportador.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             Exportador.AutoSize = true;
             Exportador.Font = new Font("Microsoft Sans Serif", 9.75F);
             Exportador.Location = new Point(15, 91);
@@ -543,7 +522,7 @@
             // 
             // TXTexportador
             // 
-            TXTexportador.Anchor = AnchorStyles.None;
+            TXTexportador.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             TXTexportador.Cursor = Cursors.IBeam;
             TXTexportador.DataBindings.Add(new Binding("Text", BsModificaProcesso, "Exportador", true));
             TXTexportador.Location = new Point(104, 89);
@@ -553,27 +532,27 @@
             // 
             // TXTstatusdoprocesso
             // 
-            TXTstatusdoprocesso.Anchor = AnchorStyles.None;
             TXTstatusdoprocesso.DataBindings.Add(new Binding("Text", BsModificaProcesso, "HistoricoDoProcesso", true));
-            TXTstatusdoprocesso.Location = new Point(6, 24);
+            TXTstatusdoprocesso.Dock = DockStyle.Fill;
+            TXTstatusdoprocesso.Location = new Point(3, 21);
             TXTstatusdoprocesso.Multiline = true;
             TXTstatusdoprocesso.Name = "TXTstatusdoprocesso";
-            TXTstatusdoprocesso.Size = new Size(328, 420);
+            TXTstatusdoprocesso.Size = new Size(331, 426);
             TXTstatusdoprocesso.TabIndex = 25;
             // 
             // TXTpendencia
             // 
-            TXTpendencia.Anchor = AnchorStyles.None;
             TXTpendencia.DataBindings.Add(new Binding("Text", BsModificaProcesso, "Pendencia", true));
-            TXTpendencia.Location = new Point(6, 24);
+            TXTpendencia.Dock = DockStyle.Fill;
+            TXTpendencia.Location = new Point(3, 21);
             TXTpendencia.Multiline = true;
             TXTpendencia.Name = "TXTpendencia";
-            TXTpendencia.Size = new Size(513, 139);
+            TXTpendencia.Size = new Size(519, 147);
             TXTpendencia.TabIndex = 26;
             // 
             // label13
             // 
-            label13.Anchor = AnchorStyles.None;
+            label13.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             label13.AutoSize = true;
             label13.Font = new Font("Microsoft Sans Serif", 9.75F);
             label13.Location = new Point(282, 62);
@@ -584,7 +563,7 @@
             // 
             // txtVeiculo
             // 
-            txtVeiculo.Anchor = AnchorStyles.None;
+            txtVeiculo.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             txtVeiculo.Cursor = Cursors.IBeam;
             txtVeiculo.DataBindings.Add(new Binding("Text", BsModificaProcesso, "Veiculo", true));
             txtVeiculo.Location = new Point(348, 60);
@@ -594,21 +573,21 @@
             // 
             // checkedListBox1
             // 
-            checkedListBox1.Anchor = AnchorStyles.None;
+            checkedListBox1.Anchor = AnchorStyles.Top | AnchorStyles.Right;
             checkedListBox1.BorderStyle = BorderStyle.FixedSingle;
             checkedListBox1.FormattingEnabled = true;
             checkedListBox1.Items.AddRange(new object[] { "BL", "Fatura", "Packing List", "CO", "Fito", "CSI", "CA", "CF" });
-            checkedListBox1.Location = new Point(1166, 45);
+            checkedListBox1.Location = new Point(46, 37);
             checkedListBox1.Name = "checkedListBox1";
             checkedListBox1.Size = new Size(108, 92);
             checkedListBox1.TabIndex = 307;
             // 
             // label16
             // 
-            label16.Anchor = AnchorStyles.None;
+            label16.Anchor = AnchorStyles.Top | AnchorStyles.Right;
             label16.AutoSize = true;
             label16.Font = new Font("Microsoft Sans Serif", 9.75F);
-            label16.Location = new Point(1166, 22);
+            label16.Location = new Point(46, 14);
             label16.Name = "label16";
             label16.Size = new Size(109, 16);
             label16.TabIndex = 308;
@@ -616,11 +595,11 @@
             // 
             // checkedListBox2
             // 
-            checkedListBox2.Anchor = AnchorStyles.None;
+            checkedListBox2.Anchor = AnchorStyles.Top | AnchorStyles.Right;
             checkedListBox2.BorderStyle = BorderStyle.FixedSingle;
             checkedListBox2.FormattingEnabled = true;
             checkedListBox2.Items.AddRange(new object[] { "DHL", "UPS", "Correio", "Fedex", "Daytona" });
-            checkedListBox2.Location = new Point(1301, 45);
+            checkedListBox2.Location = new Point(181, 37);
             checkedListBox2.Name = "checkedListBox2";
             checkedListBox2.Size = new Size(79, 92);
             checkedListBox2.TabIndex = 309;
@@ -628,10 +607,10 @@
             // 
             // label24
             // 
-            label24.Anchor = AnchorStyles.None;
+            label24.Anchor = AnchorStyles.Top | AnchorStyles.Right;
             label24.AutoSize = true;
             label24.Font = new Font("Microsoft Sans Serif", 9.75F);
-            label24.Location = new Point(1302, 22);
+            label24.Location = new Point(182, 14);
             label24.Name = "label24";
             label24.Size = new Size(77, 16);
             label24.TabIndex = 310;
@@ -639,10 +618,10 @@
             // 
             // label25
             // 
-            label25.Anchor = AnchorStyles.None;
+            label25.Anchor = AnchorStyles.Top | AnchorStyles.Right;
             label25.AutoSize = true;
             label25.Font = new Font("Microsoft Sans Serif", 9.75F);
-            label25.Location = new Point(1287, 156);
+            label25.Location = new Point(168, 139);
             label25.Name = "label25";
             label25.Size = new Size(123, 16);
             label25.TabIndex = 312;
@@ -650,9 +629,9 @@
             // 
             // DTPDataRecOriginais
             // 
-            DTPDataRecOriginais.Anchor = AnchorStyles.None;
+            DTPDataRecOriginais.Anchor = AnchorStyles.Top | AnchorStyles.Right;
             DTPDataRecOriginais.Format = DateTimePickerFormat.Short;
-            DTPDataRecOriginais.Location = new Point(1281, 178);
+            DTPDataRecOriginais.Location = new Point(162, 161);
             DTPDataRecOriginais.MinDate = new DateTime(2023, 8, 22, 0, 0, 0, 0);
             DTPDataRecOriginais.Name = "DTPDataRecOriginais";
             DTPDataRecOriginais.Size = new Size(135, 23);
@@ -661,7 +640,7 @@
             // 
             // TXTnr
             // 
-            TXTnr.Anchor = AnchorStyles.None;
+            TXTnr.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             TXTnr.DataBindings.Add(new Binding("Text", BsModificaProcesso, "Ref_USA", true));
             TXTnr.Location = new Point(87, 31);
             TXTnr.Mask = "0000/0000";
@@ -671,7 +650,7 @@
             // 
             // txtTerminal
             // 
-            txtTerminal.Anchor = AnchorStyles.None;
+            txtTerminal.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             txtTerminal.Cursor = Cursors.IBeam;
             txtTerminal.DataBindings.Add(new Binding("Text", BsModificaProcesso, "Terminal", true));
             txtTerminal.Location = new Point(420, 118);
@@ -681,7 +660,7 @@
             // 
             // label4
             // 
-            label4.Anchor = AnchorStyles.None;
+            label4.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             label4.AutoSize = true;
             label4.Font = new Font("Microsoft Sans Serif", 9.75F);
             label4.Location = new Point(348, 120);
@@ -692,7 +671,7 @@
             // 
             // label20
             // 
-            label20.Anchor = AnchorStyles.None;
+            label20.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             label20.AutoSize = true;
             label20.Font = new Font("Microsoft Sans Serif", 9.75F);
             label20.Location = new Point(165, 18);
@@ -703,7 +682,7 @@
             // 
             // label22
             // 
-            label22.Anchor = AnchorStyles.None;
+            label22.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             label22.AutoSize = true;
             label22.Font = new Font("Microsoft Sans Serif", 9.75F);
             label22.Location = new Point(14, 18);
@@ -714,7 +693,7 @@
             // 
             // dtpVencimentoLI_LPCO
             // 
-            dtpVencimentoLI_LPCO.Anchor = AnchorStyles.None;
+            dtpVencimentoLI_LPCO.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             dtpVencimentoLI_LPCO.Enabled = false;
             dtpVencimentoLI_LPCO.Format = DateTimePickerFormat.Short;
             dtpVencimentoLI_LPCO.Location = new Point(163, 40);
@@ -726,7 +705,7 @@
             // 
             // dtpVencimentoFreeTime
             // 
-            dtpVencimentoFreeTime.Anchor = AnchorStyles.None;
+            dtpVencimentoFreeTime.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             dtpVencimentoFreeTime.Enabled = false;
             dtpVencimentoFreeTime.Format = DateTimePickerFormat.Short;
             dtpVencimentoFreeTime.Location = new Point(18, 40);
@@ -738,7 +717,7 @@
             // 
             // label26
             // 
-            label26.Anchor = AnchorStyles.None;
+            label26.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             label26.AutoSize = true;
             label26.Font = new Font("Microsoft Sans Serif", 9.75F);
             label26.Location = new Point(102, 66);
@@ -749,7 +728,7 @@
             // 
             // dtpVencimentoFMA
             // 
-            dtpVencimentoFMA.Anchor = AnchorStyles.None;
+            dtpVencimentoFMA.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             dtpVencimentoFMA.Enabled = false;
             dtpVencimentoFMA.Format = DateTimePickerFormat.Short;
             dtpVencimentoFMA.Location = new Point(89, 88);
@@ -761,13 +740,15 @@
             // 
             // groupBox3
             // 
+            groupBox3.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Right;
+            groupBox3.AutoSizeMode = AutoSizeMode.GrowAndShrink;
             groupBox3.Controls.Add(label22);
             groupBox3.Controls.Add(label26);
             groupBox3.Controls.Add(dtpVencimentoFreeTime);
             groupBox3.Controls.Add(dtpVencimentoFMA);
             groupBox3.Controls.Add(dtpVencimentoLI_LPCO);
             groupBox3.Controls.Add(label20);
-            groupBox3.Location = new Point(1113, 500);
+            groupBox3.Location = new Point(1113, 508);
             groupBox3.Name = "groupBox3";
             groupBox3.Size = new Size(318, 124);
             groupBox3.TabIndex = 402;
@@ -779,7 +760,7 @@
             label27.Anchor = AnchorStyles.Top | AnchorStyles.Right;
             label27.AutoSize = true;
             label27.Font = new Font("Microsoft Sans Serif", 9.75F);
-            label27.Location = new Point(1180, 156);
+            label27.Location = new Point(61, 139);
             label27.Name = "label27";
             label27.Size = new Size(45, 16);
             label27.TabIndex = 306;
@@ -787,29 +768,30 @@
             // 
             // cbMarca
             // 
+            cbMarca.Anchor = AnchorStyles.Top | AnchorStyles.Right;
             cbMarca.AutoCompleteMode = AutoCompleteMode.Suggest;
             cbMarca.FormattingEnabled = true;
             cbMarca.Items.AddRange(new object[] { "20 DRY", "40 DRY", "20 RF", "40 RF", "20 HC", "40 HC", "20 ST", "40 ST", "Sacos", "Caixas", "Pallets" });
-            cbMarca.Location = new Point(1180, 178);
+            cbMarca.Location = new Point(61, 161);
             cbMarca.Name = "cbMarca";
             cbMarca.Size = new Size(89, 23);
             cbMarca.TabIndex = 305;
             // 
             // numMarca
             // 
-            numMarca.Anchor = AnchorStyles.None;
-            numMarca.Location = new Point(1134, 178);
+            numMarca.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+            numMarca.Location = new Point(15, 161);
             numMarca.Name = "numMarca";
             numMarca.Size = new Size(49, 23);
             numMarca.TabIndex = 403;
             // 
             // btnCapa
             // 
-            btnCapa.Anchor = AnchorStyles.None;
+            btnCapa.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
             btnCapa.Cursor = Cursors.Hand;
-            btnCapa.Location = new Point(888, 510);
+            btnCapa.Location = new Point(10, 65);
             btnCapa.Name = "btnCapa";
-            btnCapa.Size = new Size(219, 35);
+            btnCapa.Size = new Size(200, 29);
             btnCapa.TabIndex = 404;
             btnCapa.Text = "Capa";
             btnCapa.UseVisualStyleBackColor = true;
@@ -817,11 +799,11 @@
             // 
             // btnRelatorio
             // 
-            btnRelatorio.Anchor = AnchorStyles.None;
+            btnRelatorio.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
             btnRelatorio.Cursor = Cursors.Hand;
-            btnRelatorio.Location = new Point(888, 551);
+            btnRelatorio.Location = new Point(10, 99);
             btnRelatorio.Name = "btnRelatorio";
-            btnRelatorio.Size = new Size(219, 35);
+            btnRelatorio.Size = new Size(200, 29);
             btnRelatorio.TabIndex = 405;
             btnRelatorio.Text = "Relatório";
             btnRelatorio.UseVisualStyleBackColor = true;
@@ -829,287 +811,20 @@
             // 
             // TCLi
             // 
-            TCLi.Controls.Add(tabPage1);
-            TCLi.Controls.Add(tabPage2);
-            TCLi.Location = new Point(357, 193);
+            TCLi.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            TCLi.Location = new Point(0, 15);
             TCLi.Name = "TCLi";
             TCLi.SelectedIndex = 0;
-            TCLi.Size = new Size(750, 262);
+            TCLi.Size = new Size(756, 262);
+            TCLi.SizeMode = TabSizeMode.Fixed;
             TCLi.TabIndex = 801;
-            // 
-            // tabPage1
-            // 
-            tabPage1.Controls.Add(BtnNovoOrgaoAnuente);
-            tabPage1.Controls.Add(groupBox5);
-            tabPage1.Controls.Add(CBOrgaoAnuente);
-            tabPage1.Controls.Add(tabControl2);
-            tabPage1.Location = new Point(4, 24);
-            tabPage1.Name = "tabPage1";
-            tabPage1.Padding = new Padding(3);
-            tabPage1.Size = new Size(742, 234);
-            tabPage1.TabIndex = 0;
-            tabPage1.Text = "Li - 1251521";
-            tabPage1.UseVisualStyleBackColor = true;
-            // 
-            // BtnNovoOrgaoAnuente
-            // 
-            BtnNovoOrgaoAnuente.Location = new Point(604, 6);
-            BtnNovoOrgaoAnuente.Name = "BtnNovoOrgaoAnuente";
-            BtnNovoOrgaoAnuente.Size = new Size(129, 23);
-            BtnNovoOrgaoAnuente.TabIndex = 815;
-            BtnNovoOrgaoAnuente.Text = "Novo LPCO";
-            BtnNovoOrgaoAnuente.UseVisualStyleBackColor = true;
-            // 
-            // groupBox5
-            // 
-            groupBox5.Controls.Add(label39);
-            groupBox5.Controls.Add(DtpDataRegistro);
-            groupBox5.Controls.Add(label40);
-            groupBox5.Controls.Add(label41);
-            groupBox5.Controls.Add(TxtNCM);
-            groupBox5.Controls.Add(TxtLi);
-            groupBox5.Location = new Point(6, 145);
-            groupBox5.Name = "groupBox5";
-            groupBox5.Size = new Size(730, 83);
-            groupBox5.TabIndex = 812;
-            groupBox5.TabStop = false;
-            groupBox5.Text = "Dados Li";
-            // 
-            // label39
-            // 
-            label39.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-            label39.AutoSize = true;
-            label39.Font = new Font("Segoe UI", 11F);
-            label39.Location = new Point(463, 19);
-            label39.Name = "label39";
-            label39.Size = new Size(100, 20);
-            label39.TabIndex = 419;
-            label39.Text = "Data Registro";
-            // 
-            // DtpDataRegistro
-            // 
-            DtpDataRegistro.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-            DtpDataRegistro.Format = DateTimePickerFormat.Short;
-            DtpDataRegistro.Location = new Point(446, 43);
-            DtpDataRegistro.Name = "DtpDataRegistro";
-            DtpDataRegistro.Size = new Size(135, 23);
-            DtpDataRegistro.TabIndex = 418;
-            // 
-            // label40
-            // 
-            label40.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-            label40.AutoSize = true;
-            label40.Font = new Font("Segoe UI", 12F);
-            label40.Location = new Point(193, 18);
-            label40.Name = "label40";
-            label40.Size = new Size(22, 21);
-            label40.TabIndex = 420;
-            label40.Text = "LI";
-            // 
-            // label41
-            // 
-            label41.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-            label41.AutoSize = true;
-            label41.Font = new Font("Segoe UI", 12F);
-            label41.Location = new Point(335, 19);
-            label41.Name = "label41";
-            label41.Size = new Size(46, 21);
-            label41.TabIndex = 421;
-            label41.Text = "NCM";
-            // 
-            // TxtNCM
-            // 
-            TxtNCM.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-            TxtNCM.Location = new Point(285, 43);
-            TxtNCM.Name = "TxtNCM";
-            TxtNCM.Size = new Size(147, 23);
-            TxtNCM.TabIndex = 419;
-            // 
-            // TxtLi
-            // 
-            TxtLi.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-            TxtLi.Location = new Point(137, 43);
-            TxtLi.Name = "TxtLi";
-            TxtLi.Size = new Size(134, 23);
-            TxtLi.TabIndex = 418;
-            // 
-            // CBOrgaoAnuente
-            // 
-            CBOrgaoAnuente.FormattingEnabled = true;
-            CBOrgaoAnuente.Items.AddRange(new object[] { "MAPA", "DECEX", "ANVISA", "IBAMA", "INMETRO" });
-            CBOrgaoAnuente.Location = new Point(415, 6);
-            CBOrgaoAnuente.Name = "CBOrgaoAnuente";
-            CBOrgaoAnuente.Size = new Size(184, 23);
-            CBOrgaoAnuente.TabIndex = 816;
-            // 
-            // tabControl2
-            // 
-            tabControl2.Controls.Add(tabPage3);
-            tabControl2.Controls.Add(tabPage4);
-            tabControl2.Location = new Point(3, 6);
-            tabControl2.Name = "tabControl2";
-            tabControl2.SelectedIndex = 0;
-            tabControl2.Size = new Size(736, 137);
-            tabControl2.TabIndex = 817;
-            // 
-            // tabPage3
-            // 
-            tabPage3.Controls.Add(label42);
-            tabPage3.Controls.Add(DtpDataDefrimentoLPCO);
-            tabPage3.Controls.Add(label43);
-            tabPage3.Controls.Add(DtpDataRegsitroLPCO);
-            tabPage3.Controls.Add(label28);
-            tabPage3.Controls.Add(dateTimePicker3);
-            tabPage3.Controls.Add(label29);
-            tabPage3.Controls.Add(dateTimePicker2);
-            tabPage3.Controls.Add(TxtParametrizacaoLPCO);
-            tabPage3.Controls.Add(label30);
-            tabPage3.Controls.Add(TxtLPCO);
-            tabPage3.Controls.Add(label31);
-            tabPage3.Location = new Point(4, 24);
-            tabPage3.Name = "tabPage3";
-            tabPage3.Size = new Size(728, 109);
-            tabPage3.TabIndex = 0;
-            tabPage3.Text = "MAPA";
-            tabPage3.UseVisualStyleBackColor = true;
-            // 
-            // label42
-            // 
-            label42.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-            label42.AutoSize = true;
-            label42.Font = new Font("Segoe UI", 11F);
-            label42.Location = new Point(534, 32);
-            label42.Name = "label42";
-            label42.Size = new Size(129, 20);
-            label42.TabIndex = 429;
-            label42.Text = "Data Deferimento";
-            // 
-            // DtpDataDefrimentoLPCO
-            // 
-            DtpDataDefrimentoLPCO.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-            DtpDataDefrimentoLPCO.Format = DateTimePickerFormat.Short;
-            DtpDataDefrimentoLPCO.Location = new Point(531, 56);
-            DtpDataDefrimentoLPCO.Name = "DtpDataDefrimentoLPCO";
-            DtpDataDefrimentoLPCO.Size = new Size(135, 23);
-            DtpDataDefrimentoLPCO.TabIndex = 428;
-            // 
-            // label43
-            // 
-            label43.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-            label43.AutoSize = true;
-            label43.Font = new Font("Segoe UI", 11F);
-            label43.Location = new Point(399, 32);
-            label43.Name = "label43";
-            label43.Size = new Size(100, 20);
-            label43.TabIndex = 427;
-            label43.Text = "Data Registro";
-            // 
-            // DtpDataRegsitroLPCO
-            // 
-            DtpDataRegsitroLPCO.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-            DtpDataRegsitroLPCO.Format = DateTimePickerFormat.Short;
-            DtpDataRegsitroLPCO.Location = new Point(382, 56);
-            DtpDataRegsitroLPCO.Name = "DtpDataRegsitroLPCO";
-            DtpDataRegsitroLPCO.Size = new Size(135, 23);
-            DtpDataRegsitroLPCO.TabIndex = 426;
-            // 
-            // label28
-            // 
-            label28.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-            label28.AutoSize = true;
-            label28.Font = new Font("Segoe UI", 11F);
-            label28.Location = new Point(1856, 30);
-            label28.Name = "label28";
-            label28.Size = new Size(129, 20);
-            label28.TabIndex = 425;
-            label28.Text = "Data Deferimento";
-            // 
-            // dateTimePicker3
-            // 
-            dateTimePicker3.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-            dateTimePicker3.Format = DateTimePickerFormat.Short;
-            dateTimePicker3.Location = new Point(1853, 54);
-            dateTimePicker3.Name = "dateTimePicker3";
-            dateTimePicker3.Size = new Size(135, 23);
-            dateTimePicker3.TabIndex = 424;
-            // 
-            // label29
-            // 
-            label29.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-            label29.AutoSize = true;
-            label29.Font = new Font("Segoe UI", 11F);
-            label29.Location = new Point(1721, 30);
-            label29.Name = "label29";
-            label29.Size = new Size(100, 20);
-            label29.TabIndex = 423;
-            label29.Text = "Data Registro";
-            // 
-            // dateTimePicker2
-            // 
-            dateTimePicker2.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-            dateTimePicker2.Format = DateTimePickerFormat.Short;
-            dateTimePicker2.Location = new Point(1704, 54);
-            dateTimePicker2.Name = "dateTimePicker2";
-            dateTimePicker2.Size = new Size(135, 23);
-            dateTimePicker2.TabIndex = 422;
-            // 
-            // TxtParametrizacaoLPCO
-            // 
-            TxtParametrizacaoLPCO.Location = new Point(140, 59);
-            TxtParametrizacaoLPCO.Name = "TxtParametrizacaoLPCO";
-            TxtParametrizacaoLPCO.Size = new Size(211, 23);
-            TxtParametrizacaoLPCO.TabIndex = 3;
-            // 
-            // label30
-            // 
-            label30.AutoSize = true;
-            label30.Location = new Point(46, 62);
-            label30.Name = "label30";
-            label30.Size = new Size(88, 15);
-            label30.TabIndex = 2;
-            label30.Text = "Parametrização";
-            // 
-            // TxtLPCO
-            // 
-            TxtLPCO.Location = new Point(90, 25);
-            TxtLPCO.Name = "TxtLPCO";
-            TxtLPCO.Size = new Size(261, 23);
-            TxtLPCO.TabIndex = 1;
-            // 
-            // label31
-            // 
-            label31.AutoSize = true;
-            label31.Location = new Point(46, 28);
-            label31.Name = "label31";
-            label31.Size = new Size(37, 15);
-            label31.TabIndex = 0;
-            label31.Text = "LPCO";
-            // 
-            // tabPage4
-            // 
-            tabPage4.Location = new Point(4, 24);
-            tabPage4.Name = "tabPage4";
-            tabPage4.Size = new Size(728, 109);
-            tabPage4.TabIndex = 1;
-            tabPage4.Text = "ANVISA";
-            tabPage4.UseVisualStyleBackColor = true;
-            // 
-            // tabPage2
-            // 
-            tabPage2.Location = new Point(4, 24);
-            tabPage2.Name = "tabPage2";
-            tabPage2.Padding = new Padding(3);
-            tabPage2.Size = new Size(742, 234);
-            tabPage2.TabIndex = 1;
-            tabPage2.Text = "Li - 15316515";
-            tabPage2.UseVisualStyleBackColor = true;
             // 
             // label32
             // 
-            label32.Anchor = AnchorStyles.None;
+            label32.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
             label32.AutoSize = true;
             label32.Font = new Font("Microsoft Sans Serif", 9.75F);
-            label32.Location = new Point(975, 461);
+            label32.Location = new Point(89, 17);
             label32.Name = "label32";
             label32.Size = new Size(44, 16);
             label32.TabIndex = 802;
@@ -1117,21 +832,22 @@
             // 
             // CbStatus
             // 
+            CbStatus.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
             CbStatus.AutoCompleteMode = AutoCompleteMode.Suggest;
             CbStatus.DataBindings.Add(new Binding("Text", BsModificaProcesso, "Status", true));
             CbStatus.FormattingEnabled = true;
-            CbStatus.Items.AddRange(new object[] { "Aguardando embarque", "", "Aguardando atracação", "", "Aguardando presença de carga", "", "Aguardando SIGVIG", "", "Aguardando parametrização LI/LPCO", "", "Aguardando inspeção/coleta LI/LPCO", "", "Aguardando deferimento LI/LPCO", "", "Aguardando registro DI/DUIMP", "", "Aguardando parametrização DI/DUIMP", "", "Aguardando inspeção DI/DUIMP", "", "Aguardando minuta devolução container vazio", "", "Aguardando resultado laboratório ", "", "Finalizado" });
-            CbStatus.Location = new Point(888, 480);
+            CbStatus.Items.AddRange(new object[] { "", "Aguardando embarque", "Aguardando atracação", "Aguardando presença de carga", "Aguardando SIGVIG", "Aguardando parametrização LI/LPCO", "Aguardando inspeção/coleta LI/LPCO", "Aguardando deferimento LI/LPCO", "Aguardando registro DI/DUIMP", "Aguardando parametrização DI/DUIMP", "Aguardando desembaraço", "Aguardando inspeção DI/DUIMP", "Aguardando desbloqueio Siscomex Carga", "Aguardando minuta devolução container vazio", "Aguardando resultado laboratório ", "Finalizado" });
+            CbStatus.Location = new Point(10, 36);
             CbStatus.Name = "CbStatus";
-            CbStatus.Size = new Size(219, 23);
+            CbStatus.Size = new Size(200, 23);
             CbStatus.TabIndex = 803;
             // 
             // LBLdatadeatracacao
             // 
-            LBLdatadeatracacao.Anchor = AnchorStyles.None;
+            LBLdatadeatracacao.Anchor = AnchorStyles.Top | AnchorStyles.Right;
             LBLdatadeatracacao.AutoSize = true;
             LBLdatadeatracacao.Font = new Font("Microsoft Sans Serif", 9.75F);
-            LBLdatadeatracacao.Location = new Point(1289, 215);
+            LBLdatadeatracacao.Location = new Point(169, 194);
             LBLdatadeatracacao.Name = "LBLdatadeatracacao";
             LBLdatadeatracacao.Size = new Size(114, 16);
             LBLdatadeatracacao.TabIndex = 807;
@@ -1139,10 +855,10 @@
             // 
             // LBLdatadeembarque
             // 
-            LBLdatadeembarque.Anchor = AnchorStyles.None;
+            LBLdatadeembarque.Anchor = AnchorStyles.Top | AnchorStyles.Right;
             LBLdatadeembarque.AutoSize = true;
             LBLdatadeembarque.Font = new Font("Microsoft Sans Serif", 9.75F);
-            LBLdatadeembarque.Location = new Point(1142, 215);
+            LBLdatadeembarque.Location = new Point(22, 194);
             LBLdatadeembarque.Name = "LBLdatadeembarque";
             LBLdatadeembarque.Size = new Size(121, 16);
             LBLdatadeembarque.TabIndex = 806;
@@ -1150,9 +866,9 @@
             // 
             // DTPdatadeatracacao
             // 
-            DTPdatadeatracacao.Anchor = AnchorStyles.None;
+            DTPdatadeatracacao.Anchor = AnchorStyles.Top | AnchorStyles.Right;
             DTPdatadeatracacao.Format = DateTimePickerFormat.Short;
-            DTPdatadeatracacao.Location = new Point(1279, 237);
+            DTPdatadeatracacao.Location = new Point(159, 216);
             DTPdatadeatracacao.MinDate = new DateTime(2023, 8, 22, 0, 0, 0, 0);
             DTPdatadeatracacao.Name = "DTPdatadeatracacao";
             DTPdatadeatracacao.Size = new Size(135, 23);
@@ -1161,9 +877,9 @@
             // 
             // DTPdatadeembarque
             // 
-            DTPdatadeembarque.Anchor = AnchorStyles.None;
+            DTPdatadeembarque.Anchor = AnchorStyles.Top | AnchorStyles.Right;
             DTPdatadeembarque.Format = DateTimePickerFormat.Short;
-            DTPdatadeembarque.Location = new Point(1135, 237);
+            DTPdatadeembarque.Location = new Point(15, 216);
             DTPdatadeembarque.MinDate = new DateTime(2023, 8, 22, 0, 0, 0, 0);
             DTPdatadeembarque.Name = "DTPdatadeembarque";
             DTPdatadeembarque.Size = new Size(135, 23);
@@ -1172,6 +888,8 @@
             // 
             // groupBox1
             // 
+            groupBox1.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left;
+            groupBox1.AutoSizeMode = AutoSizeMode.GrowAndShrink;
             groupBox1.Controls.Add(TxtContainer);
             groupBox1.Controls.Add(label8);
             groupBox1.Controls.Add(txtOrigem);
@@ -1214,7 +932,7 @@
             // 
             // TxtContainer
             // 
-            TxtContainer.Anchor = AnchorStyles.None;
+            TxtContainer.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             TxtContainer.Cursor = Cursors.IBeam;
             TxtContainer.DataBindings.Add(new Binding("Text", BsModificaProcesso, "Container", true));
             TxtContainer.Location = new Point(638, 89);
@@ -1224,7 +942,7 @@
             // 
             // label8
             // 
-            label8.Anchor = AnchorStyles.None;
+            label8.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             label8.AutoSize = true;
             label8.Font = new Font("Microsoft Sans Serif", 9.75F);
             label8.Location = new Point(550, 91);
@@ -1235,7 +953,7 @@
             // 
             // txtOrigem
             // 
-            txtOrigem.Anchor = AnchorStyles.None;
+            txtOrigem.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             txtOrigem.Cursor = Cursors.IBeam;
             txtOrigem.DataBindings.Add(new Binding("Text", BsModificaProcesso, "Origem", true));
             txtOrigem.Location = new Point(707, 32);
@@ -1245,7 +963,7 @@
             // 
             // label3
             // 
-            label3.Anchor = AnchorStyles.None;
+            label3.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             label3.AutoSize = true;
             label3.Font = new Font("Microsoft Sans Serif", 9.75F);
             label3.Location = new Point(638, 33);
@@ -1256,7 +974,7 @@
             // 
             // TXTportodedestino
             // 
-            TXTportodedestino.Anchor = AnchorStyles.None;
+            TXTportodedestino.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             TXTportodedestino.Cursor = Cursors.IBeam;
             TXTportodedestino.DataBindings.Add(new Binding("Text", BsModificaProcesso, "PortoDestino", true));
             TXTportodedestino.Location = new Point(510, 31);
@@ -1266,7 +984,7 @@
             // 
             // label14
             // 
-            label14.Anchor = AnchorStyles.None;
+            label14.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             label14.AutoSize = true;
             label14.Font = new Font("Microsoft Sans Serif", 9.75F);
             label14.Location = new Point(379, 33);
@@ -1277,6 +995,7 @@
             // 
             // groupBox4
             // 
+            groupBox4.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             groupBox4.Controls.Add(CbLiberado);
             groupBox4.Controls.Add(CbSelecionado);
             groupBox4.Location = new Point(910, 116);
@@ -1314,7 +1033,7 @@
             // 
             // CbResultadoLaboratorial
             // 
-            CbResultadoLaboratorial.Anchor = AnchorStyles.None;
+            CbResultadoLaboratorial.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             CbResultadoLaboratorial.AutoSize = true;
             CbResultadoLaboratorial.DataBindings.Add(new Binding("Checked", BsModificaProcesso, "ResultadoLab", true));
             CbResultadoLaboratorial.Font = new Font("Microsoft Sans Serif", 9.75F);
@@ -1327,7 +1046,7 @@
             // 
             // CbPresencaCarga
             // 
-            CbPresencaCarga.Anchor = AnchorStyles.None;
+            CbPresencaCarga.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             CbPresencaCarga.AutoSize = true;
             CbPresencaCarga.DataBindings.Add(new Binding("Checked", BsModificaProcesso, "PresencaDeCarga", true));
             CbPresencaCarga.Font = new Font("Microsoft Sans Serif", 9.75F);
@@ -1340,6 +1059,8 @@
             // 
             // groupBox6
             // 
+            groupBox6.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left;
+            groupBox6.AutoSizeMode = AutoSizeMode.GrowAndShrink;
             groupBox6.Controls.Add(TXTstatusdoprocesso);
             groupBox6.Font = new Font("Segoe UI", 10F);
             groupBox6.Location = new Point(14, 182);
@@ -1351,6 +1072,8 @@
             // 
             // groupBox7
             // 
+            groupBox7.Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            groupBox7.AutoSizeMode = AutoSizeMode.GrowAndShrink;
             groupBox7.Controls.Add(TXTpendencia);
             groupBox7.Font = new Font("Segoe UI", 10F);
             groupBox7.Location = new Point(357, 461);
@@ -1362,48 +1085,102 @@
             // 
             // BtnLI
             // 
-            BtnLI.Location = new Point(965, 195);
+            BtnLI.Location = new Point(474, 0);
             BtnLI.Name = "BtnLI";
-            BtnLI.Size = new Size(129, 20);
+            BtnLI.Size = new Size(129, 23);
             BtnLI.TabIndex = 818;
             BtnLI.Text = "Novo LI";
             BtnLI.UseVisualStyleBackColor = true;
             BtnLI.Click += BtnLI_Click;
+            // 
+            // BtnExcluirLI
+            // 
+            BtnExcluirLI.Location = new Point(609, 0);
+            BtnExcluirLI.Name = "BtnExcluirLI";
+            BtnExcluirLI.Size = new Size(129, 23);
+            BtnExcluirLI.TabIndex = 819;
+            BtnExcluirLI.Text = "Excluir LI";
+            BtnExcluirLI.UseVisualStyleBackColor = true;
+            BtnExcluirLI.Click += BtnExcluirLi_Click;
+            // 
+            // flowLayoutPanel1
+            // 
+            flowLayoutPanel1.AutoSize = true;
+            flowLayoutPanel1.Location = new Point(3, 635);
+            flowLayoutPanel1.Name = "flowLayoutPanel1";
+            flowLayoutPanel1.Size = new Size(1445, 641);
+            flowLayoutPanel1.TabIndex = 820;
+            // 
+            // groupBox8
+            // 
+            groupBox8.Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            groupBox8.AutoSizeMode = AutoSizeMode.GrowAndShrink;
+            groupBox8.Controls.Add(label32);
+            groupBox8.Controls.Add(btnAdiciona);
+            groupBox8.Controls.Add(btnRelatorio);
+            groupBox8.Controls.Add(btnCapa);
+            groupBox8.Controls.Add(CbStatus);
+            groupBox8.Location = new Point(888, 461);
+            groupBox8.Name = "groupBox8";
+            groupBox8.Size = new Size(219, 171);
+            groupBox8.TabIndex = 821;
+            groupBox8.TabStop = false;
+            // 
+            // groupBox9
+            // 
+            groupBox9.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Right;
+            groupBox9.AutoSizeMode = AutoSizeMode.GrowAndShrink;
+            groupBox9.Controls.Add(label16);
+            groupBox9.Controls.Add(checkedListBox1);
+            groupBox9.Controls.Add(checkedListBox2);
+            groupBox9.Controls.Add(LBLdatadeatracacao);
+            groupBox9.Controls.Add(label24);
+            groupBox9.Controls.Add(LBLdatadeembarque);
+            groupBox9.Controls.Add(DTPDataRecOriginais);
+            groupBox9.Controls.Add(DTPdatadeatracacao);
+            groupBox9.Controls.Add(label25);
+            groupBox9.Controls.Add(DTPdatadeembarque);
+            groupBox9.Controls.Add(label27);
+            groupBox9.Controls.Add(cbMarca);
+            groupBox9.Controls.Add(numMarca);
+            groupBox9.Location = new Point(1125, 12);
+            groupBox9.Name = "groupBox9";
+            groupBox9.Size = new Size(306, 256);
+            groupBox9.TabIndex = 822;
+            groupBox9.TabStop = false;
+            // 
+            // groupBox10
+            // 
+            groupBox10.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            groupBox10.AutoSizeMode = AutoSizeMode.GrowAndShrink;
+            groupBox10.Controls.Add(BtnExcluirLI);
+            groupBox10.Controls.Add(BtnLI);
+            groupBox10.Controls.Add(TCLi);
+            groupBox10.Location = new Point(357, 182);
+            groupBox10.Name = "groupBox10";
+            groupBox10.Size = new Size(750, 283);
+            groupBox10.TabIndex = 823;
+            groupBox10.TabStop = false;
             // 
             // FrmModificaProcesso
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(1443, 639);
-            Controls.Add(BtnLI);
             Controls.Add(groupBox7);
-            Controls.Add(LBLdatadeatracacao);
-            Controls.Add(LBLdatadeembarque);
-            Controls.Add(DTPdatadeatracacao);
-            Controls.Add(DTPdatadeembarque);
-            Controls.Add(CbStatus);
-            Controls.Add(label32);
-            Controls.Add(TCLi);
-            Controls.Add(btnCapa);
-            Controls.Add(btnRelatorio);
-            Controls.Add(numMarca);
-            Controls.Add(cbMarca);
             Controls.Add(groupBox3);
-            Controls.Add(label27);
-            Controls.Add(label25);
-            Controls.Add(DTPDataRecOriginais);
-            Controls.Add(label24);
-            Controls.Add(checkedListBox2);
-            Controls.Add(label16);
-            Controls.Add(checkedListBox1);
             Controls.Add(groupBox2);
-            Controls.Add(btnAdiciona);
             Controls.Add(groupBox1);
             Controls.Add(groupBox6);
+            Controls.Add(flowLayoutPanel1);
+            Controls.Add(groupBox8);
+            Controls.Add(groupBox9);
+            Controls.Add(groupBox10);
             FormBorderStyle = FormBorderStyle.FixedSingle;
             MaximizeBox = false;
             Name = "FrmModificaProcesso";
             Text = "Processo";
+            FormClosing += frmModificaProcesso_FormClosing;
             Load += FrmModificaProcesso_Load;
             groupBox2.ResumeLayout(false);
             groupBox2.PerformLayout();
@@ -1412,13 +1189,6 @@
             groupBox3.ResumeLayout(false);
             groupBox3.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)numMarca).EndInit();
-            TCLi.ResumeLayout(false);
-            tabPage1.ResumeLayout(false);
-            groupBox5.ResumeLayout(false);
-            groupBox5.PerformLayout();
-            tabControl2.ResumeLayout(false);
-            tabPage3.ResumeLayout(false);
-            tabPage3.PerformLayout();
             groupBox1.ResumeLayout(false);
             groupBox1.PerformLayout();
             groupBox4.ResumeLayout(false);
@@ -1427,6 +1197,11 @@
             groupBox6.PerformLayout();
             groupBox7.ResumeLayout(false);
             groupBox7.PerformLayout();
+            groupBox8.ResumeLayout(false);
+            groupBox8.PerformLayout();
+            groupBox9.ResumeLayout(false);
+            groupBox9.PerformLayout();
+            groupBox10.ResumeLayout(false);
             ResumeLayout(false);
             PerformLayout();
         }
@@ -1476,7 +1251,6 @@
         private Label label25;
         private DateTimePicker DTPDataRecOriginais;
         private MaskedTextBox TXTnr;
-        private Button button2;
         private GroupBox groupBox3;
         private TextBox txtTerminal;
         private Label label4;
@@ -1494,32 +1268,6 @@
         private Button btnCapa;
         private Button btnRelatorio;
         private TabControl TCLi;
-        private TabPage tabPage1;
-        private GroupBox groupBox5;
-        private Label label39;
-        private DateTimePicker DtpDataRegistro;
-        private Label label40;
-        private Label label41;
-        private TextBox TxtNCM;
-        private TextBox TxtLi;
-        private TabPage tabPage2;
-        private Button BtnNovoOrgaoAnuente;
-        private ComboBox CBOrgaoAnuente;
-        private TabControl tabControl2;
-        private TabPage tabPage3;
-        private Label label28;
-        private DateTimePicker dateTimePicker3;
-        private Label label29;
-        private DateTimePicker dateTimePicker2;
-        private TextBox TxtParametrizacaoLPCO;
-        private Label label30;
-        private TextBox TxtLPCO;
-        private Label label31;
-        private TabPage tabPage4;
-        private Label label42;
-        private DateTimePicker DtpDataDefrimentoLPCO;
-        private Label label43;
-        private DateTimePicker DtpDataRegsitroLPCO;
         private Label label32;
         private ComboBox CbStatus;
         private Label LBLdatadeatracacao;
@@ -1542,5 +1290,10 @@
         private Label label8;
         private BindingSource BsModificaProcesso;
         private Button BtnLI;
+        private Button BtnExcluirLI;
+        private FlowLayoutPanel flowLayoutPanel1;
+        private GroupBox groupBox8;
+        private GroupBox groupBox9;
+        private GroupBox groupBox10;
     }
 }

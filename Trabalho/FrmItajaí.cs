@@ -15,7 +15,8 @@ namespace Trabalho
     public partial class FrmItajaí : Form
     {
         private readonly RepositorioProcesso _repositorio;
-        private int _estadoOrdenacaoRefUsa = 0; // 0 = original, 1 = asc, 2 = desc
+        private DataGridViewColumn? _colunaOrdenada;
+        private ListSortDirection _direcaoOrdenacao;
         private List<Processo> _listaOriginal = new();
 
         public FrmItajaí()
@@ -201,47 +202,39 @@ namespace Trabalho
                 coluna.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleLeft;
             }
         }
-
-        private async void FrmProcesso_Load(object sender, EventArgs e)
+        private async void DGV_CellDoubleClick(object? sender, DataGridViewCellEventArgs e)
         {
+            // Garante que o clique não foi no cabeçalho da coluna
+            if (e.RowIndex < 0) return;
+
+            // Pega o processo selecionado na linha clicada a partir do BindingSource
+            if (BsProcesso.Current is not Processo processoSelecionado)
+            {
+                MessageBox.Show("Não foi possível identificar o processo selecionado.", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
             try
             {
-                ConfigurarColunasDataGridViewProcesso();
-
-                var registros = await _repositorio.ListarTodosAsync();
-                // Ordena sempre do menor para o maior
-                var registrosOrdenados = registros.OrderBy(p => ExtrairAnoNumero(p.Ref_USA)).ToList();
-                _listaOriginal = registrosOrdenados;
-
-                if (registrosOrdenados.Any())
+                // Abre o formulário de edição passando o processo selecionado
+                using var frm = new FrmModificaProcesso
                 {
-                    BsProcesso.DataSource = registrosOrdenados;
-                    DGVItajai.DataSource = BsProcesso;
-                }
-                else
-                {
-                    MessageBox.Show(
-                        "Operação concluída com sucesso.",
-                        "Sucesso",
-                        MessageBoxButtons.OK,
-                        MessageBoxIcon.Information
-                    );
-                }
-                this.Icon = Icon.ExtractAssociatedIcon(Application.ExecutablePath);
-                PopularComboBoxDePesquisa();
+                    processo = processoSelecionado,
+                    Modo = "Visualizar",
+                    Visualização = true // <-- Esta é a chave para travar os campos na tela de edição
+                };
 
-                if (CmbPesquisar.Items.Count > 0)
-                {
-                    CmbPesquisar.SelectedIndex = 0;
-                }
-                await ConfigurarAutoCompletarParaPesquisaAsync();
+                frm.ShowDialog();
+
+                // Após fechar a tela de visualização, recarrega a grade para garantir que os
+                // dados estejam sempre atualizados, caso outro usuário tenha feito alguma alteração.
+                await CarregarDadosAsync();
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Erro ao carregar os dados: {ex.Message}", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show($"Erro ao abrir a tela de visualização: {ex.Message}", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
-
         private void PopularComboBoxDePesquisa()
         {
             var camposIgnorados = new HashSet<string>
@@ -331,29 +324,18 @@ namespace Trabalho
                 }
             }
         }
-        private async void BtnEditar_Click(object sender, EventArgs e)
+        private async void BtnEditar_Click(object? sender, EventArgs e)
         {
             if (BsProcesso.Current is not Processo processoSelecionado)
             {
-                MessageBox.Show("Nenhum processo selecionado para edição.", "Aviso", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show("Nenhum processo selecionado para edição.", "Aviso");
                 return;
             }
 
             using var frm = new FrmModificaProcesso { processo = processoSelecionado, Modo = "Editar" };
+            frm.ShowDialog();
 
-            if (frm.ShowDialog() == DialogResult.OK)
-            {
-                try
-                {
-                    // O repositório agora cuida de sincronizar todas as coleções relacionadas.
-                    await _repositorio.UpdateAsync(processoSelecionado);
-                    BsProcesso.ResetBindings(false);
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show($"Erro ao editar o processo: {ex.Message}", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                }
-            }
+            await CarregarDadosAsync();
         }
         private async void BtnPesquisar_Click(object sender, EventArgs e)
         {
@@ -499,43 +481,23 @@ namespace Trabalho
 
             public override string ToString() => HeaderText;
         }
-        private void DGVItajai_ColumnHeaderMouseClick(object sender, DataGridViewCellMouseEventArgs e)
+        private bool IsValueEmpty(object? value)
         {
-            var coluna = DGVItajai.Columns[e.ColumnIndex];
-            if (coluna.Name == "ColunaRefUSA")
+            if (value == null || value == DBNull.Value)
             {
-                if (BsProcesso.DataSource is not List<Processo> lista) return;
-
-                _estadoOrdenacaoRefUsa = (_estadoOrdenacaoRefUsa + 1) % 3;
-
-                List<Processo> listaOrdenada;
-                string header = "Ref. USA";
-                switch (_estadoOrdenacaoRefUsa)
-                {
-                    case 1: // Ascendente
-                        listaOrdenada = _listaOriginal.OrderBy(p => ExtrairAnoNumero(p.Ref_USA)).ToList();
-                        header += "  ↓";
-                        break;
-                    case 2: // Descendente
-                        listaOrdenada = _listaOriginal.OrderByDescending(p => ExtrairAnoNumero(p.Ref_USA)).ToList();
-                        header += "  ↑";
-                        break;
-                    default: // Original
-                        listaOrdenada = new List<Processo>(_listaOriginal);
-                        break;
-                }
-
-                BsProcesso.DataSource = listaOrdenada;
-                DGVItajai.DataSource = BsProcesso;
-                DGVItajai.Columns[0].HeaderText = header;
+                return true;
             }
+            if (value is string str)
+            {
+                return string.IsNullOrWhiteSpace(str);
+            }
+            return false;
         }
-
-        // Função auxiliar para extrair ano e número do formato 0000/0000
-        private static (int ano, int numero) ExtrairAnoNumero(string refUsa)
+        private (int ano, int numero) ExtrairAnoNumero(string refUsa)
         {
             if (string.IsNullOrWhiteSpace(refUsa)) return (0, 0);
-            var partes = refUsa.Split('/');
+            string refLimpa = refUsa.Split(' ').FirstOrDefault() ?? refUsa;
+            var partes = refLimpa.Split('/');
             int numero = 0, ano = 0;
             if (partes.Length == 2)
             {
@@ -543,6 +505,92 @@ namespace Trabalho
                 int.TryParse(partes[1], out ano);
             }
             return (ano, numero);
+        }
+
+
+        // Substitua seu método de clique no cabeçalho por este
+        private void DGV_ColumnHeaderMouseClick(object? sender, DataGridViewCellMouseEventArgs e)
+        {
+            if (sender is not DataGridView dgv) return;
+            var novaColuna = dgv.Columns[e.ColumnIndex];
+            if (novaColuna.SortMode == DataGridViewColumnSortMode.NotSortable) return;
+            if (BsProcesso.DataSource is not List<Processo> listaParaOrdenar) return;
+
+            // 1. Determina a Direção da Ordenação (mesma lógica de antes)
+            ListSortDirection direcao;
+            if (_colunaOrdenada == null || _colunaOrdenada.Name != novaColuna.Name)
+            {
+                direcao = ListSortDirection.Ascending;
+            }
+            else
+            {
+                direcao = (_direcaoOrdenacao == ListSortDirection.Ascending)
+                    ? ListSortDirection.Descending
+                    : ListSortDirection.Ascending;
+            }
+
+            _colunaOrdenada = novaColuna;
+            _direcaoOrdenacao = direcao;
+
+            IEnumerable<Processo> listaOrdenada;
+
+            // 2. Aplica a Lógica de Ordenação em Dois Níveis
+            if (novaColuna.DataPropertyName == "Ref_USA")
+            {
+                // --- LÓGICA ESPECIAL PARA REF_USA ---
+                var orderedByEmptiness = listaParaOrdenar
+                    // NÍVEL 1: Jogar Ref_USA vazias para o final
+                    .OrderBy(p => IsValueEmpty(p.Ref_USA) ? 1 : 0);
+
+                listaOrdenada = direcao == ListSortDirection.Ascending
+                    // NÍVEL 2: Ordenar as restantes pelo critério especial
+                    ? orderedByEmptiness.ThenBy(p => ExtrairAnoNumero(p.Ref_USA))
+                    : orderedByEmptiness.ThenByDescending(p => ExtrairAnoNumero(p.Ref_USA));
+            }
+            else
+            {
+                // --- LÓGICA GENÉRICA PARA OUTRAS COLUNAS ---
+                var propInfo = typeof(Processo).GetProperty(novaColuna.DataPropertyName);
+                if (propInfo == null) return;
+
+                var orderedByEmptiness = listaParaOrdenar
+                    // NÍVEL 1: Jogar valores vazios da coluna genérica para o final
+                    .OrderBy(p => IsValueEmpty(propInfo.GetValue(p)) ? 1 : 0);
+
+                // NÍVEL 2: Ordenar os valores restantes, com tratamento para datas
+                if (propInfo.PropertyType == typeof(DateTime) || propInfo.PropertyType == typeof(DateTime?))
+                {
+                    listaOrdenada = direcao == ListSortDirection.Ascending
+                        ? orderedByEmptiness.ThenBy(p => (DateTime?)propInfo.GetValue(p) ?? DateTime.MinValue)
+                        : orderedByEmptiness.ThenByDescending(p => (DateTime?)propInfo.GetValue(p) ?? DateTime.MinValue);
+                }
+                else
+                {
+                    listaOrdenada = direcao == ListSortDirection.Ascending
+                        ? orderedByEmptiness.ThenBy(p => propInfo.GetValue(p))
+                        : orderedByEmptiness.ThenByDescending(p => propInfo.GetValue(p));
+                }
+            }
+
+            // 3. Atualiza o DataGridView (mesma lógica de antes)
+            BsProcesso.DataSource = listaOrdenada.ToList();
+            BsProcesso.ResetBindings(false);
+
+            // 4. Atualiza a Seta Visual (Glyph) no Cabeçalho (mesma lógica de antes)
+            foreach (DataGridViewColumn column in dgv.Columns)
+            {
+                column.HeaderCell.SortGlyphDirection = (column.Name == novaColuna.Name)
+                    ? (direcao == ListSortDirection.Ascending ? SortOrder.Ascending : SortOrder.Descending)
+                    : SortOrder.None;
+            }
+        }
+
+        private void BtnAjuda_Click(object sender, EventArgs e)
+        {
+            if (this.WindowState == FormWindowState.Maximized)
+                this.WindowState = FormWindowState.Normal;
+            if (this.WindowState == FormWindowState.Normal)
+                this.WindowState = FormWindowState.Maximized;
         }
     }
 }

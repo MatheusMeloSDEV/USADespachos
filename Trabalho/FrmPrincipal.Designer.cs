@@ -176,10 +176,6 @@
             TCabas.SizeMode = TabSizeMode.FillToRight;
             TCabas.TabIndex = 2;
             // 
-            // timerReleaseExit
-            // 
-            timerReleaseExit.Tick += TimerReleaseExit_Tick;
-            // 
             // FrmPrincipal
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
@@ -190,7 +186,7 @@
             IsMdiContainer = true;
             MainMenuStrip = menuStrip1;
             Name = "FrmPrincipal";
-            Text = "FrmPrincipal";
+            Text = "Processos em Andamento";
             WindowState = FormWindowState.Maximized;
             FormClosing += FrmPrincipal_FormClosing;
             Load += FrmPrincipal_Load;

@@ -67,6 +67,7 @@ namespace Trabalho
                     e.Cancel = true;
                 }
             }
+            else { this.DialogResult = DialogResult.OK; }
             // Se a bandeira não estiver levantada, o formulário fecha normalmente sem perguntar nada.
         }
         private void AplicarMascaraMoeda(object sender, EventArgs e)
@@ -179,8 +180,7 @@ namespace Trabalho
 
                 MessageBox.Show("Recibo atualizado com sucesso!", "Sucesso",
                                 MessageBoxButtons.OK, MessageBoxIcon.Information);
-                this.DialogResult = DialogResult.OK;
-                this.Close();
+
             }
             catch (Exception ex)
             {

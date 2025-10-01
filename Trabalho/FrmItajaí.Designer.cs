@@ -29,9 +29,9 @@
         private void InitializeComponent()
         {
             components = new System.ComponentModel.Container();
-            DataGridViewCellStyle dataGridViewCellStyle4 = new DataGridViewCellStyle();
-            DataGridViewCellStyle dataGridViewCellStyle5 = new DataGridViewCellStyle();
-            DataGridViewCellStyle dataGridViewCellStyle6 = new DataGridViewCellStyle();
+            DataGridViewCellStyle dataGridViewCellStyle1 = new DataGridViewCellStyle();
+            DataGridViewCellStyle dataGridViewCellStyle2 = new DataGridViewCellStyle();
+            DataGridViewCellStyle dataGridViewCellStyle3 = new DataGridViewCellStyle();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FrmItajaí));
             DGVItajai = new DataGridView();
             TSMenuItajai = new ToolStrip();
@@ -40,15 +40,18 @@
             BtnEditar = new ToolStripButton();
             toolStripSeparator3 = new ToolStripSeparator();
             BtnExportar = new ToolStripButton();
+            BtnAjuda = new ToolStripButton();
             BtnCancelar = new ToolStripButton();
             BtnPesquisar = new ToolStripButton();
             toolStripSeparator1 = new ToolStripSeparator();
             CmbPesquisar = new ToolStripComboBox();
             TxtPesquisar = new ToolStripTextBox();
             BsProcesso = new BindingSource(components);
+            panel1 = new Panel();
             ((System.ComponentModel.ISupportInitialize)DGVItajai).BeginInit();
             TSMenuItajai.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)BsProcesso).BeginInit();
+            panel1.SuspendLayout();
             SuspendLayout();
             // 
             // DGVItajai
@@ -57,41 +60,43 @@
             DGVItajai.AllowUserToDeleteRows = false;
             DGVItajai.AllowUserToResizeColumns = false;
             DGVItajai.AllowUserToResizeRows = false;
-            dataGridViewCellStyle4.BackColor = Color.WhiteSmoke;
-            DGVItajai.AlternatingRowsDefaultCellStyle = dataGridViewCellStyle4;
-            DGVItajai.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            dataGridViewCellStyle1.BackColor = Color.WhiteSmoke;
+            DGVItajai.AlternatingRowsDefaultCellStyle = dataGridViewCellStyle1;
             DGVItajai.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
             DGVItajai.BackgroundColor = Color.White;
-            dataGridViewCellStyle5.Alignment = DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle5.BackColor = Color.DarkGray;
-            dataGridViewCellStyle5.Font = new Font("Segoe UI", 9.75F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            dataGridViewCellStyle5.ForeColor = Color.White;
-            dataGridViewCellStyle5.SelectionBackColor = SystemColors.Highlight;
-            dataGridViewCellStyle5.SelectionForeColor = SystemColors.HighlightText;
-            dataGridViewCellStyle5.WrapMode = DataGridViewTriState.True;
-            DGVItajai.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle5;
+            dataGridViewCellStyle2.Alignment = DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle2.BackColor = Color.DarkGray;
+            dataGridViewCellStyle2.Font = new Font("Segoe UI", 9.75F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            dataGridViewCellStyle2.ForeColor = Color.White;
+            dataGridViewCellStyle2.SelectionBackColor = SystemColors.Highlight;
+            dataGridViewCellStyle2.SelectionForeColor = SystemColors.HighlightText;
+            dataGridViewCellStyle2.WrapMode = DataGridViewTriState.True;
+            DGVItajai.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle2;
             DGVItajai.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            dataGridViewCellStyle6.Alignment = DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle6.BackColor = Color.White;
-            dataGridViewCellStyle6.Font = new Font("Segoe UI", 9.75F, FontStyle.Regular, GraphicsUnit.Point, 0);
-            dataGridViewCellStyle6.ForeColor = Color.Black;
-            dataGridViewCellStyle6.SelectionBackColor = Color.LightBlue;
-            dataGridViewCellStyle6.SelectionForeColor = Color.Black;
-            dataGridViewCellStyle6.WrapMode = DataGridViewTriState.False;
-            DGVItajai.DefaultCellStyle = dataGridViewCellStyle6;
+            dataGridViewCellStyle3.Alignment = DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle3.BackColor = Color.White;
+            dataGridViewCellStyle3.Font = new Font("Segoe UI", 9.75F, FontStyle.Regular, GraphicsUnit.Point, 0);
+            dataGridViewCellStyle3.ForeColor = Color.Black;
+            dataGridViewCellStyle3.SelectionBackColor = Color.LightBlue;
+            dataGridViewCellStyle3.SelectionForeColor = Color.Black;
+            dataGridViewCellStyle3.WrapMode = DataGridViewTriState.False;
+            DGVItajai.DefaultCellStyle = dataGridViewCellStyle3;
+            DGVItajai.Dock = DockStyle.Fill;
             DGVItajai.EnableHeadersVisualStyles = false;
-            DGVItajai.Location = new Point(12, 43);
+            DGVItajai.Location = new Point(0, 0);
             DGVItajai.Name = "DGVItajai";
             DGVItajai.ReadOnly = true;
             DGVItajai.RowHeadersVisible = false;
             DGVItajai.RowTemplate.Height = 25;
-            DGVItajai.Size = new Size(776, 395);
+            DGVItajai.Size = new Size(800, 408);
             DGVItajai.TabIndex = 0;
+            DGVItajai.CellDoubleClick += DGVItajai_CellDoubleClick;
+            DGVItajai.ColumnHeaderMouseClick += DGV_ColumnHeaderMouseClick;
             // 
             // TSMenuItajai
             // 
             TSMenuItajai.AutoSize = false;
-            TSMenuItajai.Items.AddRange(new ToolStripItem[] { BtnAdicionar, toolStripSeparator2, BtnEditar, toolStripSeparator3, BtnExportar, BtnCancelar, BtnPesquisar, toolStripSeparator1, CmbPesquisar, TxtPesquisar });
+            TSMenuItajai.Items.AddRange(new ToolStripItem[] { BtnAdicionar, toolStripSeparator2, BtnEditar, toolStripSeparator3, BtnExportar, BtnAjuda, BtnCancelar, BtnPesquisar, toolStripSeparator1, CmbPesquisar, TxtPesquisar });
             TSMenuItajai.Location = new Point(0, 0);
             TSMenuItajai.Name = "TSMenuItajai";
             TSMenuItajai.Size = new Size(800, 40);
@@ -140,13 +145,25 @@
             BtnExportar.Text = "Exportar";
             BtnExportar.Click += BtnExportar_Click;
             // 
+            // BtnAjuda
+            // 
+            BtnAjuda.Alignment = ToolStripItemAlignment.Right;
+            BtnAjuda.DisplayStyle = ToolStripItemDisplayStyle.Text;
+            BtnAjuda.Font = new Font("Segoe UI", 13F, FontStyle.Bold);
+            BtnAjuda.Image = (Image)resources.GetObject("BtnAjuda.Image");
+            BtnAjuda.ImageTransparentColor = Color.Magenta;
+            BtnAjuda.Margin = new Padding(0, 1, 7, 2);
+            BtnAjuda.Name = "BtnAjuda";
+            BtnAjuda.Size = new Size(24, 37);
+            BtnAjuda.Text = "?";
+            BtnAjuda.Click += BtnAjuda_Click;
+            // 
             // BtnCancelar
             // 
             BtnCancelar.Alignment = ToolStripItemAlignment.Right;
             BtnCancelar.DisplayStyle = ToolStripItemDisplayStyle.Image;
             BtnCancelar.Image = (Image)resources.GetObject("BtnCancelar.Image");
             BtnCancelar.ImageTransparentColor = Color.Magenta;
-            BtnCancelar.Margin = new Padding(0, 1, 7, 2);
             BtnCancelar.Name = "BtnCancelar";
             BtnCancelar.Size = new Size(23, 37);
             BtnCancelar.Text = "toolStripButton4";
@@ -186,22 +203,32 @@
             TxtPesquisar.Name = "TxtPesquisar";
             TxtPesquisar.Size = new Size(150, 40);
             // 
+            // panel1
+            // 
+            panel1.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            panel1.Controls.Add(DGVItajai);
+            panel1.Location = new Point(0, 43);
+            panel1.Name = "panel1";
+            panel1.Size = new Size(800, 408);
+            panel1.TabIndex = 2;
+            // 
             // FrmItajaí
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(800, 450);
+            ControlBox = false;
+            Controls.Add(panel1);
             Controls.Add(TSMenuItajai);
-            Controls.Add(DGVItajai);
             Name = "FrmItajaí";
-            Text = "FrmItajaí";
+            Text = "Gerenciamento de Processos";
             WindowState = FormWindowState.Maximized;
-            Load += FrmProcesso_Load;
             Shown += FrmItajaí_Shown;
             ((System.ComponentModel.ISupportInitialize)DGVItajai).EndInit();
             TSMenuItajai.ResumeLayout(false);
             TSMenuItajai.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)BsProcesso).EndInit();
+            panel1.ResumeLayout(false);
             ResumeLayout(false);
         }
 
@@ -220,5 +247,7 @@
         private ToolStripSeparator toolStripSeparator2;
         private ToolStripSeparator toolStripSeparator3;
         private BindingSource BsProcesso;
+        private Panel panel1;
+        private ToolStripButton BtnAjuda;
     }
 }

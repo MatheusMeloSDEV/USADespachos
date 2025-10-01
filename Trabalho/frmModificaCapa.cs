@@ -12,74 +12,115 @@ namespace Trabalho
         private bool _dadosForamAlterados = false;
         // Inicialize todos os checkboxes
 
+
         public FrmModificaCapa()
         {
             InitializeComponent();
             capa = new();
         }
 
-        private void FrmModificaCapa_Load(object sender, EventArgs e)
+        private void FrmModificaCapa_Load(object? sender, EventArgs e)
         {
             this.Icon = Icon.ExtractAssociatedIcon(Application.ExecutablePath);
+            CarregarDados();
+            AnexarEventoDeAlteracao(this);
 
-            // Preenche os controles com os valores do objeto capa
-            txtMaster.Text = capa.Master ?? "";
-            txtContainer.Text = capa.Container ?? "";
-            cbSigvig.SelectedItem = capa.Sigvig ?? "Selecionado";
-            DTPSigvig.Value = capa.SigvigData ?? DateTime.Today;
-            TxtIncoterm.Text = capa.Incoterm ?? "";
-            txtDTA.Text = capa.DTA ?? "";
-            txtMarinha.Text = capa.Marinha ?? "";
-            txtCE.Text = capa.CE ?? "";
-            cbArmazenagem.Checked = capa.Armazenagem; 
+            if (Visualizacao)
+            {
+                SetCamposSomenteLeitura(this);
+            }
+        }
+        private void CarregarDados()
+        {
+            txtMaster.Text = capa.Master;
+            txtContainer.Text = capa.Container;
+            CbSelecionado.Checked = capa.SigvigSelecionado;
+            CbLiberado.Checked = capa.SigvigLiberado;
+            TxtIncoterm.Text = capa.Incoterm;
+            txtDTA.Text = capa.DTA;
+            txtMarinha.Text = capa.Marinha;
+            txtCE.Text = capa.CE;
+            txtPagoPor.Text = capa.PagoPor;
+            txtTransporte.Text = capa.ENTTransporteN;
+            txtDOSSIE.Text = capa.ENTAlfandegaDossie;
+            txtObservacao.Text = capa.Observacoes;
+
+            cbArmazenagem.Checked = capa.Armazenagem;
             cbArmFaturado.Checked = capa.Faturado;
+
+            // Carrega o estado do CheckedListBox 'ItensAdicionais'
+            MarcarItem(ItensAdicionais, "Tela do Canal", capa.TelaDoCanal);
+            MarcarItem(ItensAdicionais, "Lançado", capa.Lancado);
+            MarcarItem(ItensAdicionais, "Consulta SEFAZ", capa.ConsultaSEFAZ);
+            MarcarItem(ItensAdicionais, "DAT & LI Deferida", capa.DAT_IIDeferida);
+            MarcarItem(ItensAdicionais, "DANFE", capa.DANFE);
+            MarcarItem(ItensAdicionais, "SISCarga Liberado", capa.SISCargaLiberado);
+            MarcarItem(ItensAdicionais, "Pago", capa.Pago);
+            MarcarItem(ItensAdicionais, "ENT Transporte", capa.ENTTransporte);
+            MarcarItem(ItensAdicionais, "ENT Alfandega", capa.ENTAlfandega);
+            MarcarItem(ItensAdicionais, "Conferência Física", capa.ConferenciaFisica);
+            MarcarItem(ItensAdicionais, "Averbar", capa.Averbar);
+            MarcarItem(ItensAdicionais, "Liberar BL", capa.LiberarBL);
+            MarcarItem(ItensAdicionais, "Marinha Mercante - Isenção", capa.MarinhaMercante_Isencao);
+            MarcarItem(ItensAdicionais, "ICMS - Exoneração", capa.ICMS_Exoneracao);
 
             if (capa.Numerario != null)
             {
-                foreach (var item in capa.Numerario)
+                // Percorre os itens que já estão salvos no objeto 'capa'
+                foreach (var itemSalvo in capa.Numerario)
                 {
-                    int idx = cbNumerario.Items.IndexOf(item);
-                    if (idx >= 0)
-                        Impostos.SetItemChecked(idx, true);
+                    // Procura o índice do item na lista do controle
+                    int index = cbNumerario.Items.IndexOf(itemSalvo);
+                    if (index != -1)
+                    {
+                        // Se encontrar, marca o item
+                        cbNumerario.SetItemChecked(index, true);
+                    }
                 }
             }
 
-            if (capa.Imposto != null)
+            ConfigurarDatePickerNulavel(DTPSigvig, capa.SigvigData);
+            ConfigurarDatePickerNulavel(DTPAverbar, capa.AverbarData);
+            ConfigurarDatePickerNulavel(DTPLiberarBL, capa.LiberarBLData);
+            ConfigurarDatePickerNulavel(DTPIsencaoMarinha, capa.MarinhaMercante_IsencaoData);
+            ConfigurarDatePickerNulavel(DTPICMS, capa.ICMS_ExoneracaoData);
+            ConfigurarDatePickerNulavel(DTPSisCarga, capa.SISCargaLiberadoData);
+            ConfigurarDatePickerNulavel(DTPEntTransporte, capa.ENTTransporteData);
+            ConfigurarDatePickerNulavel(DTPEntAlfandega, capa.ENTAlfandegaData);
+            ConfigurarDatePickerNulavel(DTPConferenciaFisica, capa.ConferenciaFisicaData);
+
+            // Habilita/desabilita o DTP do Sigvig com base na seleção inicial
+            DTPSigvig.Enabled = CbLiberado.Checked;
+        }
+        private void MarcarItem(CheckedListBox clb, string itemTexto, bool deveMarcar)
+        {
+            int index = clb.Items.IndexOf(itemTexto);
+            if (index != -1) // <-- A VERIFICAÇÃO MÁGICA!
             {
-                foreach (var item in capa.Imposto)
-                {
-                    int idx = Impostos.Items.IndexOf(item);
-                    if (idx >= 0)
-                        Impostos.SetItemChecked(idx, true);
-                }
+                clb.SetItemChecked(index, deveMarcar);
             }
-
-            // Bools
-            // No FrmModificaCapa_Load, adicione:
-            ItensAdicionais.SetItemChecked(ItensAdicionais.Items.IndexOf("Tela do Canal"), capa.TelaDoCanal);
-            ItensAdicionais.SetItemChecked(ItensAdicionais.Items.IndexOf("Lançado"), capa.Lancado);
-            ItensAdicionais.SetItemChecked(ItensAdicionais.Items.IndexOf("Consulta SEFAZ"), capa.ConsultaSEFAZ);
-            ItensAdicionais.SetItemChecked(ItensAdicionais.Items.IndexOf("DAT & LI Deferida"), capa.DAT_IIDeferida);
-            ItensAdicionais.SetItemChecked(ItensAdicionais.Items.IndexOf("DANFE"), capa.DANFE);
-
-            // Datas
-            DTPAverbar.Value = capa.AverbarData ?? DateTime.Today;
-            DTPLiberarBL.Value = capa.LiberarBLData ?? DateTime.Today;
-            DTPIsencaoMarinha.Value = capa.MarinhaMercante_IsencaoData ?? DateTime.Today;
-            DTPICMS.Value = capa.ICMS_ExoneracaoData ?? DateTime.Today;
-            DTPSisCarga.Value = capa.SISCargaLiberadoData ?? DateTime.Today;
-            txtPagoPor.Text = capa.PagoPor ?? "";
-            DTPEntTransporte.Value = capa.ENTTransporteData ?? DateTime.Today;
-            txtTransporte.Text = capa.ENTTransporteN ?? "";
-            DTPEntAlfandega.Value = capa.ENTAlfandegaData ?? DateTime.Today;
-            txtDOSSIE.Text = capa.ENTAlfandegaDossie ?? "";
-            DTPConferenciaFisica.Value = capa.ConferenciaFisicaData ?? DateTime.Today;
-
-            txtObservacao.Text = capa.Observacoes ?? "";
-
-            btnExportar.Enabled = false;
-            if (Visualizacao) SetCamposSomenteLeitura(this);
-            AnexarEventoDeAlteracao(this);
+        }
+        private void ConfigurarDatePickerNulavel(DateTimePicker dtp, DateTime? data)
+        {
+            dtp.ShowCheckBox = true;
+            if (data.HasValue)
+            {
+                dtp.Checked = true;
+                dtp.Value = data.Value;
+                dtp.Format = DateTimePickerFormat.Short;
+            }
+            else
+            {
+                dtp.Checked = false;
+                dtp.Format = DateTimePickerFormat.Custom;
+                dtp.CustomFormat = " ";
+            }
+            dtp.ValueChanged += (s, e) => {
+                if (s is DateTimePicker picker)
+                {
+                    picker.Format = picker.Checked ? DateTimePickerFormat.Short : DateTimePickerFormat.Custom;
+                }
+            };
         }
         private void MarcarComoAlterado(object? sender, EventArgs e)
         {
@@ -155,9 +196,16 @@ namespace Trabalho
             btnExportar.Enabled = false;
         }
 
-        private void CBOSigvig_SelectedIndexChanged(object sender, EventArgs e)
+        private void CbLiberado_CheckedChanged(object? sender, EventArgs e)
         {
-            DTPSigvig.Enabled = cbSigvig.SelectedItem?.ToString() == "Liberado";
+            // Habilita o seletor de data apenas se "Liberado" estiver marcado
+            DTPSigvig.Enabled = CbLiberado.Checked;
+
+            // Se o usuário desmarcar "Liberado", a data também é desmarcada
+            if (!CbLiberado.Checked)
+            {
+                DTPSigvig.Checked = false;
+            }
         }
 
         private void btnExportar_Click(object sender, EventArgs e)
@@ -234,59 +282,76 @@ namespace Trabalho
                 }));
             });
         }
-
-        private void btnSalvar_Click_1(object sender, EventArgs e)
+        private void SalvarDados()
         {
-            // Preencher objeto capa com os valores dos controles
             capa.Master = txtMaster.Text;
             capa.Container = txtContainer.Text;
-            capa.Sigvig = cbSigvig.SelectedItem?.ToString();
-            capa.SigvigData = (capa.Sigvig == "Liberado") ? DTPSigvig.Value : null;
+            capa.SigvigSelecionado = CbSelecionado.Checked;
+            capa.SigvigLiberado = CbLiberado.Checked;
             capa.Incoterm = TxtIncoterm.Text;
-            capa.Numerario = Impostos.CheckedItems.OfType<string>().ToArray();
             capa.DTA = txtDTA.Text;
             capa.Marinha = txtMarinha.Text;
             capa.CE = txtCE.Text;
-            capa.Imposto = Impostos.CheckedItems.OfType<string>().ToArray();
+            capa.PagoPor = txtPagoPor.Text;
+            capa.ENTTransporteN = txtTransporte.Text;
+            capa.ENTAlfandegaDossie = txtDOSSIE.Text;
+            capa.Observacoes = txtObservacao.Text;
 
-            capa.TelaDoCanal = ItensAdicionais.CheckedItems.Contains("Tela do Canal");
-            capa.Lancado = ItensAdicionais.CheckedItems.Contains("Lançado");
-            capa.ConsultaSEFAZ = ItensAdicionais.CheckedItems.Contains("Consulta SEFAZ");
-            capa.DAT_IIDeferida = ItensAdicionais.CheckedItems.Contains("DAT & LI Deferida");
-            capa.DANFE = ItensAdicionais.CheckedItems.Contains("DANFE");
+            // --- Salva campos booleanos ---
             capa.Armazenagem = cbArmazenagem.Checked;
             capa.Faturado = cbArmFaturado.Checked;
 
-            capa.AverbarData = DTPAverbar.Value;
-            capa.LiberarBLData = DTPLiberarBL.Value;
-            capa.MarinhaMercante_IsencaoData = DTPIsencaoMarinha.Value;
-            capa.ICMS_ExoneracaoData = DTPICMS.Value;
-            capa.SISCargaLiberadoData = DTPSisCarga.Value;
-            capa.PagoPor = txtPagoPor.Text;
-            capa.ENTTransporteData = DTPEntTransporte.Value;
-            capa.ENTTransporteN = txtTransporte.Text;
-            capa.ENTAlfandegaData = DTPEntAlfandega.Value;
-            capa.ENTAlfandegaDossie = txtDOSSIE.Text;
-            capa.ConferenciaFisicaData = DTPConferenciaFisica.Value;
+            // MUDANÇA: Usando o novo método seguro para salvar os itens do CheckedListBox
+            capa.TelaDoCanal = IsItemChecked(ItensAdicionais, "Tela do Canal");
+            capa.Lancado = IsItemChecked(ItensAdicionais, "Lançado");
+            capa.ConsultaSEFAZ = IsItemChecked(ItensAdicionais, "Consulta SEFAZ");
+            capa.DAT_IIDeferida = IsItemChecked(ItensAdicionais, "DAT & LI Deferida");
+            capa.DANFE = IsItemChecked(ItensAdicionais, "DANFE");
+            capa.SISCargaLiberado = IsItemChecked(ItensAdicionais, "SISCarga Liberado");
+            capa.Pago = IsItemChecked(ItensAdicionais, "Pago");
+            capa.ENTTransporte = IsItemChecked(ItensAdicionais, "ENT Transporte");
+            capa.ENTAlfandega = IsItemChecked(ItensAdicionais, "ENT Alfandega");
+            capa.ConferenciaFisica = IsItemChecked(ItensAdicionais, "Conferência Física");
+            capa.Averbar = IsItemChecked(ItensAdicionais, "Averbar");
+            capa.LiberarBL = IsItemChecked(ItensAdicionais, "Liberar BL");
+            capa.MarinhaMercante_Isencao = IsItemChecked(ItensAdicionais, "Marinha Mercante - Isenção");
+            capa.ICMS_Exoneracao = IsItemChecked(ItensAdicionais, "ICMS - Exoneração");
 
-            capa.Observacoes = txtObservacao.Text;
+            capa.Numerario = cbNumerario.CheckedItems.OfType<string>().ToArray();
 
-            // Confirmação de exportação
-            var resp = MessageBox.Show(
-                "Deseja exportar a capa agora?",
-                "Exportar Capa",
-                MessageBoxButtons.YesNo,
-                MessageBoxIcon.Question
-            );
+            capa.SigvigData = DTPSigvig.Checked ? DTPSigvig.Value : null;
+            capa.AverbarData = DTPAverbar.Checked ? DTPAverbar.Value : null;
+            capa.LiberarBLData = DTPLiberarBL.Checked ? DTPLiberarBL.Value : null;
+            capa.MarinhaMercante_IsencaoData = DTPIsencaoMarinha.Checked ? DTPIsencaoMarinha.Value : null;
+            capa.ICMS_ExoneracaoData = DTPICMS.Checked ? DTPICMS.Value : null;
+            capa.SISCargaLiberadoData = DTPSisCarga.Checked ? DTPSisCarga.Value : null;
+            capa.ENTTransporteData = DTPEntTransporte.Checked ? DTPEntTransporte.Value : null;
+            capa.ENTAlfandegaData = DTPEntAlfandega.Checked ? DTPEntAlfandega.Value : null;
+            capa.ConferenciaFisicaData = DTPConferenciaFisica.Checked ? DTPConferenciaFisica.Value : null;
+        }
+        private bool IsItemChecked(CheckedListBox clb, string itemTexto)
+        {
+            int index = clb.Items.IndexOf(itemTexto);
 
-            if (resp == DialogResult.Yes)
+            // Se o item não foi encontrado (index = -1), ele não pode estar marcado.
+            if (index == -1)
             {
-                btnExportar_Click(btnExportar, EventArgs.Empty);
+                // Opcional: Adiciona um aviso no console de depuração para o desenvolvedor.
+                Debug.WriteLine($"Aviso: O item '{itemTexto}' não foi encontrado na CheckedListBox '{clb.Name}'.");
+                return false;
             }
-            else
-            {
-                btnExportar.Enabled = true;
-            }
+
+            // Se encontrou, retorna o estado real (marcado ou desmarcado).
+            return clb.GetItemChecked(index);
+        }
+        private void btnSalvar_Click_1(object? sender, EventArgs e)
+        {
+            SalvarDados();
+            _dadosForamAlterados = false;
+            this.Text = this.Text.Replace("*", "");
+
+            MessageBox.Show("Capa salva com sucesso!", "Sucesso", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            // Removida a pergunta de exportar para simplificar o botão Salvar.
         }
 
         private void btnCancelar_Click_1(object sender, EventArgs e)

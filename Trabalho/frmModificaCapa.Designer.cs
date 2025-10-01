@@ -27,10 +27,8 @@ namespace Trabalho
             label5 = new Label();
             txtCE = new TextBox();
             label6 = new Label();
-            label7 = new Label();
             txtDTA = new TextBox();
             label8 = new Label();
-            cbSigvig = new ComboBox();
             DTPSigvig = new DateTimePicker();
             cbIncotern = new CheckBox();
             ItensAdicionais = new CheckedListBox();
@@ -68,7 +66,11 @@ namespace Trabalho
             cbNumerario = new CheckedListBox();
             label21 = new Label();
             label22 = new Label();
+            groupBox2 = new GroupBox();
+            CbLiberado = new CheckBox();
+            CbSelecionado = new CheckBox();
             groupBox1.SuspendLayout();
+            groupBox2.SuspendLayout();
             SuspendLayout();
             // 
             // label1
@@ -99,9 +101,9 @@ namespace Trabalho
             label3.AutoSize = true;
             label3.Location = new Point(12, 67);
             label3.Name = "label3";
-            label3.Size = new Size(54, 15);
+            label3.Size = new Size(58, 15);
             label3.TabIndex = 4;
-            label3.Text = "Incotern:";
+            label3.Text = "Incoterm:";
             // 
             // txtContainer
             // 
@@ -151,15 +153,6 @@ namespace Trabalho
             label6.TabIndex = 12;
             label6.Text = "CE:";
             // 
-            // label7
-            // 
-            label7.AutoSize = true;
-            label7.Location = new Point(12, 154);
-            label7.Name = "label7";
-            label7.Size = new Size(42, 15);
-            label7.TabIndex = 10;
-            label7.Text = "Sigvig:";
-            // 
             // txtDTA
             // 
             txtDTA.Location = new Point(49, 93);
@@ -176,19 +169,10 @@ namespace Trabalho
             label8.TabIndex = 8;
             label8.Text = "DTA:";
             // 
-            // cbSigvig
-            // 
-            cbSigvig.FormattingEnabled = true;
-            cbSigvig.Items.AddRange(new object[] { "Selecionado", "Liberado" });
-            cbSigvig.Location = new Point(60, 151);
-            cbSigvig.Name = "cbSigvig";
-            cbSigvig.Size = new Size(233, 23);
-            cbSigvig.TabIndex = 16;
-            // 
             // DTPSigvig
             // 
             DTPSigvig.Format = DateTimePickerFormat.Short;
-            DTPSigvig.Location = new Point(299, 151);
+            DTPSigvig.Location = new Point(247, 8);
             DTPSigvig.Name = "DTPSigvig";
             DTPSigvig.Size = new Size(175, 23);
             DTPSigvig.TabIndex = 17;
@@ -367,7 +351,7 @@ namespace Trabalho
             // Impostos
             // 
             Impostos.FormattingEnabled = true;
-            Impostos.Items.AddRange(new object[] { "I.I,", "I.P.I.", "PIS/PASEP", "COFINS", "ICMS" });
+            Impostos.Items.AddRange(new object[] { "I.I.", "I.P.I.", "PIS/PASEP", "COFINS", "ICMS" });
             Impostos.Location = new Point(12, 182);
             Impostos.MultiColumn = true;
             Impostos.Name = "Impostos";
@@ -518,9 +502,42 @@ namespace Trabalho
             label22.TabIndex = 56;
             label22.Text = "Numerário";
             // 
+            // groupBox2
+            // 
+            groupBox2.Controls.Add(CbLiberado);
+            groupBox2.Controls.Add(CbSelecionado);
+            groupBox2.Controls.Add(DTPSigvig);
+            groupBox2.Location = new Point(11, 148);
+            groupBox2.Name = "groupBox2";
+            groupBox2.Size = new Size(463, 33);
+            groupBox2.TabIndex = 57;
+            groupBox2.TabStop = false;
+            groupBox2.Text = "Sigvig";
+            // 
+            // CbLiberado
+            // 
+            CbLiberado.AutoSize = true;
+            CbLiberado.Location = new Point(168, 9);
+            CbLiberado.Name = "CbLiberado";
+            CbLiberado.Size = new Size(72, 19);
+            CbLiberado.TabIndex = 19;
+            CbLiberado.Text = "Liberado";
+            CbLiberado.UseVisualStyleBackColor = true;
+            // 
+            // CbSelecionado
+            // 
+            CbSelecionado.AutoSize = true;
+            CbSelecionado.Location = new Point(72, 9);
+            CbSelecionado.Name = "CbSelecionado";
+            CbSelecionado.Size = new Size(90, 19);
+            CbSelecionado.TabIndex = 18;
+            CbSelecionado.Text = "Selecionado";
+            CbSelecionado.UseVisualStyleBackColor = true;
+            // 
             // FrmModificaCapa
             // 
             ClientSize = new Size(746, 565);
+            Controls.Add(groupBox2);
             Controls.Add(label22);
             Controls.Add(label21);
             Controls.Add(cbNumerario);
@@ -553,13 +570,10 @@ namespace Trabalho
             Controls.Add(DTPAverbar);
             Controls.Add(ItensAdicionais);
             Controls.Add(cbIncotern);
-            Controls.Add(DTPSigvig);
-            Controls.Add(cbSigvig);
             Controls.Add(txtMarinha);
             Controls.Add(label5);
             Controls.Add(txtCE);
             Controls.Add(label6);
-            Controls.Add(label7);
             Controls.Add(txtDTA);
             Controls.Add(label8);
             Controls.Add(txtContainer);
@@ -575,6 +589,8 @@ namespace Trabalho
             Load += FrmModificaCapa_Load;
             groupBox1.ResumeLayout(false);
             groupBox1.PerformLayout();
+            groupBox2.ResumeLayout(false);
+            groupBox2.PerformLayout();
             ResumeLayout(false);
             PerformLayout();
         }
@@ -588,10 +604,8 @@ namespace Trabalho
         private Label label5;
         private TextBox txtCE;
         private Label label6;
-        private Label label7;
         private TextBox txtDTA;
         private Label label8;
-        private ComboBox cbSigvig;
         private DateTimePicker DTPSigvig;
         private CheckBox cbIncotern;
         private CheckedListBox ItensAdicionais;
@@ -629,5 +643,8 @@ namespace Trabalho
         private CheckedListBox cbNumerario;
         private Label label21;
         private Label label22;
+        private GroupBox groupBox2;
+        private CheckBox CbSelecionado;
+        private CheckBox CbLiberado;
     }
 }
