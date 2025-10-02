@@ -29,9 +29,9 @@
         private void InitializeComponent()
         {
             components = new System.ComponentModel.Container();
-            DataGridViewCellStyle dataGridViewCellStyle1 = new DataGridViewCellStyle();
-            DataGridViewCellStyle dataGridViewCellStyle2 = new DataGridViewCellStyle();
-            DataGridViewCellStyle dataGridViewCellStyle3 = new DataGridViewCellStyle();
+            DataGridViewCellStyle dataGridViewCellStyle4 = new DataGridViewCellStyle();
+            DataGridViewCellStyle dataGridViewCellStyle5 = new DataGridViewCellStyle();
+            DataGridViewCellStyle dataGridViewCellStyle6 = new DataGridViewCellStyle();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FrmItajaí));
             DGVItajai = new DataGridView();
             TSMenuItajai = new ToolStrip();
@@ -48,6 +48,8 @@
             TxtPesquisar = new ToolStripTextBox();
             BsProcesso = new BindingSource(components);
             panel1 = new Panel();
+            BtnExcluir = new ToolStripButton();
+            toolStripSeparator4 = new ToolStripSeparator();
             ((System.ComponentModel.ISupportInitialize)DGVItajai).BeginInit();
             TSMenuItajai.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)BsProcesso).BeginInit();
@@ -60,27 +62,27 @@
             DGVItajai.AllowUserToDeleteRows = false;
             DGVItajai.AllowUserToResizeColumns = false;
             DGVItajai.AllowUserToResizeRows = false;
-            dataGridViewCellStyle1.BackColor = Color.WhiteSmoke;
-            DGVItajai.AlternatingRowsDefaultCellStyle = dataGridViewCellStyle1;
+            dataGridViewCellStyle4.BackColor = Color.WhiteSmoke;
+            DGVItajai.AlternatingRowsDefaultCellStyle = dataGridViewCellStyle4;
             DGVItajai.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
             DGVItajai.BackgroundColor = Color.White;
-            dataGridViewCellStyle2.Alignment = DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle2.BackColor = Color.DarkGray;
-            dataGridViewCellStyle2.Font = new Font("Segoe UI", 9.75F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            dataGridViewCellStyle2.ForeColor = Color.White;
-            dataGridViewCellStyle2.SelectionBackColor = SystemColors.Highlight;
-            dataGridViewCellStyle2.SelectionForeColor = SystemColors.HighlightText;
-            dataGridViewCellStyle2.WrapMode = DataGridViewTriState.True;
-            DGVItajai.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle2;
+            dataGridViewCellStyle5.Alignment = DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle5.BackColor = Color.DarkGray;
+            dataGridViewCellStyle5.Font = new Font("Segoe UI", 9.75F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            dataGridViewCellStyle5.ForeColor = Color.White;
+            dataGridViewCellStyle5.SelectionBackColor = SystemColors.Highlight;
+            dataGridViewCellStyle5.SelectionForeColor = SystemColors.HighlightText;
+            dataGridViewCellStyle5.WrapMode = DataGridViewTriState.True;
+            DGVItajai.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle5;
             DGVItajai.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            dataGridViewCellStyle3.Alignment = DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle3.BackColor = Color.White;
-            dataGridViewCellStyle3.Font = new Font("Segoe UI", 9.75F, FontStyle.Regular, GraphicsUnit.Point, 0);
-            dataGridViewCellStyle3.ForeColor = Color.Black;
-            dataGridViewCellStyle3.SelectionBackColor = Color.LightBlue;
-            dataGridViewCellStyle3.SelectionForeColor = Color.Black;
-            dataGridViewCellStyle3.WrapMode = DataGridViewTriState.False;
-            DGVItajai.DefaultCellStyle = dataGridViewCellStyle3;
+            dataGridViewCellStyle6.Alignment = DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle6.BackColor = Color.White;
+            dataGridViewCellStyle6.Font = new Font("Segoe UI", 9.75F, FontStyle.Regular, GraphicsUnit.Point, 0);
+            dataGridViewCellStyle6.ForeColor = Color.Black;
+            dataGridViewCellStyle6.SelectionBackColor = Color.LightBlue;
+            dataGridViewCellStyle6.SelectionForeColor = Color.Black;
+            dataGridViewCellStyle6.WrapMode = DataGridViewTriState.False;
+            DGVItajai.DefaultCellStyle = dataGridViewCellStyle6;
             DGVItajai.Dock = DockStyle.Fill;
             DGVItajai.EnableHeadersVisualStyles = false;
             DGVItajai.Location = new Point(0, 0);
@@ -96,7 +98,7 @@
             // TSMenuItajai
             // 
             TSMenuItajai.AutoSize = false;
-            TSMenuItajai.Items.AddRange(new ToolStripItem[] { BtnAdicionar, toolStripSeparator2, BtnEditar, toolStripSeparator3, BtnExportar, BtnAjuda, BtnCancelar, BtnPesquisar, toolStripSeparator1, CmbPesquisar, TxtPesquisar });
+            TSMenuItajai.Items.AddRange(new ToolStripItem[] { BtnAdicionar, toolStripSeparator2, BtnEditar, toolStripSeparator3, BtnExcluir, toolStripSeparator4, BtnExportar, BtnAjuda, BtnCancelar, BtnPesquisar, toolStripSeparator1, CmbPesquisar, TxtPesquisar });
             TSMenuItajai.Location = new Point(0, 0);
             TSMenuItajai.Name = "TSMenuItajai";
             TSMenuItajai.Size = new Size(800, 40);
@@ -212,6 +214,22 @@
             panel1.Size = new Size(800, 408);
             panel1.TabIndex = 2;
             // 
+            // BtnExcluir
+            // 
+            BtnExcluir.Image = (Image)resources.GetObject("BtnExcluir.Image");
+            BtnExcluir.ImageTransparentColor = Color.Magenta;
+            BtnExcluir.Margin = new Padding(0);
+            BtnExcluir.Name = "BtnExcluir";
+            BtnExcluir.Size = new Size(61, 40);
+            BtnExcluir.Text = "Excluir";
+            BtnExcluir.Click += BtnExcluir_Click;
+            // 
+            // toolStripSeparator4
+            // 
+            toolStripSeparator4.Margin = new Padding(5, 0, 5, 0);
+            toolStripSeparator4.Name = "toolStripSeparator4";
+            toolStripSeparator4.Size = new Size(6, 40);
+            // 
             // FrmItajaí
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
@@ -249,5 +267,7 @@
         private BindingSource BsProcesso;
         private Panel panel1;
         private ToolStripButton BtnAjuda;
+        private ToolStripButton BtnExcluir;
+        private ToolStripSeparator toolStripSeparator4;
     }
 }

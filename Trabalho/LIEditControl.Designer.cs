@@ -58,6 +58,7 @@
             // 
             // btnExcluirLpco
             // 
+            btnExcluirLpco.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
             btnExcluirLpco.Location = new Point(610, 113);
             btnExcluirLpco.Name = "btnExcluirLpco";
             btnExcluirLpco.Size = new Size(129, 23);
@@ -67,6 +68,7 @@
             // 
             // BtnNovoOrgaoAnuente
             // 
+            BtnNovoOrgaoAnuente.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
             BtnNovoOrgaoAnuente.Location = new Point(610, 70);
             BtnNovoOrgaoAnuente.Name = "BtnNovoOrgaoAnuente";
             BtnNovoOrgaoAnuente.Size = new Size(129, 23);
@@ -76,6 +78,7 @@
             // 
             // groupBox5
             // 
+            groupBox5.Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             groupBox5.Controls.Add(label1);
             groupBox5.Controls.Add(CbStatusLI);
             groupBox5.Controls.Add(label39);
@@ -171,6 +174,7 @@
             // 
             // CBOrgaoAnuente
             // 
+            CBOrgaoAnuente.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
             CBOrgaoAnuente.FormattingEnabled = true;
             CBOrgaoAnuente.Items.AddRange(new object[] { "MAPA", "DECEX", "ANVISA", "IBAMA", "INMETRO" });
             CBOrgaoAnuente.Location = new Point(610, 27);
@@ -207,7 +211,7 @@
             // 
             // lpcoEditControl1
             // 
-            lpcoEditControl1.Dock = DockStyle.Fill;
+            lpcoEditControl1.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             lpcoEditControl1.Location = new Point(0, 0);
             lpcoEditControl1.Name = "lpcoEditControl1";
             lpcoEditControl1.Size = new Size(593, 109);
@@ -257,7 +261,7 @@
             // 
             ANVISA.Location = new Point(4, 24);
             ANVISA.Name = "ANVISA";
-            ANVISA.Size = new Size(192, 72);
+            ANVISA.Size = new Size(593, 109);
             ANVISA.TabIndex = 1;
             ANVISA.Text = "ANVISA";
             ANVISA.UseVisualStyleBackColor = true;
@@ -266,7 +270,7 @@
             // 
             DECEX.Location = new Point(4, 24);
             DECEX.Name = "DECEX";
-            DECEX.Size = new Size(192, 72);
+            DECEX.Size = new Size(593, 109);
             DECEX.TabIndex = 2;
             DECEX.Text = "DECEX";
             DECEX.UseVisualStyleBackColor = true;
@@ -275,7 +279,7 @@
             // 
             IBAMA.Location = new Point(4, 24);
             IBAMA.Name = "IBAMA";
-            IBAMA.Size = new Size(192, 72);
+            IBAMA.Size = new Size(593, 109);
             IBAMA.TabIndex = 3;
             IBAMA.Text = "IBAMA";
             IBAMA.UseVisualStyleBackColor = true;
@@ -284,7 +288,7 @@
             // 
             IMETRO.Location = new Point(4, 24);
             IMETRO.Name = "IMETRO";
-            IMETRO.Size = new Size(192, 72);
+            IMETRO.Size = new Size(593, 109);
             IMETRO.TabIndex = 4;
             IMETRO.Text = "IMETRO";
             IMETRO.UseVisualStyleBackColor = true;

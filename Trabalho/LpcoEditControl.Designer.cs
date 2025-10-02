@@ -30,7 +30,6 @@
         {
             CbParametrizacao = new ComboBox();
             CbMotivoExigencia = new ComboBox();
-            CbEmExigencia = new CheckBox();
             lblDataDeferimento = new Label();
             DtpDataDeferimentoLPCO = new DateTimePicker();
             lblDataRegistro = new Label();
@@ -55,24 +54,12 @@
             CbMotivoExigencia.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             CbMotivoExigencia.Enabled = false;
             CbMotivoExigencia.FormattingEnabled = true;
-            CbMotivoExigencia.Items.AddRange(new object[] { "PENDENTE", "CUMPRIDA" });
-            CbMotivoExigencia.Location = new Point(407, 72);
+            CbMotivoExigencia.Items.AddRange(new object[] { "EXIGÊNCIA PENDENTE", "EXIGÊNCIA CUMPRIDA", "DEFERIDO" });
+            CbMotivoExigencia.Location = new Point(345, 69);
             CbMotivoExigencia.Name = "CbMotivoExigencia";
             CbMotivoExigencia.Size = new Size(135, 23);
             CbMotivoExigencia.TabIndex = 437;
-            CbMotivoExigencia.Text = "Motivo da exigência...";
-            // 
-            // CbEmExigencia
-            // 
-            CbEmExigencia.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
-            CbEmExigencia.AutoSize = true;
-            CbEmExigencia.Location = new Point(301, 74);
-            CbEmExigencia.Name = "CbEmExigencia";
-            CbEmExigencia.Size = new Size(100, 19);
-            CbEmExigencia.TabIndex = 436;
-            CbEmExigencia.Text = "Em exigência?";
-            CbEmExigencia.UseVisualStyleBackColor = true;
-            CbEmExigencia.CheckedChanged += CbEmExigencia_CheckedChanged;
+            CbMotivoExigencia.Text = "Status do LPCO...";
             // 
             // lblDataDeferimento
             // 
@@ -148,7 +135,6 @@
             AutoScaleMode = AutoScaleMode.Font;
             Controls.Add(CbParametrizacao);
             Controls.Add(CbMotivoExigencia);
-            Controls.Add(CbEmExigencia);
             Controls.Add(lblDataDeferimento);
             Controls.Add(DtpDataDeferimentoLPCO);
             Controls.Add(lblDataRegistro);
@@ -166,7 +152,6 @@
 
         private ComboBox CbParametrizacao;
         private ComboBox CbMotivoExigencia;
-        private CheckBox CbEmExigencia;
         private Label lblDataDeferimento;
         private DateTimePicker DtpDataDeferimentoLPCO;
         private Label lblDataRegistro;

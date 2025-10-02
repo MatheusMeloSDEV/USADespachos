@@ -342,7 +342,7 @@
             // 
             // btnAdiciona
             // 
-            btnAdiciona.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
+            btnAdiciona.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             btnAdiciona.Cursor = Cursors.Hand;
             btnAdiciona.Location = new Point(10, 134);
             btnAdiciona.Name = "btnAdiciona";
@@ -787,7 +787,7 @@
             // 
             // btnCapa
             // 
-            btnCapa.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
+            btnCapa.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             btnCapa.Cursor = Cursors.Hand;
             btnCapa.Location = new Point(10, 65);
             btnCapa.Name = "btnCapa";
@@ -799,7 +799,7 @@
             // 
             // btnRelatorio
             // 
-            btnRelatorio.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
+            btnRelatorio.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             btnRelatorio.Cursor = Cursors.Hand;
             btnRelatorio.Location = new Point(10, 99);
             btnRelatorio.Name = "btnRelatorio";
@@ -811,17 +811,17 @@
             // 
             // TCLi
             // 
-            TCLi.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
-            TCLi.Location = new Point(0, 15);
+            TCLi.Dock = DockStyle.Fill;
+            TCLi.Location = new Point(3, 19);
             TCLi.Name = "TCLi";
             TCLi.SelectedIndex = 0;
-            TCLi.Size = new Size(756, 262);
+            TCLi.Size = new Size(744, 261);
             TCLi.SizeMode = TabSizeMode.Fixed;
             TCLi.TabIndex = 801;
             // 
             // label32
             // 
-            label32.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
+            label32.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             label32.AutoSize = true;
             label32.Font = new Font("Microsoft Sans Serif", 9.75F);
             label32.Location = new Point(89, 17);
@@ -832,11 +832,11 @@
             // 
             // CbStatus
             // 
-            CbStatus.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
+            CbStatus.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             CbStatus.AutoCompleteMode = AutoCompleteMode.Suggest;
             CbStatus.DataBindings.Add(new Binding("Text", BsModificaProcesso, "Status", true));
             CbStatus.FormattingEnabled = true;
-            CbStatus.Items.AddRange(new object[] { "", "Aguardando embarque", "Aguardando atracação", "Aguardando presença de carga", "Aguardando SIGVIG", "Aguardando parametrização LI/LPCO", "Aguardando inspeção/coleta LI/LPCO", "Aguardando deferimento LI/LPCO", "Aguardando registro DI/DUIMP", "Aguardando parametrização DI/DUIMP", "Aguardando desembaraço", "Aguardando inspeção DI/DUIMP", "Aguardando desbloqueio Siscomex Carga", "Aguardando minuta devolução container vazio", "Aguardando resultado laboratório ", "Finalizado" });
+            CbStatus.Items.AddRange(new object[] { "", "Aguardando embarque", "Aguardando atracação", "Aguardando presença de carga", "Aguardando SIGVIG", "Aguardando documentos finais para LPCO", "Aguardando parametrização LI/LPCO", "Aguardando inspeção/coleta LI/LPCO", "Aguardando deferimento LI/LPCO", "Aguardando registro DI/DUIMP", "Aguardando parametrização DI/DUIMP", "Aguardando desembaraço", "Aguardando inspeção DI/DUIMP", "Aguardando desbloqueio Siscomex Carga", "Aguardando minuta devolução container vazio", "Aguardando resultado laboratório ", "Finalizado" });
             CbStatus.Location = new Point(10, 36);
             CbStatus.Name = "CbStatus";
             CbStatus.Size = new Size(200, 23);
@@ -1085,6 +1085,7 @@
             // 
             // BtnLI
             // 
+            BtnLI.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
             BtnLI.Location = new Point(474, 0);
             BtnLI.Name = "BtnLI";
             BtnLI.Size = new Size(129, 23);
@@ -1095,6 +1096,7 @@
             // 
             // BtnExcluirLI
             // 
+            BtnExcluirLI.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
             BtnExcluirLI.Location = new Point(609, 0);
             BtnExcluirLI.Name = "BtnExcluirLI";
             BtnExcluirLI.Size = new Size(129, 23);

@@ -277,7 +277,8 @@ namespace Trabalho
         private async void BtnAdicionar_Click(object sender, EventArgs e)
         {
             var processo = new Processo();
-            using var frm = new FrmModificaProcesso { processo = processo, Modo = "Adicionar" };
+            OrigemProcesso Itajai = OrigemProcesso.Itajai;
+            using var frm = new FrmModificaProcesso { processo = processo, Modo = "Adicionar", Origem = Itajai };
 
             if (frm.ShowDialog() == DialogResult.OK)
             {
@@ -295,6 +296,7 @@ namespace Trabalho
                     MessageBox.Show($"Erro ao adicionar o processo: {ex.Message}", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
             }
+            await CarregarDadosAsync();
         }
         private async void BtnReload_Click(object sender, EventArgs e)
         {
@@ -323,6 +325,7 @@ namespace Trabalho
                     MessageBox.Show($"Erro ao excluir o processo: {ex.Message}", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
             }
+            await CarregarDadosAsync();
         }
         private async void BtnEditar_Click(object? sender, EventArgs e)
         {

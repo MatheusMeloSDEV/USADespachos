@@ -19,13 +19,10 @@ namespace Trabalho
             // Vincula os dados usando DataBinding
             TxtLPCO.DataBindings.Add("Text", _lpco, nameof(_lpco.LPCO), false, DataSourceUpdateMode.OnPropertyChanged);
             CbParametrizacao.DataBindings.Add("Text", _lpco, nameof(_lpco.ParametrizacaoLPCO), false, DataSourceUpdateMode.OnPropertyChanged);
-            CbEmExigencia.DataBindings.Add("Checked", _lpco, nameof(_lpco.EmExigencia), false, DataSourceUpdateMode.OnPropertyChanged);
             CbMotivoExigencia.DataBindings.Add("Text", _lpco, nameof(_lpco.MotivoExigencia), false, DataSourceUpdateMode.OnPropertyChanged);
 
             ConfigurarDatePickerNulavel(DtpDataRegistroLPCO, _lpco.DataRegistroLPCO);
             ConfigurarDatePickerNulavel(DtpDataDeferimentoLPCO, _lpco.DataDeferimentoLPCO);
-
-            CbMotivoExigencia.Enabled = CbEmExigencia.Checked;
         }
 
         public void SalvarAlteracoes()
@@ -36,16 +33,6 @@ namespace Trabalho
 
             _lpco.DataRegistroLPCO = DtpDataRegistroLPCO.Checked ? DtpDataRegistroLPCO.Value : null;
             _lpco.DataDeferimentoLPCO = DtpDataDeferimentoLPCO.Checked ? DtpDataDeferimentoLPCO.Value : null;
-        }
-
-        private void CbEmExigencia_CheckedChanged(object? sender, EventArgs e)
-        {
-            CbMotivoExigencia.Enabled = CbEmExigencia.Checked;
-            if (!CbEmExigencia.Checked && _lpco != null)
-            {
-                CbMotivoExigencia.SelectedItem = null;
-                _lpco.MotivoExigencia = string.Empty;
-            }
         }
 
         private void ConfigurarDatePickerNulavel(DateTimePicker dtp, DateTime? data)

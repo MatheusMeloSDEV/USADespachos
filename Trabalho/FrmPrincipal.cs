@@ -22,7 +22,7 @@ namespace Trabalho
         private readonly Logado _logadoUsuario;
         private readonly Dictionary<Type, Form> _forms = new();
         private bool _logoutPeloMenu = false;
-        
+
         private readonly HashSet<TabPage> _abasJaCarregadas = new HashSet<TabPage>();
 
         public FrmPrincipal(Logado logadoUsuario)
@@ -365,11 +365,14 @@ namespace Trabalho
         private void MenuItemProcessoSantos_Click(object? sender, EventArgs e) => ShowSingleFormOfType<frmSantos>();
         private void MenuItemProcessosItajai_Click(object? sender, EventArgs e) => ShowSingleFormOfType<FrmItajaí>();
         private void MenuItemOrgaoAnuente_Click(object? sender, EventArgs e) => ShowSingleFormOfType<FrmOrgaoAnuente>();
+        private void MenuItemVistoria_Click(object sender, EventArgs e) => ShowSingleFormOfType<FrmVistorias>();
         private void MenuItemFinanceiro_Click(object? sender, EventArgs e) => ShowSingleFormOfType<FrmFinanceiro>();
         private void MenuItemAdmin_Click(object? sender, EventArgs e) => ShowSingleFormOfType<FrmAdmin>();
         private void MenuItemMaximize_Click(object? sender, EventArgs e) => this.WindowState = FormWindowState.Maximized;
         private void MenuItemMinimize_Click(object? sender, EventArgs e) => this.WindowState = FormWindowState.Minimized;
 
         #endregion
+
+
     }
 }

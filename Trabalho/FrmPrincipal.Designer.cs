@@ -48,6 +48,7 @@
             MenuitemFinanceiro = new ToolStripMenuItem();
             TCabas = new TabControl();
             timerReleaseExit = new System.Windows.Forms.Timer(components);
+            MenuItemVistoria = new ToolStripMenuItem();
             menuStrip1.SuspendLayout();
             SuspendLayout();
             // 
@@ -111,22 +112,22 @@
             // 
             // santosToolStripMenuItem
             // 
-            santosToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { MenuItemProcessoSantos, MenuItemOrgaoAnuente });
+            santosToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { MenuItemProcessoSantos, MenuItemOrgaoAnuente, MenuItemVistoria });
             santosToolStripMenuItem.Name = "santosToolStripMenuItem";
-            santosToolStripMenuItem.Size = new Size(109, 22);
+            santosToolStripMenuItem.Size = new Size(180, 22);
             santosToolStripMenuItem.Text = "Santos";
             // 
             // MenuItemProcessoSantos
             // 
             MenuItemProcessoSantos.Name = "MenuItemProcessoSantos";
-            MenuItemProcessoSantos.Size = new Size(155, 22);
+            MenuItemProcessoSantos.Size = new Size(180, 22);
             MenuItemProcessoSantos.Text = "Processos";
             MenuItemProcessoSantos.Click += MenuItemProcessoSantos_Click;
             // 
             // MenuItemOrgaoAnuente
             // 
             MenuItemOrgaoAnuente.Name = "MenuItemOrgaoAnuente";
-            MenuItemOrgaoAnuente.Size = new Size(155, 22);
+            MenuItemOrgaoAnuente.Size = new Size(180, 22);
             MenuItemOrgaoAnuente.Text = "Orgão Anuente";
             MenuItemOrgaoAnuente.Click += MenuItemOrgaoAnuente_Click;
             // 
@@ -134,7 +135,7 @@
             // 
             itajaíToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { MenuItemProcessosItajai, MenuItemOrgaoAnuente1 });
             itajaíToolStripMenuItem.Name = "itajaíToolStripMenuItem";
-            itajaíToolStripMenuItem.Size = new Size(109, 22);
+            itajaíToolStripMenuItem.Size = new Size(180, 22);
             itajaíToolStripMenuItem.Text = "Itajaí";
             // 
             // MenuItemProcessosItajai
@@ -175,6 +176,13 @@
             TCabas.Size = new Size(800, 422);
             TCabas.SizeMode = TabSizeMode.FillToRight;
             TCabas.TabIndex = 2;
+            // 
+            // MenuItemVistoria
+            // 
+            MenuItemVistoria.Name = "MenuItemVistoria";
+            MenuItemVistoria.Size = new Size(180, 22);
+            MenuItemVistoria.Text = "Vistoria";
+            MenuItemVistoria.Click += MenuItemVistoria_Click;
             // 
             // FrmPrincipal
             // 
@@ -217,5 +225,6 @@
         private ToolStripMenuItem MenuItemExit;
         private ToolStripMenuItem MenuItemEmAndamento;
         private System.Windows.Forms.Timer timerReleaseExit;
+        private ToolStripMenuItem MenuItemVistoria;
     }
 }

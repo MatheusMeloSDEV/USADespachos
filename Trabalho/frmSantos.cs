@@ -280,7 +280,8 @@ namespace Trabalho
         private async void BtnAdicionar_Click(object sender, EventArgs e)
         {
             var processo = new Processo();
-            using var frm = new FrmModificaProcesso { processo = processo, Modo = "Adicionar" };
+            OrigemProcesso Santos = OrigemProcesso.Santos;
+            using var frm = new FrmModificaProcesso { processo = processo, Modo = "Adicionar", Origem = Santos };
 
             if (frm.ShowDialog() == DialogResult.OK)
             {
