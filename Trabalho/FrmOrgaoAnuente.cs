@@ -40,7 +40,7 @@ namespace Trabalho
             DgvOrgaoAnuente.DataSource = _bsLpcoViewModel;
             DgvOrgaoAnuente.AutoGenerateColumns = false;
             DgvOrgaoAnuente.RowHeadersVisible = false;
-            DgvOrgaoAnuente.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
+            DgvOrgaoAnuente.SelectionMode = DataGridViewSelectionMode.RowHeaderSelect;
             DgvOrgaoAnuente.AllowUserToAddRows = false;
             DgvOrgaoAnuente.ReadOnly = true;
             DgvOrgaoAnuente.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
