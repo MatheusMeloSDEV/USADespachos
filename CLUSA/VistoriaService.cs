@@ -69,6 +69,7 @@ namespace CLUSA
                     ParametrizacaoLPCO = item.LPCO.ParametrizacaoLPCO,
                     // MUDANÇA: Adiciona o Terminal, usando o processo que buscamos
                     Terminal = processoCorrespondente?.Terminal ?? string.Empty,
+                    Previsao = processoCorrespondente?.DataDeAtracacao,
                     Status = StatusVistoria.AguardandoChegadaParaAgendar
                 };
 

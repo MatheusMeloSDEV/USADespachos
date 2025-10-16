@@ -14,6 +14,7 @@ namespace CLUSA
         private readonly RepositorioFatura _repositorioFatura;
         private readonly RepositorioRecibo _repositorioRecibo;
         private readonly RepositorioNotificacao _repositorioNotificacao;
+        private readonly RepositorioVistorias _repositorioVistorias;
 
         public RepositorioProcesso()
         {
@@ -25,6 +26,7 @@ namespace CLUSA
             _repositorioFatura = new RepositorioFatura();
             _repositorioRecibo = new RepositorioRecibo();
             _repositorioNotificacao = new RepositorioNotificacao(mongoDatabase);
+            _repositorioVistorias = new RepositorioVistorias(mongoDatabase);
         }
 
         public async Task<List<Processo>> ListarTodosAsync()
@@ -82,6 +84,7 @@ namespace CLUSA
         {
             await _processos.ReplaceOneAsync(p => p.Id == processo.Id, processo);
             await SincronizarLicencas(processo);
+            await SincronizarVistorias(processo);
         }
 
         public async Task DeleteAsync(string processoId)
@@ -161,6 +164,7 @@ namespace CLUSA
                 orgaoParaSalvar.Conhecimento = processo.Conhecimento;
                 orgaoParaSalvar.DataChegada = processo.DataDeAtracacao;
                 orgaoParaSalvar.Inspecao = processo.Inspecao;
+                orgaoParaSalvar.StatusLI = liProcesso.StatusLI;
 
                 // Atualiza os dados que vêm da LI editada no FrmModificaProcesso
                 orgaoParaSalvar.NCM = liProcesso.NCM;
@@ -174,6 +178,7 @@ namespace CLUSA
                 // preservados e os dados compartilhados/editados foram atualizados.
                 await _repositorioOrgaoAnuente.UpdateAsync(orgaoParaSalvar);
             }
+
 
             // --- ADICIONA LIs novas ---
             var numerosLisAtuais = lisAtuaisNoDb.Select(li => li.Numero).ToHashSet();
@@ -192,6 +197,29 @@ namespace CLUSA
             foreach (var li in lisParaDeletar)
             {
                 await _repositorioOrgaoAnuente.DeleteByIdAsync(li.Id.ToString());
+            }
+        }
+        /// <summary>
+        /// Sincroniza a coleção de Vistorias associadas a um Processo.
+        /// Atualiza, insere e remove (opcional) com base no array de Vistorias do Processo.
+        /// </summary>
+        private async Task SincronizarVistorias(Processo processo)
+        {
+            // Busca todas as vistorias no banco pelo Ref_USA do processo
+            var vistoriasNoBanco = await _repositorioVistorias.GetByRefUsaAsync(processo.Ref_USA);
+
+            // Atualiza cada vistoria ligada ao Ref_USA do processo com os dados atualizados do processo
+            foreach (var vistoria in vistoriasNoBanco)
+            {
+                vistoria.Importador = processo.Importador;
+                vistoria.Container = processo.Container;
+                vistoria.Conhecimento = processo.Conhecimento;
+                vistoria.Ref_USA = processo.Ref_USA;
+                vistoria.Produto = processo.Produto;
+                vistoria.Terminal = processo.Terminal;
+                vistoria.Previsao = processo.DataDeAtracacao;
+
+                await _repositorioVistorias.UpsertAsync(vistoria);
             }
         }
     }

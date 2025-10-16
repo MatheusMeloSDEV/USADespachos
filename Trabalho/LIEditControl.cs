@@ -31,6 +31,18 @@ namespace Trabalho
             itensComboBox.AddRange(Enum.GetNames(typeof(TipoOrgaoAnuente)));
             CBOrgaoAnuente.DataSource = itensComboBox;
             CBOrgaoAnuente.SelectedIndex = 0;
+
+            CbStatusLI.DropDownStyle = ComboBoxStyle.DropDownList;
+            CbStatusLI.FlatStyle = FlatStyle.Flat;
+            CbStatusLI.BackColor = SystemColors.Window; // Ou Color.White
+            CbStatusLI.Enter += (s, e) => CbStatusLI.BackColor = SystemColors.Window;
+            CbStatusLI.Leave += (s, e) => CbStatusLI.BackColor = SystemColors.Window;
+
+            CBOrgaoAnuente.DropDownStyle = ComboBoxStyle.DropDownList;
+            CBOrgaoAnuente.FlatStyle = FlatStyle.Flat;
+            CBOrgaoAnuente.BackColor = SystemColors.Window; // Ou Color.White
+            CBOrgaoAnuente.Enter += (s, e) => CBOrgaoAnuente.BackColor = SystemColors.Window;
+            CBOrgaoAnuente.Leave += (s, e) => CBOrgaoAnuente.BackColor = SystemColors.Window;
         }
 
         public void SalvarAlteracoes()

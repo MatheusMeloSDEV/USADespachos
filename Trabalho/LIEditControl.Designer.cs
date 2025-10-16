@@ -31,14 +31,15 @@
             btnExcluirLpco = new Button();
             BtnNovoOrgaoAnuente = new Button();
             groupBox5 = new GroupBox();
-            label1 = new Label();
+            tableLayoutPanel1 = new TableLayoutPanel();
             CbStatusLI = new ComboBox();
-            label39 = new Label();
-            DtpDataRegistro = new DateTimePicker();
+            label1 = new Label();
             label40 = new Label();
+            TxtLi = new TextBox();
+            DtpDataRegistro = new DateTimePicker();
+            label39 = new Label();
             label41 = new Label();
             TxtNCM = new TextBox();
-            TxtLi = new TextBox();
             CBOrgaoAnuente = new ComboBox();
             tabControl2 = new TabControl();
             MAPA = new TabPage();
@@ -52,6 +53,7 @@
             IBAMA = new TabPage();
             IMETRO = new TabPage();
             groupBox5.SuspendLayout();
+            tableLayoutPanel1.SuspendLayout();
             tabControl2.SuspendLayout();
             MAPA.SuspendLayout();
             SuspendLayout();
@@ -79,14 +81,7 @@
             // groupBox5
             // 
             groupBox5.Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
-            groupBox5.Controls.Add(label1);
-            groupBox5.Controls.Add(CbStatusLI);
-            groupBox5.Controls.Add(label39);
-            groupBox5.Controls.Add(DtpDataRegistro);
-            groupBox5.Controls.Add(label40);
-            groupBox5.Controls.Add(label41);
-            groupBox5.Controls.Add(TxtNCM);
-            groupBox5.Controls.Add(TxtLi);
+            groupBox5.Controls.Add(tableLayoutPanel1);
             groupBox5.Location = new Point(3, 142);
             groupBox5.Name = "groupBox5";
             groupBox5.Size = new Size(736, 83);
@@ -94,83 +89,112 @@
             groupBox5.TabStop = false;
             groupBox5.Text = "Dados Li";
             // 
-            // label1
+            // tableLayoutPanel1
             // 
-            label1.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-            label1.AutoSize = true;
-            label1.Font = new Font("Segoe UI", 11F);
-            label1.Location = new Point(575, 21);
-            label1.Name = "label1";
-            label1.Size = new Size(64, 20);
-            label1.TabIndex = 423;
-            label1.Text = "Status LI";
+            tableLayoutPanel1.ColumnCount = 4;
+            tableLayoutPanel1.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 25F));
+            tableLayoutPanel1.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 25F));
+            tableLayoutPanel1.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 25F));
+            tableLayoutPanel1.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 25F));
+            tableLayoutPanel1.Controls.Add(CbStatusLI, 3, 1);
+            tableLayoutPanel1.Controls.Add(label1, 3, 0);
+            tableLayoutPanel1.Controls.Add(label40, 0, 0);
+            tableLayoutPanel1.Controls.Add(TxtLi, 0, 1);
+            tableLayoutPanel1.Controls.Add(DtpDataRegistro, 2, 1);
+            tableLayoutPanel1.Controls.Add(label39, 2, 0);
+            tableLayoutPanel1.Controls.Add(label41, 1, 0);
+            tableLayoutPanel1.Controls.Add(TxtNCM, 1, 1);
+            tableLayoutPanel1.Dock = DockStyle.Fill;
+            tableLayoutPanel1.Location = new Point(3, 19);
+            tableLayoutPanel1.Name = "tableLayoutPanel1";
+            tableLayoutPanel1.RowCount = 2;
+            tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Percent, 32.9113922F));
+            tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Percent, 67.08861F));
+            tableLayoutPanel1.Size = new Size(730, 61);
+            tableLayoutPanel1.TabIndex = 424;
             // 
             // CbStatusLI
             // 
+            CbStatusLI.Dock = DockStyle.Fill;
             CbStatusLI.FormattingEnabled = true;
             CbStatusLI.Items.AddRange(new object[] { "Pronto para Entrada", "Pendência Documental", "Entrada Concluída" });
-            CbStatusLI.Location = new Point(540, 44);
+            CbStatusLI.Location = new Point(549, 23);
             CbStatusLI.Name = "CbStatusLI";
-            CbStatusLI.Size = new Size(135, 23);
+            CbStatusLI.Size = new Size(178, 23);
             CbStatusLI.TabIndex = 422;
             // 
-            // label39
+            // label1
             // 
-            label39.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-            label39.AutoSize = true;
-            label39.Font = new Font("Segoe UI", 11F);
-            label39.Location = new Point(403, 20);
-            label39.Name = "label39";
-            label39.Size = new Size(100, 20);
-            label39.TabIndex = 419;
-            label39.Text = "Data Registro";
-            // 
-            // DtpDataRegistro
-            // 
-            DtpDataRegistro.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-            DtpDataRegistro.Format = DateTimePickerFormat.Short;
-            DtpDataRegistro.Location = new Point(386, 44);
-            DtpDataRegistro.Name = "DtpDataRegistro";
-            DtpDataRegistro.Size = new Size(135, 23);
-            DtpDataRegistro.TabIndex = 418;
+            label1.AutoSize = true;
+            label1.Dock = DockStyle.Fill;
+            label1.Font = new Font("Segoe UI", 11F);
+            label1.Location = new Point(549, 0);
+            label1.Name = "label1";
+            label1.Size = new Size(178, 20);
+            label1.TabIndex = 423;
+            label1.Text = "Status LI";
+            label1.TextAlign = ContentAlignment.MiddleCenter;
             // 
             // label40
             // 
-            label40.Anchor = AnchorStyles.Top | AnchorStyles.Right;
             label40.AutoSize = true;
+            label40.Dock = DockStyle.Fill;
             label40.Font = new Font("Segoe UI", 12F);
-            label40.Location = new Point(133, 19);
+            label40.Location = new Point(3, 0);
             label40.Name = "label40";
-            label40.Size = new Size(22, 21);
+            label40.Size = new Size(176, 20);
             label40.TabIndex = 420;
             label40.Text = "LI";
-            // 
-            // label41
-            // 
-            label41.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-            label41.AutoSize = true;
-            label41.Font = new Font("Segoe UI", 12F);
-            label41.Location = new Point(275, 20);
-            label41.Name = "label41";
-            label41.Size = new Size(46, 21);
-            label41.TabIndex = 421;
-            label41.Text = "NCM";
-            // 
-            // TxtNCM
-            // 
-            TxtNCM.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-            TxtNCM.Location = new Point(225, 44);
-            TxtNCM.Name = "TxtNCM";
-            TxtNCM.Size = new Size(147, 23);
-            TxtNCM.TabIndex = 419;
+            label40.TextAlign = ContentAlignment.MiddleCenter;
             // 
             // TxtLi
             // 
-            TxtLi.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-            TxtLi.Location = new Point(77, 44);
+            TxtLi.Dock = DockStyle.Fill;
+            TxtLi.Location = new Point(3, 23);
             TxtLi.Name = "TxtLi";
-            TxtLi.Size = new Size(134, 23);
+            TxtLi.Size = new Size(176, 23);
             TxtLi.TabIndex = 418;
+            // 
+            // DtpDataRegistro
+            // 
+            DtpDataRegistro.Dock = DockStyle.Fill;
+            DtpDataRegistro.Format = DateTimePickerFormat.Short;
+            DtpDataRegistro.Location = new Point(367, 23);
+            DtpDataRegistro.Name = "DtpDataRegistro";
+            DtpDataRegistro.Size = new Size(176, 23);
+            DtpDataRegistro.TabIndex = 418;
+            // 
+            // label39
+            // 
+            label39.AutoSize = true;
+            label39.Dock = DockStyle.Fill;
+            label39.Font = new Font("Segoe UI", 11F);
+            label39.Location = new Point(367, 0);
+            label39.Name = "label39";
+            label39.Size = new Size(176, 20);
+            label39.TabIndex = 419;
+            label39.Text = "Data Registro";
+            label39.TextAlign = ContentAlignment.MiddleCenter;
+            // 
+            // label41
+            // 
+            label41.AutoSize = true;
+            label41.Dock = DockStyle.Fill;
+            label41.Font = new Font("Segoe UI", 12F);
+            label41.Location = new Point(185, 0);
+            label41.Name = "label41";
+            label41.Size = new Size(176, 20);
+            label41.TabIndex = 421;
+            label41.Text = "NCM";
+            label41.TextAlign = ContentAlignment.MiddleCenter;
+            // 
+            // TxtNCM
+            // 
+            TxtNCM.Dock = DockStyle.Fill;
+            TxtNCM.Location = new Point(185, 23);
+            TxtNCM.Name = "TxtNCM";
+            TxtNCM.Size = new Size(176, 23);
+            TxtNCM.TabIndex = 419;
             // 
             // CBOrgaoAnuente
             // 
@@ -211,7 +235,7 @@
             // 
             // lpcoEditControl1
             // 
-            lpcoEditControl1.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            lpcoEditControl1.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left;
             lpcoEditControl1.Location = new Point(0, 0);
             lpcoEditControl1.Name = "lpcoEditControl1";
             lpcoEditControl1.Size = new Size(593, 109);
@@ -305,7 +329,8 @@
             Name = "LIEditControl";
             Size = new Size(746, 230);
             groupBox5.ResumeLayout(false);
-            groupBox5.PerformLayout();
+            tableLayoutPanel1.ResumeLayout(false);
+            tableLayoutPanel1.PerformLayout();
             tabControl2.ResumeLayout(false);
             MAPA.ResumeLayout(false);
             MAPA.PerformLayout();
@@ -337,5 +362,6 @@
         private TabPage IMETRO;
         private Label label1;
         private ComboBox CbStatusLI;
+        private TableLayoutPanel tableLayoutPanel1;
     }
 }

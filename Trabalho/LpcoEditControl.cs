@@ -20,9 +20,22 @@ namespace Trabalho
             TxtLPCO.DataBindings.Add("Text", _lpco, nameof(_lpco.LPCO), false, DataSourceUpdateMode.OnPropertyChanged);
             CbParametrizacao.DataBindings.Add("Text", _lpco, nameof(_lpco.ParametrizacaoLPCO), false, DataSourceUpdateMode.OnPropertyChanged);
             CbMotivoExigencia.DataBindings.Add("Text", _lpco, nameof(_lpco.MotivoExigencia), false, DataSourceUpdateMode.OnPropertyChanged);
-
             ConfigurarDatePickerNulavel(DtpDataRegistroLPCO, _lpco.DataRegistroLPCO);
             ConfigurarDatePickerNulavel(DtpDataDeferimentoLPCO, _lpco.DataDeferimentoLPCO);
+
+
+            CbParametrizacao.DropDownStyle = ComboBoxStyle.DropDownList;
+            CbParametrizacao.FlatStyle = FlatStyle.Flat;
+            CbParametrizacao.BackColor = SystemColors.Window; // Ou Color.White
+            CbParametrizacao.Enter += (s, e) => CbParametrizacao.BackColor = SystemColors.Window;
+            CbParametrizacao.Leave += (s, e) => CbParametrizacao.BackColor = SystemColors.Window;
+
+            CbMotivoExigencia.DropDownStyle = ComboBoxStyle.DropDownList;
+            CbMotivoExigencia.FlatStyle = FlatStyle.Flat;
+            CbMotivoExigencia.BackColor = SystemColors.Window; // Ou Color.White
+            CbMotivoExigencia.Enter += (s, e) => CbMotivoExigencia.BackColor = SystemColors.Window;
+            CbMotivoExigencia.Leave += (s, e) => CbMotivoExigencia.BackColor = SystemColors.Window;
+
         }
 
         public void SalvarAlteracoes()

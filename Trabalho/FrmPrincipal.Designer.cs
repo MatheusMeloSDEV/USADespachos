@@ -45,16 +45,15 @@
             MenuItemProcessosItajai = new ToolStripMenuItem();
             MenuItemOrgaoAnuente1 = new ToolStripMenuItem();
             MenuItemAdmin = new ToolStripMenuItem();
-            MenuitemFinanceiro = new ToolStripMenuItem();
-            TCabas = new TabControl();
-            timerReleaseExit = new System.Windows.Forms.Timer(components);
             MenuItemVistoria = new ToolStripMenuItem();
+            MenuitemFinanceiro = new ToolStripMenuItem();
+            timerReleaseExit = new System.Windows.Forms.Timer(components);
             menuStrip1.SuspendLayout();
             SuspendLayout();
             // 
             // menuStrip1
             // 
-            menuStrip1.Items.AddRange(new ToolStripItem[] { MenuItemNotifications, MenuItemHome, planilhasToolStripMenuItem, MenuItemAdmin, MenuitemFinanceiro });
+            menuStrip1.Items.AddRange(new ToolStripItem[] { MenuItemNotifications, MenuItemHome, planilhasToolStripMenuItem, MenuItemAdmin, MenuItemVistoria, MenuitemFinanceiro });
             menuStrip1.Location = new Point(0, 0);
             menuStrip1.Name = "menuStrip1";
             menuStrip1.Size = new Size(800, 24);
@@ -112,22 +111,22 @@
             // 
             // santosToolStripMenuItem
             // 
-            santosToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { MenuItemProcessoSantos, MenuItemOrgaoAnuente, MenuItemVistoria });
+            santosToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { MenuItemProcessoSantos, MenuItemOrgaoAnuente });
             santosToolStripMenuItem.Name = "santosToolStripMenuItem";
-            santosToolStripMenuItem.Size = new Size(180, 22);
+            santosToolStripMenuItem.Size = new Size(109, 22);
             santosToolStripMenuItem.Text = "Santos";
             // 
             // MenuItemProcessoSantos
             // 
             MenuItemProcessoSantos.Name = "MenuItemProcessoSantos";
-            MenuItemProcessoSantos.Size = new Size(180, 22);
+            MenuItemProcessoSantos.Size = new Size(155, 22);
             MenuItemProcessoSantos.Text = "Processos";
             MenuItemProcessoSantos.Click += MenuItemProcessoSantos_Click;
             // 
             // MenuItemOrgaoAnuente
             // 
             MenuItemOrgaoAnuente.Name = "MenuItemOrgaoAnuente";
-            MenuItemOrgaoAnuente.Size = new Size(180, 22);
+            MenuItemOrgaoAnuente.Size = new Size(155, 22);
             MenuItemOrgaoAnuente.Text = "Orgão Anuente";
             MenuItemOrgaoAnuente.Click += MenuItemOrgaoAnuente_Click;
             // 
@@ -135,7 +134,7 @@
             // 
             itajaíToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { MenuItemProcessosItajai, MenuItemOrgaoAnuente1 });
             itajaíToolStripMenuItem.Name = "itajaíToolStripMenuItem";
-            itajaíToolStripMenuItem.Size = new Size(180, 22);
+            itajaíToolStripMenuItem.Size = new Size(109, 22);
             itajaíToolStripMenuItem.Text = "Itajaí";
             // 
             // MenuItemProcessosItajai
@@ -160,6 +159,13 @@
             MenuItemAdmin.Text = "Administrador";
             MenuItemAdmin.Click += MenuItemAdmin_Click;
             // 
+            // MenuItemVistoria
+            // 
+            MenuItemVistoria.Name = "MenuItemVistoria";
+            MenuItemVistoria.Size = new Size(58, 20);
+            MenuItemVistoria.Text = "Vistoria";
+            MenuItemVistoria.Click += MenuItemVistoria_Click;
+            // 
             // MenuitemFinanceiro
             // 
             MenuitemFinanceiro.Name = "MenuitemFinanceiro";
@@ -167,29 +173,11 @@
             MenuitemFinanceiro.Text = "Financeiro";
             MenuitemFinanceiro.Click += MenuItemFinanceiro_Click;
             // 
-            // TCabas
-            // 
-            TCabas.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
-            TCabas.Location = new Point(0, 27);
-            TCabas.Name = "TCabas";
-            TCabas.SelectedIndex = 0;
-            TCabas.Size = new Size(800, 422);
-            TCabas.SizeMode = TabSizeMode.FillToRight;
-            TCabas.TabIndex = 2;
-            // 
-            // MenuItemVistoria
-            // 
-            MenuItemVistoria.Name = "MenuItemVistoria";
-            MenuItemVistoria.Size = new Size(180, 22);
-            MenuItemVistoria.Text = "Vistoria";
-            MenuItemVistoria.Click += MenuItemVistoria_Click;
-            // 
             // FrmPrincipal
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(800, 450);
-            Controls.Add(TCabas);
             Controls.Add(menuStrip1);
             IsMdiContainer = true;
             MainMenuStrip = menuStrip1;
@@ -208,7 +196,6 @@
         #endregion
 
         private MenuStrip menuStrip1;
-        private TabControl TCabas;
         private ToolStripMenuItem MenuItemNotifications;
         private ToolStripMenuItem MenuItemHome;
         private ToolStripMenuItem planilhasToolStripMenuItem;

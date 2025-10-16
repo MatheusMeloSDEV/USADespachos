@@ -8,7 +8,8 @@ namespace CLUSA
         AguardandoChegadaParaAgendar,
         SolicitarDataVistoria,
         VistoriaAgendada,
-        AguardandoDeferimento
+        AguardandoDeferimento,
+        AguardandoLaudo
     }
 
     public class Vistoria
@@ -29,6 +30,7 @@ namespace CLUSA
         public string Produto { get; set; } = string.Empty;
         public string ParametrizacaoLPCO { get; set; } = string.Empty;
         public string Terminal { get; set; } = string.Empty;
+        public DateTime? Previsao { get; set; } = null;
 
         // Dados específicos da Vistoria (editáveis)
         public string Notas { get; set; } = string.Empty;

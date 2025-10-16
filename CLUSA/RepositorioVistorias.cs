@@ -24,6 +24,11 @@ namespace CLUSA
             var filter = Builders<Vistoria>.Filter.Eq(v => v.LPCO, vistoria.LPCO);
             await _colecao.ReplaceOneAsync(filter, vistoria, new ReplaceOptions { IsUpsert = true });
         }
+        public async Task<List<Vistoria>> GetByRefUsaAsync(string refUsa)
+        {
+            var filter = Builders<Vistoria>.Filter.Eq(v => v.Ref_USA, refUsa);
+            return await _colecao.Find(filter).ToListAsync();
+        }
         /// <summary>
         /// Deleta um registro de vistoria com base no número do LPCO.
         /// </summary>

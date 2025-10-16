@@ -173,44 +173,9 @@ namespace Trabalho
             // --- (NOVO) Salva os dados das abas dinâmicas de LI e LPCO ---
             foreach (TabPage abaLi in TCLi.TabPages)
             {
-                if (abaLi.Tag is not LicencaImportacao li) continue;
-
-                // O DataBinding para TxtLi e TxtNCM geralmente funciona, mas vamos garantir.
-                if (abaLi.Controls.Find("TxtLi", true).FirstOrDefault() is TextBox txtLi) li.Numero = txtLi.Text;
-                if (abaLi.Controls.Find("TxtNCM", true).FirstOrDefault() is TextBox txtNcm) li.NCM = txtNcm.Text;
-                if (abaLi.Controls.Find("CbStatusLI", true).FirstOrDefault() is ComboBox cmbStatus) li.StatusLI = cmbStatus.Text;
-                if (abaLi.Controls.Find("DtpDataRegistro", true).FirstOrDefault() is DateTimePicker dtpLi)
+                if (abaLi.Controls.OfType<LIEditControl>().FirstOrDefault() is LIEditControl liControl)
                 {
-                    li.DataRegistro = dtpLi.Checked ? dtpLi.Value : null;
-                }
-
-                // Encontra o TabControl aninhado dos LPCOs
-                var tabControlLpco = abaLi.Controls.OfType<TabControl>().FirstOrDefault();
-                if (tabControlLpco != null)
-                {
-                    foreach (TabPage abaLpco in tabControlLpco.TabPages)
-                    {
-                        if (abaLpco.Tag is not LpcoInfo lpco) continue;
-
-                        // AGORA ESTA PARTE VAI FUNCIONAR CORRETAMENTE
-                        if (abaLpco.Controls.Find("TxtLPCO", true).FirstOrDefault() is TextBox txtLpcoNum)
-                            lpco.LPCO = txtLpcoNum.Text;
-
-                        if (abaLpco.Controls.Find("CbParametrizacao", true).FirstOrDefault() is ComboBox cmbParam)
-                            lpco.ParametrizacaoLPCO = cmbParam.Text;
-
-                        if (abaLpco.Controls.Find("CbEmExigencia", true).FirstOrDefault() is CheckBox CbEmExigencia)
-                            lpco.EmExigencia = CbEmExigencia.Checked;
-
-                        if (abaLpco.Controls.Find("CbMotivoExigencia", true).FirstOrDefault() is ComboBox CbMotivoExigencia)
-                            lpco.MotivoExigencia = CbMotivoExigencia.Text;
-
-                        if (abaLpco.Controls.Find("DtpDataRegistroLPCO", true).FirstOrDefault() is DateTimePicker dtpLpcoReg)
-                            lpco.DataRegistroLPCO = dtpLpcoReg.Checked ? dtpLpcoReg.Value : null;
-
-                        if (abaLpco.Controls.Find("DtpDataDeferimentoLPCO", true).FirstOrDefault() is DateTimePicker dtpLpcoDef)
-                            lpco.DataDeferimentoLPCO = dtpLpcoDef.Checked ? dtpLpcoDef.Value : null;
-                    }
+                    liControl.SalvarAlteracoes();
                 }
             }
             processo.LI.RemoveAll(li => string.IsNullOrWhiteSpace(li.Numero) || li.Numero == "Nova LI");

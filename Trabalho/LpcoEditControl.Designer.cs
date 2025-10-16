@@ -42,23 +42,24 @@
             // CbParametrizacao
             // 
             CbParametrizacao.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            CbParametrizacao.FlatStyle = FlatStyle.Flat;
             CbParametrizacao.FormattingEnabled = true;
-            CbParametrizacao.Items.AddRange(new object[] { "", "Documental", "Exame Físico", "Conferência Física", "Coleta de Amostra", "nspeção Física" });
+            CbParametrizacao.Items.AddRange(new object[] { "", "Documental", "Exame Físico", "Conferência Física", "Coleta de Amostra", "Inspeção Física" });
             CbParametrizacao.Location = new Point(113, 61);
             CbParametrizacao.Name = "CbParametrizacao";
             CbParametrizacao.Size = new Size(140, 23);
-            CbParametrizacao.TabIndex = 438;
+            CbParametrizacao.TabIndex = 2;
             // 
             // CbMotivoExigencia
             // 
             CbMotivoExigencia.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
-            CbMotivoExigencia.Enabled = false;
+            CbMotivoExigencia.FlatStyle = FlatStyle.Flat;
             CbMotivoExigencia.FormattingEnabled = true;
             CbMotivoExigencia.Items.AddRange(new object[] { "EXIGÊNCIA PENDENTE", "EXIGÊNCIA CUMPRIDA", "DEFERIDO" });
             CbMotivoExigencia.Location = new Point(345, 69);
             CbMotivoExigencia.Name = "CbMotivoExigencia";
             CbMotivoExigencia.Size = new Size(135, 23);
-            CbMotivoExigencia.TabIndex = 437;
+            CbMotivoExigencia.TabIndex = 5;
             CbMotivoExigencia.Text = "Status do LPCO...";
             // 
             // lblDataDeferimento
@@ -79,7 +80,7 @@
             DtpDataDeferimentoLPCO.Location = new Point(419, 40);
             DtpDataDeferimentoLPCO.Name = "DtpDataDeferimentoLPCO";
             DtpDataDeferimentoLPCO.Size = new Size(135, 23);
-            DtpDataDeferimentoLPCO.TabIndex = 434;
+            DtpDataDeferimentoLPCO.TabIndex = 4;
             // 
             // lblDataRegistro
             // 
@@ -99,7 +100,7 @@
             DtpDataRegistroLPCO.Location = new Point(270, 40);
             DtpDataRegistroLPCO.Name = "DtpDataRegistroLPCO";
             DtpDataRegistroLPCO.Size = new Size(135, 23);
-            DtpDataRegistroLPCO.TabIndex = 432;
+            DtpDataRegistroLPCO.TabIndex = 3;
             // 
             // lblParametrizacao
             // 
@@ -117,7 +118,7 @@
             TxtLPCO.Location = new Point(63, 27);
             TxtLPCO.Name = "TxtLPCO";
             TxtLPCO.Size = new Size(190, 23);
-            TxtLPCO.TabIndex = 430;
+            TxtLPCO.TabIndex = 1;
             // 
             // lblLPCO
             // 

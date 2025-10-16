@@ -111,12 +111,13 @@
             CbPresencaCarga = new CheckBox();
             groupBox6 = new GroupBox();
             groupBox7 = new GroupBox();
-            BtnLI = new Button();
-            BtnExcluirLI = new Button();
             flowLayoutPanel1 = new FlowLayoutPanel();
             groupBox8 = new GroupBox();
             groupBox9 = new GroupBox();
             groupBox10 = new GroupBox();
+            BtnLI = new Button();
+            BtnExcluirLI = new Button();
+            tableLayoutPanel1 = new TableLayoutPanel();
             groupBox2.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)BsModificaProcesso).BeginInit();
             ((System.ComponentModel.ISupportInitialize)NUMfreetime).BeginInit();
@@ -129,6 +130,7 @@
             groupBox8.SuspendLayout();
             groupBox9.SuspendLayout();
             groupBox10.SuspendLayout();
+            tableLayoutPanel1.SuspendLayout();
             SuspendLayout();
             // 
             // groupBox2
@@ -1083,28 +1085,6 @@
             groupBox7.TabStop = false;
             groupBox7.Text = "Pendência";
             // 
-            // BtnLI
-            // 
-            BtnLI.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
-            BtnLI.Location = new Point(474, 0);
-            BtnLI.Name = "BtnLI";
-            BtnLI.Size = new Size(129, 23);
-            BtnLI.TabIndex = 818;
-            BtnLI.Text = "Novo LI";
-            BtnLI.UseVisualStyleBackColor = true;
-            BtnLI.Click += BtnLI_Click;
-            // 
-            // BtnExcluirLI
-            // 
-            BtnExcluirLI.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
-            BtnExcluirLI.Location = new Point(609, 0);
-            BtnExcluirLI.Name = "BtnExcluirLI";
-            BtnExcluirLI.Size = new Size(129, 23);
-            BtnExcluirLI.TabIndex = 819;
-            BtnExcluirLI.Text = "Excluir LI";
-            BtnExcluirLI.UseVisualStyleBackColor = true;
-            BtnExcluirLI.Click += BtnExcluirLi_Click;
-            // 
             // flowLayoutPanel1
             // 
             flowLayoutPanel1.AutoSize = true;
@@ -1155,14 +1135,50 @@
             // 
             groupBox10.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             groupBox10.AutoSizeMode = AutoSizeMode.GrowAndShrink;
-            groupBox10.Controls.Add(BtnExcluirLI);
-            groupBox10.Controls.Add(BtnLI);
+            groupBox10.Controls.Add(tableLayoutPanel1);
             groupBox10.Controls.Add(TCLi);
             groupBox10.Location = new Point(357, 182);
             groupBox10.Name = "groupBox10";
             groupBox10.Size = new Size(750, 283);
             groupBox10.TabIndex = 823;
             groupBox10.TabStop = false;
+            // 
+            // BtnLI
+            // 
+            BtnLI.Dock = DockStyle.Fill;
+            BtnLI.Location = new Point(3, 3);
+            BtnLI.Name = "BtnLI";
+            BtnLI.Size = new Size(143, 24);
+            BtnLI.TabIndex = 818;
+            BtnLI.Text = "Novo LI";
+            BtnLI.UseVisualStyleBackColor = true;
+            BtnLI.Click += BtnLI_Click;
+            // 
+            // BtnExcluirLI
+            // 
+            BtnExcluirLI.Dock = DockStyle.Fill;
+            BtnExcluirLI.Location = new Point(152, 3);
+            BtnExcluirLI.Name = "BtnExcluirLI";
+            BtnExcluirLI.Size = new Size(143, 24);
+            BtnExcluirLI.TabIndex = 819;
+            BtnExcluirLI.Text = "Excluir LI";
+            BtnExcluirLI.UseVisualStyleBackColor = true;
+            BtnExcluirLI.Click += BtnExcluirLi_Click;
+            // 
+            // tableLayoutPanel1
+            // 
+            tableLayoutPanel1.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Right;
+            tableLayoutPanel1.ColumnCount = 2;
+            tableLayoutPanel1.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
+            tableLayoutPanel1.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
+            tableLayoutPanel1.Controls.Add(BtnExcluirLI, 1, 0);
+            tableLayoutPanel1.Controls.Add(BtnLI, 0, 0);
+            tableLayoutPanel1.Location = new Point(452, 0);
+            tableLayoutPanel1.Name = "tableLayoutPanel1";
+            tableLayoutPanel1.RowCount = 1;
+            tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
+            tableLayoutPanel1.Size = new Size(298, 30);
+            tableLayoutPanel1.TabIndex = 824;
             // 
             // FrmModificaProcesso
             // 
@@ -1204,6 +1220,7 @@
             groupBox9.ResumeLayout(false);
             groupBox9.PerformLayout();
             groupBox10.ResumeLayout(false);
+            tableLayoutPanel1.ResumeLayout(false);
             ResumeLayout(false);
             PerformLayout();
         }
@@ -1291,11 +1308,12 @@
         private TextBox TxtContainer;
         private Label label8;
         private BindingSource BsModificaProcesso;
-        private Button BtnLI;
-        private Button BtnExcluirLI;
         private FlowLayoutPanel flowLayoutPanel1;
         private GroupBox groupBox8;
         private GroupBox groupBox9;
         private GroupBox groupBox10;
+        private TableLayoutPanel tableLayoutPanel1;
+        private Button BtnExcluirLI;
+        private Button BtnLI;
     }
 }

@@ -17,6 +17,7 @@ namespace Trabalho
         private readonly BindingSource _bsVistoriaAgendada;
         private readonly BindingSource _bsSolicitadoData;
         private readonly BindingSource _bsAguardandoChegada;
+        private readonly BindingSource _bsAguardandoLaudo;
 
         public FrmVistorias()
         {
@@ -33,14 +34,8 @@ namespace Trabalho
             _bsVistoriaAgendada = new BindingSource();
             _bsSolicitadoData = new BindingSource();
             _bsAguardandoChegada = new BindingSource();
+            _bsAguardandoLaudo = new BindingSource();
         }
-
-        private async void FrmVistorias_Shown(object? sender, EventArgs e)
-        {
-            ConfigurarGrids();
-            await CarregarDadosAsync();
-        }
-
         private async Task CarregarDadosAsync()
         {
             try
@@ -49,10 +44,30 @@ namespace Trabalho
                 await _vistoriaService.SincronizarVistoriasAsync();
                 var todasAsVistorias = await _repositorioVistorias.GetAllAsync();
 
-                _bsAguardandoDef.DataSource = todasAsVistorias.Where(v => v.Status == StatusVistoria.AguardandoDeferimento).ToList();
-                _bsVistoriaAgendada.DataSource = todasAsVistorias.Where(v => v.Status == StatusVistoria.VistoriaAgendada).ToList();
-                _bsSolicitadoData.DataSource = todasAsVistorias.Where(v => v.Status == StatusVistoria.SolicitarDataVistoria).ToList();
-                _bsAguardandoChegada.DataSource = todasAsVistorias.Where(v => v.Status == StatusVistoria.AguardandoChegadaParaAgendar).ToList();
+                // MUDANÇA: Os BindingSources agora recebem a lista de 'Vistoria' diretamente.
+                _bsAguardandoLaudo.DataSource = todasAsVistorias
+                    .Where(v => v.Status == StatusVistoria.AguardandoLaudo)
+                    .OrderBy(v => v.Previsao ?? DateTime.MaxValue)
+                    .ToList();
+                _bsAguardandoDef.DataSource = todasAsVistorias
+                    .Where(v => v.Status == StatusVistoria.AguardandoDeferimento)
+                    .OrderBy(v => v.Previsao ?? DateTime.MaxValue)
+                    .ToList();
+
+                _bsVistoriaAgendada.DataSource = todasAsVistorias
+                    .Where(v => v.Status == StatusVistoria.VistoriaAgendada)
+                    .OrderBy(v => v.Previsao ?? DateTime.MaxValue)
+                    .ToList();
+
+                _bsSolicitadoData.DataSource = todasAsVistorias
+                    .Where(v => v.Status == StatusVistoria.SolicitarDataVistoria)
+                    .OrderBy(v => v.Previsao ?? DateTime.MaxValue)
+                    .ToList();
+
+                _bsAguardandoChegada.DataSource = todasAsVistorias
+                    .Where(v => v.Status == StatusVistoria.AguardandoChegadaParaAgendar)
+                    .OrderBy(v => v.Previsao ?? DateTime.MaxValue)
+                    .ToList();
             }
             catch (Exception ex)
             {
@@ -63,6 +78,11 @@ namespace Trabalho
                 Cursor = Cursors.Default;
             }
         }
+        private async void FrmVistorias_Shown(object? sender, EventArgs e)
+        {
+            ConfigurarGrids();
+            await CarregarDadosAsync();
+        }
 
         private void ConfigurarGrids()
         {
@@ -71,12 +91,14 @@ namespace Trabalho
             DGVVistoriaAgendada.DataSource = _bsVistoriaAgendada;
             DGVSolicitadoDataVistoria.DataSource = _bsSolicitadoData;
             DGVAguardandoChegAgendVistoria.DataSource = _bsAguardandoChegada;
+            DGVLaudo.DataSource = _bsAguardandoLaudo;
 
             // MUDANÇA: Chama a configuração para TODAS as 4 grades
             ConfigurarGrid(DGVAguardandoChegAgendVistoria);
             ConfigurarGrid(DGVSolicitadoDataVistoria);
             ConfigurarGrid(DGVVistoriaAgendada);
             ConfigurarGrid(DGVAguardandoDef);
+            ConfigurarGrid(DGVLaudo);
         }
 
         /// <summary>
@@ -90,27 +112,24 @@ namespace Trabalho
             dgv.SelectionMode = DataGridViewSelectionMode.CellSelect;
             dgv.AllowUserToAddRows = false;
             dgv.ReadOnly = false;
-
-            // MUDANÇA 1: Conecta o novo evento para configurar a caixa de edição.
             dgv.EditingControlShowing += DGV_EditingControlShowing;
             dgv.CellValueChanged += DGV_CellValueChanged;
-
-            // MUDANÇA 2: Permite que a altura das linhas se ajuste ao conteúdo.
+            dgv.DataBindingComplete += DGV_DataBindingComplete;
             dgv.AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.AllCells;
 
             dgv.Columns.Clear();
             dgv.Columns.AddRange(new DataGridViewColumn[]
             {
                 new DataGridViewTextBoxColumn { DataPropertyName = "LI", HeaderText = "L.I.", ReadOnly = true, AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells, MinimumWidth = 90 },
-                new DataGridViewTextBoxColumn { DataPropertyName = "LPCO", HeaderText = "LPCO", ReadOnly = true, FillWeight = 120, AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells, MinimumWidth = 120 },
-                new DataGridViewTextBoxColumn { DataPropertyName = "Importador", HeaderText = "Importador", ReadOnly = true, FillWeight = 120, AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells, MinimumWidth = 120 },
+                new DataGridViewTextBoxColumn { DataPropertyName = "LPCO", HeaderText = "LPCO", ReadOnly = true, AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells, MinimumWidth = 120 },
+                new DataGridViewTextBoxColumn { DataPropertyName = "Importador", HeaderText = "Importador", ReadOnly = true, FillWeight = 120, MinimumWidth = 120 },
                 new DataGridViewTextBoxColumn { DataPropertyName = "Container", HeaderText = "Container", ReadOnly = true, AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells, MinimumWidth = 110 },
                 new DataGridViewTextBoxColumn { DataPropertyName = "Ref_USA", HeaderText = "Ref. USA", ReadOnly = true, AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells, MinimumWidth = 90 },
                 new DataGridViewTextBoxColumn { DataPropertyName = "Produto", HeaderText = "Produto", ReadOnly = true, FillWeight = 150, MinimumWidth = 150 },
-                new DataGridViewTextBoxColumn { DataPropertyName = "Terminal", HeaderText = "Terminal", ReadOnly = true, AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells, FillWeight = 150, MinimumWidth = 150 },
+                new DataGridViewTextBoxColumn { DataPropertyName = "Terminal", HeaderText = "Terminal", ReadOnly = true, AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells, MinimumWidth = 150 },
                 new DataGridViewTextBoxColumn { DataPropertyName = "Conhecimento", HeaderText = "Conhecimento", ReadOnly = true, AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells, MinimumWidth = 110 },
-                new DataGridViewTextBoxColumn { DataPropertyName = "ParametrizacaoLPCO", HeaderText = "Status LPCO", ReadOnly = true, FillWeight = 100, AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells, MinimumWidth = 100 },
-
+                new DataGridViewTextBoxColumn { DataPropertyName = "Previsao", HeaderText = "Previsão", ReadOnly = true, DefaultCellStyle = new DataGridViewCellStyle { Format = "dd/MM/yyyy" }, AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells, MinimumWidth = 90 },
+                new DataGridViewTextBoxColumn { DataPropertyName = "ParametrizacaoLPCO", HeaderText = "Status LPCO", ReadOnly = true, AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells, MinimumWidth = 100 },
                 new DataGridViewTextBoxColumn
                 {
                     DataPropertyName = "Notas",
@@ -118,37 +137,18 @@ namespace Trabalho
                     ReadOnly = false,
                     FillWeight = 180,
                     MinimumWidth = 150,
-                    // MUDANÇA 3: Permite que o texto na célula "Notas" quebre a linha.
                     DefaultCellStyle = new DataGridViewCellStyle { WrapMode = DataGridViewTriState.True }
                 }
             });
         }
         private void DGV_EditingControlShowing(object? sender, DataGridViewEditingControlShowingEventArgs e)
         {
-            // 1. Identifica qual DataGridView disparou o evento. Se não for um, sai.
-            if (sender is not DataGridView dgv) return;
-
-            // 2. Garante que a célula atual não seja nula.
-            if (dgv.CurrentCell == null) return;
-
-            // 3. Verifica se a célula que está sendo editada é um TextBox.
+            if (sender is not DataGridView dgv || dgv.CurrentCell == null) return;
             if (e.Control is TextBox editingTextBox)
             {
-                // 4. Verifica se a coluna da célula atual é a de "Notas".
-                if (dgv.CurrentCell.OwningColumn.DataPropertyName == "Notas")
-                {
-                    // Se for, permite múltiplas linhas e a tecla Enter.
-                    editingTextBox.Multiline = true;
-                    editingTextBox.AcceptsReturn = true;
-                    editingTextBox.WordWrap = true;
-                }
-                else
-                {
-                    // Se não for, garante que outras colunas de texto continuem com uma única linha.
-                    editingTextBox.Multiline = false;
-                    editingTextBox.AcceptsReturn = false;
-                    editingTextBox.WordWrap = false;
-                }
+                editingTextBox.Multiline = (dgv.CurrentCell.OwningColumn.DataPropertyName == "Notas");
+                editingTextBox.AcceptsReturn = editingTextBox.Multiline;
+                editingTextBox.WordWrap = editingTextBox.Multiline;
             }
         }
         /// <summary>
@@ -178,6 +178,34 @@ namespace Trabalho
                     MessageBox.Show($"Erro ao salvar a nota: {ex.Message}", "Erro de Salvamento", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     // Opcional: recarregar os dados para reverter a alteração visual
                     await CarregarDadosAsync();
+                }
+            }
+        }
+
+        private void DGV_DataBindingComplete(object? sender, DataGridViewBindingCompleteEventArgs e)
+        {
+            // Garante que o evento foi disparado por uma grade
+            if (sender is not DataGridView dgv) return;
+
+            // Percorre cada linha da grade que acabou de ser preenchida
+            foreach (DataGridViewRow row in dgv.Rows)
+            {
+                // Pega o objeto 'Vistoria' associado à linha
+                if (row.DataBoundItem is Vistoria vistoria)
+                {
+                    // A REGRA: Verifica se a parametrização é "Coleta de Amostra"
+                    if (vistoria.ParametrizacaoLPCO?.ToUpper() == "COLETA DE AMOSTRA")
+                    {
+                        // Se for, pinta o fundo da linha com um amarelo forte
+                        row.DefaultCellStyle.BackColor = Color.Gold;
+                        row.DefaultCellStyle.ForeColor = Color.Black; // Garante que o texto fique legível
+                    }
+                    else
+                    {
+                        // Se não for, garante que a linha tenha a cor padrão
+                        row.DefaultCellStyle.BackColor = SystemColors.Window;
+                        row.DefaultCellStyle.ForeColor = SystemColors.ControlText;
+                    }
                 }
             }
         }
@@ -228,11 +256,19 @@ namespace Trabalho
         {
             await MoverVistoria(DGVVistoriaAgendada, _bsVistoriaAgendada, _bsAguardandoDef, StatusVistoria.AguardandoDeferimento);
         }
+        private async void BtnSobeLaudo_Click(object sender, EventArgs e)
+        {
+            await MoverVistoria(DGVAguardandoDef, _bsAguardandoDef, _bsAguardandoLaudo, StatusVistoria.AguardandoLaudo);
+        }
 
         // --- NOVOS MÉTODOS PARA DESCER DE ESTÁGIO ---
         private async void btnDesceParaAgendada_Click(object? sender, EventArgs e)
         {
             await MoverVistoria(DGVAguardandoDef, _bsAguardandoDef, _bsVistoriaAgendada, StatusVistoria.VistoriaAgendada);
+        }
+        private async void BtnDesceDeferimento_Click(object sender, EventArgs e)
+        {
+            await MoverVistoria(DGVLaudo, _bsAguardandoLaudo, _bsAguardandoDef, StatusVistoria.AguardandoDeferimento);
         }
 
         private async void btnDesceParaSolicitado_Click(object? sender, EventArgs e)
@@ -297,5 +333,61 @@ namespace Trabalho
             }
         }
         #endregion
+
+        private void label1_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private async void BtnDeferido_Click_1(object sender, EventArgs e)
+        {
+            if (DGVLaudo.CurrentRow == null || DGVLaudo.CurrentRow.DataBoundItem is not Vistoria vistoriaSelecionada)
+            {
+                MessageBox.Show("Por favor, selecione um item para finalizar.", "Aviso", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            var resultado = MessageBox.Show($"Tem certeza que deseja marcar a vistoria do LPCO '{vistoriaSelecionada.LPCO}' como DEFERIDA?", "Confirmar Deferimento", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+
+            if (resultado == DialogResult.No) return;
+
+            try
+            {
+                // 1. Busca o Processo principal no banco de dados.
+                var processo = await _repositorioProcesso.GetByRefUsaAsync(vistoriaSelecionada.Ref_USA);
+                if (processo == null)
+                {
+                    MessageBox.Show("Processo original não encontrado. Não é possível atualizar o status.", "Erro");
+                    return;
+                }
+
+                // 2. Encontra o LPCO específico dentro da lista de LIs do processo.
+                var lpcoParaAtualizar = processo.LI
+                    .SelectMany(li => li.LPCO)
+                    .FirstOrDefault(lpco => lpco.LPCO == vistoriaSelecionada.LPCO);
+
+                if (lpcoParaAtualizar != null)
+                {
+                    // 3. Atualiza o status do LPCO para "DEFERIDO".
+                    lpcoParaAtualizar.MotivoExigencia = "DEFERIDO";
+
+                    // 4. Salva o Processo inteiro. A lógica de SincronizarLicencas
+                    //    irá propagar essa alteração para o OrgaoAnuente correspondente.
+                    await _repositorioProcesso.UpdateAsync(processo);
+                }
+
+                // 5. Deleta o registro da vistoria, já que ela foi concluída.
+                await _repositorioVistorias.DeleteByLpcoAsync(vistoriaSelecionada.LPCO);
+
+                // 6. Remove o item da grade na tela.
+                _bsAguardandoLaudo.Remove(vistoriaSelecionada);
+
+                MessageBox.Show("Vistoria finalizada e status do LPCO atualizado com sucesso!", "Sucesso", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Erro ao finalizar a vistoria: {ex.Message}", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
     }
 }

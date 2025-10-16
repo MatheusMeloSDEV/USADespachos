@@ -1,5 +1,6 @@
 ﻿using CLUSA; // Sua namespace dos modelos e repositórios
 using System.ComponentModel;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace Trabalho
@@ -153,7 +154,7 @@ namespace Trabalho
         {
             var todasAsLIs = await _repositorioOrgaoAnuente.GetAllAsync();
 
-            _listaOriginalViewModel = todasAsLIs
+            var listaMapeada = todasAsLIs
                 .SelectMany(li =>
                     (li.LPCO.Any() ? li.LPCO : new List<LpcoInfo> { new LpcoInfo() })
                     .Select(lpco => new LpcoViewModel
@@ -180,20 +181,20 @@ namespace Trabalho
                         LPCO = lpco.LPCO,
                         DataRegistroLPCO = lpco.DataRegistroLPCO,
                         ParametrizacaoLPCO = lpco.ParametrizacaoLPCO,
-                        MotivoExigencia = lpco.MotivoExigencia?.ToUpper() == "PENDENTE"
+                        MotivoExigencia = lpco.MotivoExigencia?.ToUpper() == "EXIGÊNCIA PENDENTE"
                                 ? $"{lpco.NomeOrgao} {lpco.MotivoExigencia.ToUpper()}" // Ex: "MAPA PENDENTE"
                                 : lpco.MotivoExigencia, // Ex: "CUMPRIDA" ou ""
                     }))
                 .ToList();
 
-            // MUDANÇA: A ordenação agora usa o ViewModel completo
-            var listaOrdenada = _listaOriginalViewModel
-                .OrderBy(vm => GetStatusPriority(vm)) // 1. Prioridade por Status/Exigência
-                .ThenByDescending(vm => ExtrairAnoNumero(vm.Ref_USA).ano)
-                .ThenBy(vm => ExtrairAnoNumero(vm.Ref_USA).numero)
-                .ToList();
+            _listaOriginalViewModel = listaMapeada
+                    .OrderBy(vm => GetStatusPriority(vm))        // 1. Prioridade por Status/Exigência
+                    .ThenByDescending(vm => ExtrairAnoNumero(vm.Ref_USA).ano) // 2. Ano
+                    .ThenBy(vm => ExtrairAnoNumero(vm.Ref_USA).numero)    // 3. Número do processo
+                    .ToList();
 
-            _bsLpcoViewModel.DataSource = listaOrdenada;
+            // Exibe a lista original e ordenada na grade.
+            _bsLpcoViewModel.DataSource = _listaOriginalViewModel;
             _bsLpcoViewModel.ResetBindings(false);
         }
 
@@ -438,11 +439,21 @@ namespace Trabalho
                 MessageBox.Show($"Erro ao abrir detalhes: {ex.Message}", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
-        private void BtnCancelar_Click(object? sender, EventArgs e)
+        private async void BtnCancelar_Click(object? sender, EventArgs e)
         {
             TxtPesquisa.Clear();
+
+            // MUDANÇA: Em vez de recarregar tudo do banco, apenas restaura
+            // a lista original que já está em memória e ordenada por prioridade.
             _bsLpcoViewModel.DataSource = new List<LpcoViewModel>(_listaOriginalViewModel);
             _bsLpcoViewModel.ResetBindings(false);
+
+            // Limpa a indicação visual de ordenação por clique no cabeçalho
+            foreach (DataGridViewColumn column in DgvOrgaoAnuente.Columns)
+            {
+                column.HeaderCell.SortGlyphDirection = SortOrder.None;
+            }
+            _colunaOrdenada = null; // Reseta o estado da ordenação por clique
         }
 
         // Classe auxiliar para o ComboBox

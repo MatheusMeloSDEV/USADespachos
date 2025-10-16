@@ -41,7 +41,7 @@ namespace Trabalho
 
             // Assinatura dos eventos
             this.Shown += FrmPrincipal_Shown;
-            TCabas.SelectedIndexChanged += TCabas_SelectedIndexChanged; // <-- Evento para carregar abas sob demanda
+            //TCabas.SelectedIndexChanged += TCabas_SelectedIndexChanged; // <-- Evento para carregar abas sob demanda
         }
 
 
@@ -51,13 +51,13 @@ namespace Trabalho
         {
             // O formulário já está visível, agora carregamos os dados sem travar.
             await CarregarDadosProcessos();
-            TCabas.Visible = true;
+            //TCabas.Visible = true;
         }
 
         private void FrmPrincipal_Load(object sender, EventArgs e)
         {
             this.Icon = Icon.ExtractAssociatedIcon(Application.ExecutablePath);
-            TCabas.Visible = false; // Esconde as abas até os dados serem carregados
+            //TCabas.Visible = false; // Esconde as abas até os dados serem carregados
         }
 
         private void FrmPrincipal_FormClosing(object sender, FormClosingEventArgs e)
@@ -79,8 +79,8 @@ namespace Trabalho
                 // 1. Busca os dados do banco (rápido e assíncrono)
                 var processos = await _repositorioProcesso.ListarTodosAsync();
 
-                // 2. Monta as abas VAZIAS (operação instantânea)
-                MontarTabsProcessos(processos);
+                //// 2. Monta as abas VAZIAS (operação instantânea)
+                //MontarTabsProcessos(processos);
 
                 // 3. Processa as notificações em segundo plano
                 await GerarNotificacoes(processos);
@@ -101,81 +101,81 @@ namespace Trabalho
         /// <summary>
         /// Cria as abas rapidamente, sem preencher o conteúdo.
         /// </summary>
-        private void MontarTabsProcessos(List<Processo> processos)
-        {
-            TCabas.SuspendLayout();
-            TCabas.TabPages.Clear();
-            _abasJaCarregadas.Clear();
+        //private void MontarTabsProcessos(List<Processo> processos)
+        //{
+        //    TCabas.SuspendLayout();
+        //    TCabas.TabPages.Clear();
+        //    _abasJaCarregadas.Clear();
 
-            // Adiciona as 3 abas principais
-            TCabas.TabPages.Add(new TabPage("Data de Atracação") { Name = "DataDeAtracacao", Tag = processos });
-            TCabas.TabPages.Add(new TabPage("Órgãos Anuentes") { Name = "OrgaoAnuentes", Tag = processos });
-            TCabas.TabPages.Add(new TabPage("Finalizados") { Name = "Finalizados", Tag = processos });
+        //    // Adiciona as 3 abas principais
+        //    TCabas.TabPages.Add(new TabPage("Data de Atracação") { Name = "DataDeAtracacao", Tag = processos });
+        //    TCabas.TabPages.Add(new TabPage("Órgãos Anuentes") { Name = "OrgaoAnuentes", Tag = processos });
+        //    TCabas.TabPages.Add(new TabPage("Finalizados") { Name = "Finalizados", Tag = processos });
 
-            TCabas.ResumeLayout();
+        //    TCabas.ResumeLayout();
 
-            // Força o carregamento da primeira aba visível
-            if (TCabas.TabPages.Count > 0)
-            {
-                TCabas_SelectedIndexChanged(TCabas, EventArgs.Empty);
-            }
-        }
+        //    // Força o carregamento da primeira aba visível
+        //    if (TCabas.TabPages.Count > 0)
+        //    {
+        //        TCabas_SelectedIndexChanged(TCabas, EventArgs.Empty);
+        //    }
+        //}
 
         /// <summary>
         /// Evento disparado QUANDO o usuário clica em uma aba.
         /// </summary>
-        private void TCabas_SelectedIndexChanged(object? sender, EventArgs e)
-        {
-            if (TCabas.SelectedTab == null) return;
-            var abaSelecionada = TCabas.SelectedTab;
+        //private void TCabas_SelectedIndexChanged(object? sender, EventArgs e)
+        //{
+        //    if (TCabas.SelectedTab == null) return;
+        //    var abaSelecionada = TCabas.SelectedTab;
 
-            // Se o conteúdo desta aba já foi criado, não faz nada.
-            if (_abasJaCarregadas.Contains(abaSelecionada)) return;
+        //    // Se o conteúdo desta aba já foi criado, não faz nada.
+        //    if (_abasJaCarregadas.Contains(abaSelecionada)) return;
 
-            // Se for a primeira vez, cria o conteúdo.
-            if (abaSelecionada.Tag is List<Processo> processos)
-            {
-                PopularAbaComControles(abaSelecionada, processos);
-                _abasJaCarregadas.Add(abaSelecionada);
-            }
-        }
+        //    // Se for a primeira vez, cria o conteúdo.
+        //    if (abaSelecionada.Tag is List<Processo> processos)
+        //    {
+        //        PopularAbaComControles(abaSelecionada, processos);
+        //        _abasJaCarregadas.Add(abaSelecionada);
+        //    }
+        //}
 
         /// <summary>
         /// O "trabalho pesado": cria os controles para UMA aba específica.
         /// </summary>
-        private void PopularAbaComControles(TabPage aba, List<Processo> processos)
-        {
-            Cursor = Cursors.WaitCursor;
-            aba.SuspendLayout();
+        //private void PopularAbaComControles(TabPage aba, List<Processo> processos)
+        //{
+        //    Cursor = Cursors.WaitCursor;
+        //    aba.SuspendLayout();
 
-            var table = CriarTabela();
-            aba.Controls.Add(table);
+        //    var table = CriarTabela();
+        //    aba.Controls.Add(table);
 
-            // Filtra a lista de processos com base na aba clicada
-            List<string> textosParaLabels = new List<string>();
-            switch (aba.Name)
-            {
-                case "DataDeAtracacao":
-                    textosParaLabels = processos.Where(p => p.Status != "Finalizado")
-                        .Select(p => $"{p.Ref_USA} — {p.SR} — {(p.DataDeAtracacao.HasValue ? p.DataDeAtracacao.Value.ToString("dd/MM/yyyy") : "N/A")}").ToList();
-                    break;
+        //    // Filtra a lista de processos com base na aba clicada
+        //    List<string> textosParaLabels = new List<string>();
+        //    switch (aba.Name)
+        //    {
+        //        case "DataDeAtracacao":
+        //            textosParaLabels = processos.Where(p => p.Status != "Finalizado")
+        //                .Select(p => $"{p.Ref_USA} — {p.SR} — {(p.DataDeAtracacao.HasValue ? p.DataDeAtracacao.Value.ToString("dd/MM/yyyy") : "N/A")}").ToList();
+        //            break;
 
-                case "OrgaoAnuentes":
-                    textosParaLabels = processos.Where(p => p.Status != "Finalizado")
-                       .Select(p => $"{p.Ref_USA} — {p.Importador} — {p.OrgaosAnuentesString}").ToList();
-                    break;
+        //        case "OrgaoAnuentes":
+        //            textosParaLabels = processos.Where(p => p.Status != "Finalizado")
+        //               .Select(p => $"{p.Ref_USA} — {p.Importador} — {p.OrgaosAnuentesString}").ToList();
+        //            break;
 
-                case "Finalizados":
-                    textosParaLabels = processos.Where(p => p.Status == "Finalizado")
-                        .Select(p => $"{p.Ref_USA} — Finalizado em: {(p.DataCarregamentoDI.HasValue ? p.DataCarregamentoDI.Value.ToString("dd/MM/yyyy") : "N/A")}").ToList();
-                    break;
-            }
+        //        case "Finalizados":
+        //            textosParaLabels = processos.Where(p => p.Status == "Finalizado")
+        //                .Select(p => $"{p.Ref_USA} — Finalizado em: {(p.DataCarregamentoDI.HasValue ? p.DataCarregamentoDI.Value.ToString("dd/MM/yyyy") : "N/A")}").ToList();
+        //            break;
+        //    }
 
-            table.Controls.AddRange(textosParaLabels.Select(CriarLabel).ToArray());
+        //    table.Controls.AddRange(textosParaLabels.Select(CriarLabel).ToArray());
 
-            aba.ResumeLayout();
-            Cursor = Cursors.Default;
-        }
+        //    aba.ResumeLayout();
+        //    Cursor = Cursors.Default;
+        //}
 
         #endregion
 
@@ -183,7 +183,8 @@ namespace Trabalho
 
         public async Task GerarNotificacoes(List<Processo> processos)
         {
-            var notificacoesExistentes = await _notificacaoRepo.GetAllAsync();
+            var refsUsa = processos.Select(p => p.Ref_USA).Distinct().ToList();
+            var notificacoesExistentes = await _notificacaoRepo.ObterNaoVisualizadasPorProcessosAsync(refsUsa, 500);
             var lookupExistentes = notificacoesExistentes.Select(n => $"{n.RefUsa}|{n.Mensagem}").ToHashSet();
             var novasNotificacoes = new List<Notificacao>();
 
@@ -204,9 +205,10 @@ namespace Trabalho
 
             if (novasNotificacoes.Any())
             {
-                await _notificacaoRepo.InsertManyAsync(novasNotificacoes); // Supondo que você tenha um InsertMany
+                await _notificacaoRepo.InsertManyAsync(novasNotificacoes);
             }
         }
+
 
         private void VerificarVencimento(Processo doc, DateTime? vencimento, string nomeExibicao, List<Notificacao> lista, HashSet<string> lookup)
         {
@@ -233,22 +235,23 @@ namespace Trabalho
         /// <summary>
         /// Busca as notificações não visualizadas no banco e atualiza o menu de notificações na tela.
         /// </summary>
-        private async Task AtualizarNotificacoes() // <-- MUDANÇA AQUI: de 'void' para 'Task'
+        private int notificacoesLimite = 20;
+        private int notificacoesSkip = 0;
+
+        private async Task AtualizarNotificacoes()
         {
-            // Limpa os itens antigos do menu dropdown.
             MenuItemNotifications.DropDownItems.Clear();
 
-            // Busca a lista de notificações pendentes no banco de dados.
-            var pendentes = await _notificacaoRepo.ObterNotificacoesNaoVisualizadasAsync();
+            // Busca notificações limitadas para paginação
+            var pendentes = await _notificacaoRepo.ObterNotificacoesNaoVisualizadasAsync(notificacoesLimite, notificacoesSkip);
 
             int quantidade = pendentes.Count;
+            int totalNaoVisualizadas = await _notificacaoRepo.ContarNaoVisualizadasAsync();
 
-            // Atualiza o texto do menu principal com a contagem de notificações.
-            MenuItemNotifications.Text = quantidade > 0
-                ? $"Notificações ({quantidade})"
+            MenuItemNotifications.Text = totalNaoVisualizadas > 0
+                ? $"Notificações ({totalNaoVisualizadas})"
                 : "Notificações";
 
-            // Se não houver notificações, adiciona um item "Sem notificações" e encerra.
             if (quantidade == 0)
             {
                 MenuItemNotifications.DropDownItems.Add(new ToolStripMenuItem
@@ -259,7 +262,6 @@ namespace Trabalho
                 return;
             }
 
-            // Se houver notificações, cria um item de menu para cada uma.
             foreach (var notif in pendentes)
             {
                 var itemMenu = new ToolStripMenuItem
@@ -268,7 +270,6 @@ namespace Trabalho
                     Tag = notif.RefUsa
                 };
 
-                // Adiciona um evento de clique de mouse para cada item criado.
                 itemMenu.MouseDown += async (sender, e) =>
                 {
                     if (e.Button == MouseButtons.Right && sender is ToolStripMenuItem menuItem && menuItem.Tag is string refUsa)
@@ -284,7 +285,6 @@ namespace Trabalho
                             try
                             {
                                 await _notificacaoRepo.MarcarComoVisualizadoAsync(refUsa, menuItem.Text);
-                                // Chama a versão 'void' para não dar erro de await dentro do evento
                                 AtualizarNotificacoesVoid();
                             }
                             catch (Exception ex)
@@ -297,7 +297,26 @@ namespace Trabalho
 
                 MenuItemNotifications.DropDownItems.Add(itemMenu);
             }
+
+            // Botão para carregar mais se houver
+            if (totalNaoVisualizadas > notificacoesSkip + notificacoesLimite)
+            {
+                var btnMais = new ToolStripMenuItem
+                {
+                    Text = $"Ver mais... ({totalNaoVisualizadas - notificacoesSkip - notificacoesLimite} restantes)",
+                    Enabled = true
+                };
+
+                btnMais.Click += async (s, e) =>
+                {
+                    notificacoesSkip += notificacoesLimite;
+                    await AtualizarNotificacoes();
+                };
+
+                MenuItemNotifications.DropDownItems.Add(btnMais);
+            }
         }
+
 
         // Crie este método wrapper 'void' para ser chamado de dentro do evento de clique.
         private async void AtualizarNotificacoesVoid()
@@ -319,13 +338,13 @@ namespace Trabalho
         {
             foreach (var f in MdiChildren) f.Close();
             _forms.Clear();
-            TCabas.Visible = true;
-            _ = CarregarDadosProcessos(); // Dispara a atualização sem esperar
+            //TCabas.Visible = true;
+            //_ = CarregarDadosProcessos(); // Dispara a atualização sem esperar
         }
 
         private T? ShowSingleFormOfType<T>() where T : Form, new()
         {
-            TCabas.Visible = false;
+            //TCabas.Visible = false;
             if (_forms.TryGetValue(typeof(T), out var form) && !form.IsDisposed)
             {
                 form.WindowState = FormWindowState.Normal;
