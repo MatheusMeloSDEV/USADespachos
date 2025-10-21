@@ -43,8 +43,8 @@ namespace Trabalho
             DGVFaturamento.Columns.Clear();
             DGVFaturamento.Columns.AddRange(new DataGridViewColumn[]
             {
-                new DataGridViewTextBoxColumn { DataPropertyName = "Ref_USA", HeaderText = "Ref. USA", FillWeight = 40 },
-                new DataGridViewTextBoxColumn { DataPropertyName = "Importador", HeaderText = "Importador", FillWeight = 100 },
+                new DataGridViewTextBoxColumn { DataPropertyName = "Ref_USA", HeaderText = "Ref. USA", MinimumWidth = 20 },
+                new DataGridViewTextBoxColumn { DataPropertyName = "Importador", HeaderText = "Importador", MinimumWidth = 100 },
                 new DataGridViewTextBoxColumn { DataPropertyName = "Saldo", HeaderText = "Saldo", FillWeight = 50, DefaultCellStyle = new DataGridViewCellStyle { Format = "C2" } },
                 new DataGridViewTextBoxColumn { DataPropertyName = "TipoFinalizacao", HeaderText = "Tipo", FillWeight = 40 }
             });

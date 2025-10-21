@@ -48,7 +48,11 @@
             MenuItemVistoria = new ToolStripMenuItem();
             MenuitemFinanceiro = new ToolStripMenuItem();
             timerReleaseExit = new System.Windows.Forms.Timer(components);
+            pictureBox1 = new PictureBox();
+            panel1 = new Panel();
             menuStrip1.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)pictureBox1).BeginInit();
+            panel1.SuspendLayout();
             SuspendLayout();
             // 
             // menuStrip1
@@ -56,7 +60,7 @@
             menuStrip1.Items.AddRange(new ToolStripItem[] { MenuItemNotifications, MenuItemHome, planilhasToolStripMenuItem, MenuItemAdmin, MenuItemVistoria, MenuitemFinanceiro });
             menuStrip1.Location = new Point(0, 0);
             menuStrip1.Name = "menuStrip1";
-            menuStrip1.Size = new Size(800, 24);
+            menuStrip1.Size = new Size(1264, 24);
             menuStrip1.TabIndex = 1;
             menuStrip1.Text = "menuStrip1";
             // 
@@ -73,13 +77,13 @@
             MenuItemHome.Name = "MenuItemHome";
             MenuItemHome.Size = new Size(50, 20);
             MenuItemHome.Text = "Menu";
+            MenuItemHome.DoubleClick += MenuItemHome_DoubleClick;
             // 
             // MenuItemEmAndamento
             // 
             MenuItemEmAndamento.Name = "MenuItemEmAndamento";
             MenuItemEmAndamento.Size = new Size(210, 22);
             MenuItemEmAndamento.Text = "Processos em andamento";
-            MenuItemEmAndamento.Click += MenuItemHome_Click;
             // 
             // MenuItemMaximizar
             // 
@@ -173,12 +177,35 @@
             MenuitemFinanceiro.Text = "Financeiro";
             MenuitemFinanceiro.Click += MenuItemFinanceiro_Click;
             // 
+            // pictureBox1
+            // 
+            pictureBox1.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            pictureBox1.BackColor = Color.Transparent;
+            pictureBox1.Image = (Image)resources.GetObject("pictureBox1.Image");
+            pictureBox1.Location = new Point(382, 90);
+            pictureBox1.Name = "pictureBox1";
+            pictureBox1.Size = new Size(500, 500);
+            pictureBox1.SizeMode = PictureBoxSizeMode.Zoom;
+            pictureBox1.TabIndex = 3;
+            pictureBox1.TabStop = false;
+            // 
+            // panel1
+            // 
+            panel1.BackColor = Color.Transparent;
+            panel1.Controls.Add(pictureBox1);
+            panel1.Dock = DockStyle.Fill;
+            panel1.Location = new Point(0, 0);
+            panel1.Name = "panel1";
+            panel1.Size = new Size(1264, 681);
+            panel1.TabIndex = 5;
+            // 
             // FrmPrincipal
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(800, 450);
+            ClientSize = new Size(1264, 681);
             Controls.Add(menuStrip1);
+            Controls.Add(panel1);
             IsMdiContainer = true;
             MainMenuStrip = menuStrip1;
             Name = "FrmPrincipal";
@@ -189,6 +216,8 @@
             Shown += FrmPrincipal_Shown;
             menuStrip1.ResumeLayout(false);
             menuStrip1.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)pictureBox1).EndInit();
+            panel1.ResumeLayout(false);
             ResumeLayout(false);
             PerformLayout();
         }
@@ -213,5 +242,7 @@
         private ToolStripMenuItem MenuItemEmAndamento;
         private System.Windows.Forms.Timer timerReleaseExit;
         private ToolStripMenuItem MenuItemVistoria;
+        private PictureBox pictureBox1;
+        private Panel panel1;
     }
 }

@@ -263,7 +263,7 @@ namespace Trabalho
                     }
                     else if (viewModel.StatusLI?.ToUpper() == "PENDÊNCIA DOCUMENTAL")
                     {
-                        row.DefaultCellStyle.BackColor = Color.LightYellow;
+                        row.DefaultCellStyle.BackColor = Color.Yellow;
                     }
                 }
             }

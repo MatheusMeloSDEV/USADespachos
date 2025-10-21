@@ -156,6 +156,16 @@ namespace Trabalho
             processo.DataRecebOriginais = DTPDataRecOriginais.Checked ? DTPDataRecOriginais.Value : null;
             processo.DataMinutaDI = dtpDataMinuta.Checked ? dtpDataMinuta.Value : null;
 
+            processo.VencimentoFMA = DataHelper.CalcularVencimento(DTPdatadeatracacao.Value, 85);
+            dtpVencimentoFMA.Value = processo.VencimentoFMA ?? dtpVencimentoFMA.Value;
+
+            processo.VencimentoFreeTime = DataHelper.CalcularVencimento(dtpVencimentoFreeTime.Value, Convert.ToInt32(NUMfreetime.Value));
+            dtpVencimentoFreeTime.Value = processo.VencimentoFreeTime ?? dtpVencimentoFreeTime.Value;
+
+            //Data de registro LI/LPCO + 80 dias => A Data de Registro mais antiga
+            processo.VencimentoLI_LPCO = DataHelper.CalcularVencimento(DTPdataderegistrodi.Value, 80);
+            dtpVencimentoLI_LPCO.Value = processo.VencimentoLI_LPCO ?? dtpVencimentoLI_LPCO.Value;
+
             processo.HistoricoDoProcesso = TXTstatusdoprocesso.Text;
             processo.Pendencia = TXTpendencia.Text;
 

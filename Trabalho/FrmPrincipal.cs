@@ -7,6 +7,7 @@ using System.ComponentModel;
 using System.Data;
 using System.Diagnostics;
 using System.Drawing;
+using System.Drawing.Imaging;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -39,6 +40,11 @@ namespace Trabalho
             var database = client.GetDatabase(ConfigDatabase.MongoDatabaseName);
             _notificacaoRepo = new RepositorioNotificacao(database);
 
+            if (pictureBox1.Image != null)
+            {
+                pictureBox1.Image = SetImageOpacity(pictureBox1.Image, 0.2f); // 50% de transparência
+            }
+            panel1.Visible = true; pictureBox1.Visible = true;
             // Assinatura dos eventos
             this.Shown += FrmPrincipal_Shown;
             //TCabas.SelectedIndexChanged += TCabas_SelectedIndexChanged; // <-- Evento para carregar abas sob demanda
@@ -51,7 +57,6 @@ namespace Trabalho
         {
             // O formulário já está visível, agora carregamos os dados sem travar.
             await CarregarDadosProcessos();
-            //TCabas.Visible = true;
         }
 
         private void FrmPrincipal_Load(object sender, EventArgs e)
@@ -336,15 +341,12 @@ namespace Trabalho
 
         private void MenuItemHome_Click(object? sender, EventArgs e)
         {
-            foreach (var f in MdiChildren) f.Close();
-            _forms.Clear();
-            //TCabas.Visible = true;
-            //_ = CarregarDadosProcessos(); // Dispara a atualização sem esperar
+
         }
 
         private T? ShowSingleFormOfType<T>() where T : Form, new()
         {
-            //TCabas.Visible = false;
+            panel1.Visible = false;
             if (_forms.TryGetValue(typeof(T), out var form) && !form.IsDisposed)
             {
                 form.WindowState = FormWindowState.Normal;
@@ -393,5 +395,30 @@ namespace Trabalho
         #endregion
 
 
+        private void lblEmAndamento_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        public static Bitmap SetImageOpacity(Image image, float opacity)
+        {
+            Bitmap bmp = new Bitmap(image.Width, image.Height);
+            using (Graphics g = Graphics.FromImage(bmp))
+            {
+                ColorMatrix matrix = new ColorMatrix();
+                matrix.Matrix33 = opacity; // valor entre 0 (totalmente transparente) e 1 (totalmente opaco)
+                ImageAttributes attributes = new ImageAttributes();
+                attributes.SetColorMatrix(matrix, ColorMatrixFlag.Default, ColorAdjustType.Bitmap);
+                g.DrawImage(image, new Rectangle(0, 0, bmp.Width, bmp.Height), 0, 0, image.Width, image.Height, GraphicsUnit.Pixel, attributes);
+            }
+            return bmp;
+        }
+
+        private void MenuItemHome_DoubleClick(object sender, EventArgs e)
+        {
+            foreach (var f in MdiChildren) f.Close();
+            _forms.Clear();
+            panel1.Visible = true; pictureBox1.Visible = true;
+        }
     }
 }

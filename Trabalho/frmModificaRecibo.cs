@@ -181,6 +181,9 @@ namespace Trabalho
                 MessageBox.Show("Recibo atualizado com sucesso!", "Sucesso",
                                 MessageBoxButtons.OK, MessageBoxIcon.Information);
 
+                _dadosForamAlterados = false;
+                this.Text = this.Text.Replace("*", "");
+
             }
             catch (Exception ex)
             {

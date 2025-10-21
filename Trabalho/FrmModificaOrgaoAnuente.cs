@@ -340,6 +340,7 @@ namespace Trabalho
                     liNoProcesso.NCM = OrgaoAnuente.NCM;
                     liNoProcesso.DataRegistro = OrgaoAnuente.DataRegistro;
                     liNoProcesso.LPCO = OrgaoAnuente.LPCO;
+                    liNoProcesso.StatusLI = OrgaoAnuente.StatusLI;
                 }
 
                 // Atualiza campos do Processo que podem ter sido editados nesta tela
