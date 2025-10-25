@@ -4,7 +4,6 @@ using System.Data;
 using System.Drawing;
 using System.Linq;
 using System.Windows.Forms;
-
 namespace Trabalho
 {
     public partial class FrmVistorias : Form
@@ -18,6 +17,7 @@ namespace Trabalho
         private readonly BindingSource _bsSolicitadoData;
         private readonly BindingSource _bsAguardandoChegada;
         private readonly BindingSource _bsAguardandoLaudo;
+        private readonly BindingSource _bsProcessosDadoEntrada;
 
         public FrmVistorias()
         {
@@ -35,6 +35,7 @@ namespace Trabalho
             _bsSolicitadoData = new BindingSource();
             _bsAguardandoChegada = new BindingSource();
             _bsAguardandoLaudo = new BindingSource();
+            _bsProcessosDadoEntrada = new BindingSource();
         }
         private async Task CarregarDadosAsync()
         {
@@ -68,6 +69,10 @@ namespace Trabalho
                     .Where(v => v.Status == StatusVistoria.AguardandoChegadaParaAgendar)
                     .OrderBy(v => v.Previsao ?? DateTime.MaxValue)
                     .ToList();
+                _bsProcessosDadoEntrada.DataSource = todasAsVistorias
+                    .Where(v => v.Status == StatusVistoria.ProcessoDadoEntrada)
+                    .OrderBy(v => v.Previsao ?? DateTime.MaxValue)
+                    .ToList();
             }
             catch (Exception ex)
             {
@@ -80,10 +85,32 @@ namespace Trabalho
         }
         private async void FrmVistorias_Shown(object? sender, EventArgs e)
         {
+            _timer.Interval = 60000;
+            _timer.Tick += async (s, e) => await SincronizarPeriodicamente();
+            _timer.Start();
+
             ConfigurarGrids();
             await CarregarDadosAsync();
         }
+        private async Task SincronizarPeriodicamente()
+        {
+            var alteracoes = await _vistoriaService.SincronizarVistoriasAsync();
+            if (alteracoes != null && alteracoes.Any())
+            {
+                BtnRecarrega.Text = $"Atualização pendentes {alteracoes.Count}";
+            }
+        }
+        private async void BtnRecarrega_Click(object sender, EventArgs e)
+        {
+            BtnRecarrega.Enabled = false;
+            BtnRecarrega.Text = "Atualizando...";
 
+            await SincronizarPeriodicamente();
+            await CarregarDadosAsync();
+
+            BtnRecarrega.Enabled = true;
+            BtnRecarrega.Text = "";
+        }
         private void ConfigurarGrids()
         {
             // Vincula cada BindingSource à sua respectiva grade
@@ -92,6 +119,7 @@ namespace Trabalho
             DGVSolicitadoDataVistoria.DataSource = _bsSolicitadoData;
             DGVAguardandoChegAgendVistoria.DataSource = _bsAguardandoChegada;
             DGVLaudo.DataSource = _bsAguardandoLaudo;
+            DGVProcessosDadoEntrada.DataSource = _bsProcessosDadoEntrada;
 
             // MUDANÇA: Chama a configuração para TODAS as 4 grades
             ConfigurarGrid(DGVAguardandoChegAgendVistoria);
@@ -99,6 +127,7 @@ namespace Trabalho
             ConfigurarGrid(DGVVistoriaAgendada);
             ConfigurarGrid(DGVAguardandoDef);
             ConfigurarGrid(DGVLaudo);
+            ConfigurarGrid(DGVProcessosDadoEntrada);
         }
 
         /// <summary>
@@ -332,12 +361,8 @@ namespace Trabalho
                 MessageBox.Show($"Erro ao finalizar a vistoria: {ex.Message}", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
+
         #endregion
-
-        private void label1_Click(object sender, EventArgs e)
-        {
-
-        }
 
         private async void BtnDeferido_Click_1(object sender, EventArgs e)
         {
@@ -388,6 +413,51 @@ namespace Trabalho
             {
                 MessageBox.Show($"Erro ao finalizar a vistoria: {ex.Message}", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
+        }
+        private void MostrarSomenteLinhaConteudo(int linhaConteudoSelecionada)
+        {
+            TableVistorias.SuspendLayout();
+            int[] linhasConteudo = { 2, 4, 6, 8 };
+
+            foreach (int linha in linhasConteudo)
+            {
+                if (linha < TableVistorias.RowStyles.Count)
+                {
+                    if (linha == (linhaConteudoSelecionada))
+                    {
+                        TableVistorias.RowStyles[linha].SizeType = SizeType.Percent;
+                        TableVistorias.RowStyles[linha].Height = 100;
+                    }
+                    else
+                    {
+                        TableVistorias.RowStyles[linha].SizeType = SizeType.Absolute;
+                        TableVistorias.RowStyles[linha].Height = 0;
+                    }
+                }
+            }
+            TableVistorias.ResumeLayout();
+        }
+
+
+
+        private void LblSolicitadoDataVistoria_Click(object sender, EventArgs e)
+        {
+            MostrarSomenteLinhaConteudo(8);
+        }
+
+        private void LblVistoriaAgendada_Click(object sender, EventArgs e)
+        {
+            MostrarSomenteLinhaConteudo(6);
+        }
+
+        private void LblAguardandoLaudo_Click(object sender, EventArgs e)
+        {
+            MostrarSomenteLinhaConteudo(2);
+        }
+
+        private void LblAguardandoDeferimento_Click(object sender, EventArgs e)
+        {
+            MostrarSomenteLinhaConteudo(4);
         }
     }
 }

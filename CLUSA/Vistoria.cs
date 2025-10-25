@@ -9,7 +9,8 @@ namespace CLUSA
         SolicitarDataVistoria,
         VistoriaAgendada,
         AguardandoDeferimento,
-        AguardandoLaudo
+        AguardandoLaudo,
+        ProcessoDadoEntrada
     }
 
     public class Vistoria

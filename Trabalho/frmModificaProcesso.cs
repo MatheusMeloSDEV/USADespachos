@@ -156,15 +156,58 @@ namespace Trabalho
             processo.DataRecebOriginais = DTPDataRecOriginais.Checked ? DTPDataRecOriginais.Value : null;
             processo.DataMinutaDI = dtpDataMinuta.Checked ? dtpDataMinuta.Value : null;
 
-            processo.VencimentoFMA = DataHelper.CalcularVencimento(DTPdatadeatracacao.Value, 85);
-            dtpVencimentoFMA.Value = processo.VencimentoFMA ?? dtpVencimentoFMA.Value;
+            if (DTPdatadeatracacao.Checked)
+            {
+                processo.VencimentoFMA = DataHelper.CalcularVencimento(DTPdatadeatracacao.Value, 85);
+                dtpVencimentoFMA.Value = processo.VencimentoFMA ?? dtpVencimentoFMA.Value;
+            }
+            else
+            {
+                processo.VencimentoFMA = null;
+                // Opcional: dtpVencimentoFMA.Value = DateTime.Today; // Ou deixa como está
+            }
 
-            processo.VencimentoFreeTime = DataHelper.CalcularVencimento(dtpVencimentoFreeTime.Value, Convert.ToInt32(NUMfreetime.Value));
-            dtpVencimentoFreeTime.Value = processo.VencimentoFreeTime ?? dtpVencimentoFreeTime.Value;
+            if (DTPdatadeatracacao.Checked)
+            {
+                processo.VencimentoFreeTime = DataHelper.CalcularVencimento(DTPdatadeatracacao.Value, Convert.ToInt32(NUMfreetime.Value));
+                dtpVencimentoFreeTime.Value = processo.VencimentoFreeTime ?? dtpVencimentoFreeTime.Value;
+            }
+            else
+            {
+                processo.VencimentoFreeTime = null;
+                // Opcional: dtpVencimentoFreeTime.Value = DateTime.Today;
+            }
 
-            //Data de registro LI/LPCO + 80 dias => A Data de Registro mais antiga
-            processo.VencimentoLI_LPCO = DataHelper.CalcularVencimento(DTPdataderegistrodi.Value, 80);
-            dtpVencimentoLI_LPCO.Value = processo.VencimentoLI_LPCO ?? dtpVencimentoLI_LPCO.Value;
+
+            DateTime? dataMaisAntiga = null;
+
+            // Busca a data mais antiga nas LIs:
+            if (processo.LI != null && processo.LI.Count > 0)
+            {
+                dataMaisAntiga = processo.LI
+                    .Where(li => li.DataRegistro.HasValue)
+                    .Min(li => li.DataRegistro);
+            }
+
+            if (dataMaisAntiga.HasValue)
+            {
+                processo.VencimentoLI_LPCO = DataHelper.CalcularVencimento(dataMaisAntiga.Value, 80);
+                if (processo.VencimentoLI_LPCO.HasValue)
+                {
+                    dtpVencimentoLI_LPCO.Value = processo.VencimentoLI_LPCO.Value;
+                }
+                else
+                {
+                    dtpVencimentoLI_LPCO.Value = DateTime.Today; // ou mantenha o valor atual, use o padrão desejado!
+                    dtpVencimentoLI_LPCO.Format = DateTimePickerFormat.Custom;
+                    dtpVencimentoLI_LPCO.CustomFormat = " "; // deixa visualmente em branco
+                }
+
+            }
+            else
+            {
+                processo.VencimentoLI_LPCO = null;
+            }
 
             processo.HistoricoDoProcesso = TXTstatusdoprocesso.Text;
             processo.Pendencia = TXTpendencia.Text;

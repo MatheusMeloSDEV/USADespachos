@@ -30,13 +30,14 @@
         {
             components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FrmPrincipal));
-            menuStrip1 = new MenuStrip();
-            MenuItemNotifications = new ToolStripMenuItem();
+            Menu = new MenuStrip();
             MenuItemHome = new ToolStripMenuItem();
+            MenuItemMenu = new ToolStripMenuItem();
             MenuItemEmAndamento = new ToolStripMenuItem();
             MenuItemMaximizar = new ToolStripMenuItem();
             MenuItemMinimizar = new ToolStripMenuItem();
             MenuItemExit = new ToolStripMenuItem();
+            MenuItemNotifications = new ToolStripMenuItem();
             planilhasToolStripMenuItem = new ToolStripMenuItem();
             santosToolStripMenuItem = new ToolStripMenuItem();
             MenuItemProcessoSantos = new ToolStripMenuItem();
@@ -46,38 +47,43 @@
             MenuItemOrgaoAnuente1 = new ToolStripMenuItem();
             MenuItemAdmin = new ToolStripMenuItem();
             MenuItemVistoria = new ToolStripMenuItem();
+            vencimentosToolStripMenuItem = new ToolStripMenuItem();
             MenuitemFinanceiro = new ToolStripMenuItem();
             timerReleaseExit = new System.Windows.Forms.Timer(components);
             pictureBox1 = new PictureBox();
             panel1 = new Panel();
-            menuStrip1.SuspendLayout();
+            contextMenuStripNotifications = new ContextMenuStrip(components);
+            Menu.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)pictureBox1).BeginInit();
             panel1.SuspendLayout();
             SuspendLayout();
             // 
-            // menuStrip1
+            // Menu
             // 
-            menuStrip1.Items.AddRange(new ToolStripItem[] { MenuItemNotifications, MenuItemHome, planilhasToolStripMenuItem, MenuItemAdmin, MenuItemVistoria, MenuitemFinanceiro });
-            menuStrip1.Location = new Point(0, 0);
-            menuStrip1.Name = "menuStrip1";
-            menuStrip1.Size = new Size(1264, 24);
-            menuStrip1.TabIndex = 1;
-            menuStrip1.Text = "menuStrip1";
-            // 
-            // MenuItemNotifications
-            // 
-            MenuItemNotifications.Image = (Image)resources.GetObject("MenuItemNotifications.Image");
-            MenuItemNotifications.Name = "MenuItemNotifications";
-            MenuItemNotifications.Size = new Size(101, 20);
-            MenuItemNotifications.Text = "Notificações";
+            Menu.Items.AddRange(new ToolStripItem[] { MenuItemHome, MenuItemNotifications, planilhasToolStripMenuItem, MenuItemAdmin, MenuItemVistoria, vencimentosToolStripMenuItem, MenuitemFinanceiro });
+            Menu.Location = new Point(0, 0);
+            Menu.Name = "Menu";
+            Menu.Size = new Size(1264, 34);
+            Menu.TabIndex = 1;
+            Menu.Text = "menuStrip1";
             // 
             // MenuItemHome
             // 
-            MenuItemHome.DropDownItems.AddRange(new ToolStripItem[] { MenuItemEmAndamento, MenuItemMaximizar, MenuItemMinimizar, MenuItemExit });
+            MenuItemHome.DisplayStyle = ToolStripItemDisplayStyle.Image;
+            MenuItemHome.DropDownItems.AddRange(new ToolStripItem[] { MenuItemMenu, MenuItemEmAndamento, MenuItemMaximizar, MenuItemMinimizar, MenuItemExit });
+            MenuItemHome.Image = (Image)resources.GetObject("MenuItemHome.Image");
+            MenuItemHome.Margin = new Padding(0, 5, 0, 5);
             MenuItemHome.Name = "MenuItemHome";
-            MenuItemHome.Size = new Size(50, 20);
+            MenuItemHome.Size = new Size(28, 20);
             MenuItemHome.Text = "Menu";
             MenuItemHome.DoubleClick += MenuItemHome_DoubleClick;
+            // 
+            // MenuItemMenu
+            // 
+            MenuItemMenu.Name = "MenuItemMenu";
+            MenuItemMenu.Size = new Size(210, 22);
+            MenuItemMenu.Text = "Menu";
+            MenuItemMenu.Click += MenuItemMenu_Click;
             // 
             // MenuItemEmAndamento
             // 
@@ -106,11 +112,19 @@
             MenuItemExit.Text = "Sair";
             MenuItemExit.Click += MenuItemExit_Click;
             // 
+            // MenuItemNotifications
+            // 
+            MenuItemNotifications.Image = (Image)resources.GetObject("MenuItemNotifications.Image");
+            MenuItemNotifications.Name = "MenuItemNotifications";
+            MenuItemNotifications.Size = new Size(101, 30);
+            MenuItemNotifications.Text = "Notificações";
+            MenuItemNotifications.Click += menuItemNotificacoes_Click;
+            // 
             // planilhasToolStripMenuItem
             // 
             planilhasToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { santosToolStripMenuItem, itajaíToolStripMenuItem });
             planilhasToolStripMenuItem.Name = "planilhasToolStripMenuItem";
-            planilhasToolStripMenuItem.Size = new Size(66, 20);
+            planilhasToolStripMenuItem.Size = new Size(66, 30);
             planilhasToolStripMenuItem.Text = "Planilhas";
             // 
             // santosToolStripMenuItem
@@ -159,21 +173,28 @@
             // 
             MenuItemAdmin.Alignment = ToolStripItemAlignment.Right;
             MenuItemAdmin.Name = "MenuItemAdmin";
-            MenuItemAdmin.Size = new Size(95, 20);
+            MenuItemAdmin.Size = new Size(95, 30);
             MenuItemAdmin.Text = "Administrador";
             MenuItemAdmin.Click += MenuItemAdmin_Click;
             // 
             // MenuItemVistoria
             // 
             MenuItemVistoria.Name = "MenuItemVistoria";
-            MenuItemVistoria.Size = new Size(58, 20);
+            MenuItemVistoria.Size = new Size(58, 30);
             MenuItemVistoria.Text = "Vistoria";
             MenuItemVistoria.Click += MenuItemVistoria_Click;
             // 
+            // vencimentosToolStripMenuItem
+            // 
+            vencimentosToolStripMenuItem.Name = "vencimentosToolStripMenuItem";
+            vencimentosToolStripMenuItem.Size = new Size(87, 30);
+            vencimentosToolStripMenuItem.Text = "Vencimentos";
+            // 
             // MenuitemFinanceiro
             // 
+            MenuitemFinanceiro.Alignment = ToolStripItemAlignment.Right;
             MenuitemFinanceiro.Name = "MenuitemFinanceiro";
-            MenuitemFinanceiro.Size = new Size(74, 20);
+            MenuitemFinanceiro.Size = new Size(74, 30);
             MenuitemFinanceiro.Text = "Financeiro";
             MenuitemFinanceiro.Click += MenuItemFinanceiro_Click;
             // 
@@ -199,23 +220,30 @@
             panel1.Size = new Size(1264, 681);
             panel1.TabIndex = 5;
             // 
+            // contextMenuStripNotifications
+            // 
+            contextMenuStripNotifications.AutoClose = false;
+            contextMenuStripNotifications.Name = "contextMenuStrip1";
+            contextMenuStripNotifications.ShowImageMargin = false;
+            contextMenuStripNotifications.Size = new Size(36, 4);
+            // 
             // FrmPrincipal
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(1264, 681);
-            Controls.Add(menuStrip1);
+            Controls.Add(Menu);
             Controls.Add(panel1);
             IsMdiContainer = true;
-            MainMenuStrip = menuStrip1;
+            MainMenuStrip = Menu;
             Name = "FrmPrincipal";
             Text = "Processos em Andamento";
             WindowState = FormWindowState.Maximized;
             FormClosing += FrmPrincipal_FormClosing;
             Load += FrmPrincipal_Load;
             Shown += FrmPrincipal_Shown;
-            menuStrip1.ResumeLayout(false);
-            menuStrip1.PerformLayout();
+            Menu.ResumeLayout(false);
+            Menu.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)pictureBox1).EndInit();
             panel1.ResumeLayout(false);
             ResumeLayout(false);
@@ -224,7 +252,7 @@
 
         #endregion
 
-        private MenuStrip menuStrip1;
+        private MenuStrip Menu;
         private ToolStripMenuItem MenuItemNotifications;
         private ToolStripMenuItem MenuItemHome;
         private ToolStripMenuItem planilhasToolStripMenuItem;
@@ -244,5 +272,8 @@
         private ToolStripMenuItem MenuItemVistoria;
         private PictureBox pictureBox1;
         private Panel panel1;
+        private ToolStripMenuItem MenuItemMenu;
+        private ToolStripMenuItem vencimentosToolStripMenuItem;
+        private ContextMenuStrip contextMenuStripNotifications;
     }
 }

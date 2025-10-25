@@ -115,9 +115,9 @@
             groupBox8 = new GroupBox();
             groupBox9 = new GroupBox();
             groupBox10 = new GroupBox();
-            BtnLI = new Button();
-            BtnExcluirLI = new Button();
             tableLayoutPanel1 = new TableLayoutPanel();
+            BtnExcluirLI = new Button();
+            BtnLI = new Button();
             groupBox2.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)BsModificaProcesso).BeginInit();
             ((System.ComponentModel.ISupportInitialize)NUMfreetime).BeginInit();
@@ -838,7 +838,7 @@
             CbStatus.AutoCompleteMode = AutoCompleteMode.Suggest;
             CbStatus.DataBindings.Add(new Binding("Text", BsModificaProcesso, "Status", true));
             CbStatus.FormattingEnabled = true;
-            CbStatus.Items.AddRange(new object[] { "", "Aguardando embarque", "Aguardando atracação", "Aguardando presença de carga", "Aguardando SIGVIG", "Aguardando documentos finais para LPCO", "Aguardando parametrização LI/LPCO", "Aguardando inspeção/coleta LI/LPCO", "Aguardando deferimento LI/LPCO", "Aguardando registro DI/DUIMP", "Aguardando parametrização DI/DUIMP", "Aguardando desembaraço", "Aguardando inspeção DI/DUIMP", "Aguardando desbloqueio Siscomex Carga", "Aguardando minuta devolução container vazio", "Aguardando resultado laboratório ", "Finalizado" });
+            CbStatus.Items.AddRange(new object[] { "", "Aguardando embarque", "Aguardando atracação", "Aguardando presença de carga", "Aguardando Correção CE", "", "Aguardando a TCA Definitivo", "Aguardando SIGVIG", "Providenciando LI", "Providenciando Protocolo de LPCO", "Aguardando documentos finais para LPCO", "Aguardando parametrização LI/LPCO", "Aguardando inspeção/coleta LI/LPCO", "Aguardando deferimento LI/LPCO", "Disponível para Registro de DI/DUIMP", "Aguardando registro DI/DUIMP", "Aguardando parametrização DI/DUIMP", "Aguardando desembaraço", "Aguardando inspeção DI/DUIMP", "Aguardando desbloqueio Siscomex Carga", "Aguardando minuta devolução container vazio", "Aguardando resultado laboratório ", "Finalizado" });
             CbStatus.Location = new Point(10, 36);
             CbStatus.Name = "CbStatus";
             CbStatus.Size = new Size(200, 23);
@@ -1143,28 +1143,6 @@
             groupBox10.TabIndex = 823;
             groupBox10.TabStop = false;
             // 
-            // BtnLI
-            // 
-            BtnLI.Dock = DockStyle.Fill;
-            BtnLI.Location = new Point(3, 3);
-            BtnLI.Name = "BtnLI";
-            BtnLI.Size = new Size(143, 24);
-            BtnLI.TabIndex = 818;
-            BtnLI.Text = "Novo LI";
-            BtnLI.UseVisualStyleBackColor = true;
-            BtnLI.Click += BtnLI_Click;
-            // 
-            // BtnExcluirLI
-            // 
-            BtnExcluirLI.Dock = DockStyle.Fill;
-            BtnExcluirLI.Location = new Point(152, 3);
-            BtnExcluirLI.Name = "BtnExcluirLI";
-            BtnExcluirLI.Size = new Size(143, 24);
-            BtnExcluirLI.TabIndex = 819;
-            BtnExcluirLI.Text = "Excluir LI";
-            BtnExcluirLI.UseVisualStyleBackColor = true;
-            BtnExcluirLI.Click += BtnExcluirLi_Click;
-            // 
             // tableLayoutPanel1
             // 
             tableLayoutPanel1.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Right;
@@ -1179,6 +1157,28 @@
             tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
             tableLayoutPanel1.Size = new Size(298, 30);
             tableLayoutPanel1.TabIndex = 824;
+            // 
+            // BtnExcluirLI
+            // 
+            BtnExcluirLI.Dock = DockStyle.Fill;
+            BtnExcluirLI.Location = new Point(152, 3);
+            BtnExcluirLI.Name = "BtnExcluirLI";
+            BtnExcluirLI.Size = new Size(143, 24);
+            BtnExcluirLI.TabIndex = 819;
+            BtnExcluirLI.Text = "Excluir LI";
+            BtnExcluirLI.UseVisualStyleBackColor = true;
+            BtnExcluirLI.Click += BtnExcluirLi_Click;
+            // 
+            // BtnLI
+            // 
+            BtnLI.Dock = DockStyle.Fill;
+            BtnLI.Location = new Point(3, 3);
+            BtnLI.Name = "BtnLI";
+            BtnLI.Size = new Size(143, 24);
+            BtnLI.TabIndex = 818;
+            BtnLI.Text = "Novo LI";
+            BtnLI.UseVisualStyleBackColor = true;
+            BtnLI.Click += BtnLI_Click;
             // 
             // FrmModificaProcesso
             // 

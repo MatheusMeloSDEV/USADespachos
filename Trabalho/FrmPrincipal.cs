@@ -81,17 +81,17 @@ namespace Trabalho
             Cursor = Cursors.WaitCursor;
             try
             {
-                // 1. Busca os dados do banco (rápido e assíncrono)
                 var processos = await _repositorioProcesso.ListarTodosAsync();
 
-                //// 2. Monta as abas VAZIAS (operação instantânea)
-                //MontarTabsProcessos(processos);
-
-                // 3. Processa as notificações em segundo plano
                 await GerarNotificacoes(processos);
 
-                // 4. Atualiza o menu de notificações
-                await AtualizarNotificacoes();
+                await PopularContextMenuNotifications();
+
+                // <<< Atualiza o texto do menu de notificações >>>
+                int totalNaoVisualizadas = await _notificacaoRepo.ContarNaoVisualizadasAsync();
+                MenuItemNotifications.Text = totalNaoVisualizadas > 0
+                    ? $"Notificações ({totalNaoVisualizadas})"
+                    : "Notificações";
             }
             catch (Exception ex)
             {
@@ -102,6 +102,7 @@ namespace Trabalho
                 Cursor = Cursors.Default;
             }
         }
+
 
         /// <summary>
         /// Cria as abas rapidamente, sem preencher o conteúdo.
@@ -186,6 +187,25 @@ namespace Trabalho
 
         #region "Lógica de Notificações (Otimizada)"
 
+        private async void menuItemNotificacoes_Click(object sender, EventArgs e)
+        {
+            // Antes de abrir o painel, atualize o contador
+            int totalNaoVisualizadas = await _notificacaoRepo.ContarNaoVisualizadasAsync();
+
+            if (totalNaoVisualizadas > 0)
+                MenuItemNotifications.Text = $"Notificações ({totalNaoVisualizadas})";
+            else
+                MenuItemNotifications.Text = $"Notificações";
+
+            // Popula e mostra o ContextMenuStrip
+            await PopularContextMenuNotifications();
+            var parent = Menu;
+            var menuLocation = parent.PointToScreen(MenuItemNotifications.Bounds.Location);
+            contextMenuStripNotifications.Show(menuLocation.X, menuLocation.Y + MenuItemNotifications.Height);
+        }
+
+
+
         public async Task GerarNotificacoes(List<Processo> processos)
         {
             var refsUsa = processos.Select(p => p.Ref_USA).Distinct().ToList();
@@ -243,30 +263,26 @@ namespace Trabalho
         private int notificacoesLimite = 20;
         private int notificacoesSkip = 0;
 
-        private async Task AtualizarNotificacoes()
+        private async Task PopularContextMenuNotifications()
         {
-            MenuItemNotifications.DropDownItems.Clear();
+            contextMenuStripNotifications.Items.Clear();
 
-            // Busca notificações limitadas para paginação
             var pendentes = await _notificacaoRepo.ObterNotificacoesNaoVisualizadasAsync(notificacoesLimite, notificacoesSkip);
-
-            int quantidade = pendentes.Count;
             int totalNaoVisualizadas = await _notificacaoRepo.ContarNaoVisualizadasAsync();
 
-            MenuItemNotifications.Text = totalNaoVisualizadas > 0
-                ? $"Notificações ({totalNaoVisualizadas})"
-                : "Notificações";
-
-            if (quantidade == 0)
+            // Paginação: Botão "Voltar" se não está na primeira página
+            if (notificacoesSkip > 0)
             {
-                MenuItemNotifications.DropDownItems.Add(new ToolStripMenuItem
+                var btnVoltar = new ToolStripMenuItem("Voltar...");
+                btnVoltar.Click += async (s, e) =>
                 {
-                    Text = "Nenhuma notificação nova",
-                    Enabled = false
-                });
-                return;
+                    notificacoesSkip = Math.Max(notificacoesSkip - notificacoesLimite, 0);
+                    await PopularContextMenuNotifications();
+                };
+                contextMenuStripNotifications.Items.Add(btnVoltar);
             }
 
+            // Adicione as notificações
             foreach (var notif in pendentes)
             {
                 var itemMenu = new ToolStripMenuItem
@@ -279,54 +295,42 @@ namespace Trabalho
                 {
                     if (e.Button == MouseButtons.Right && sender is ToolStripMenuItem menuItem && menuItem.Tag is string refUsa)
                     {
-                        var resposta = MessageBox.Show(
-                            $"Deseja marcar esta notificação como lida?\n\n'{menuItem.Text}'",
-                            "Finalizar Notificação",
-                            MessageBoxButtons.YesNo,
-                            MessageBoxIcon.Question);
+                        var originalColor = menuItem.BackColor;
+                        menuItem.BackColor = Color.LightGreen;
+                        await Task.Delay(300);
 
-                        if (resposta == DialogResult.Yes)
+                        try
                         {
-                            try
-                            {
-                                await _notificacaoRepo.MarcarComoVisualizadoAsync(refUsa, menuItem.Text);
-                                AtualizarNotificacoesVoid();
-                            }
-                            catch (Exception ex)
-                            {
-                                MessageBox.Show($"Erro ao finalizar notificação: {ex.Message}", "Erro");
-                            }
+                            await _notificacaoRepo.MarcarComoVisualizadoAsync(refUsa, menuItem.Text);
+                            await PopularContextMenuNotifications();
+                        }
+                        catch (Exception ex)
+                        {
+                            MessageBox.Show($"Erro ao finalizar notificação: {ex.Message}", "Erro");
+                            menuItem.BackColor = originalColor;
                         }
                     }
                 };
 
-                MenuItemNotifications.DropDownItems.Add(itemMenu);
+                contextMenuStripNotifications.Items.Add(itemMenu);
             }
 
-            // Botão para carregar mais se houver
+            // Botão "Ver mais..." se houver mais notificações
             if (totalNaoVisualizadas > notificacoesSkip + notificacoesLimite)
             {
-                var btnMais = new ToolStripMenuItem
-                {
-                    Text = $"Ver mais... ({totalNaoVisualizadas - notificacoesSkip - notificacoesLimite} restantes)",
-                    Enabled = true
-                };
-
+                var btnMais = new ToolStripMenuItem($"Ver mais... ({totalNaoVisualizadas - notificacoesSkip - notificacoesLimite} restantes)");
                 btnMais.Click += async (s, e) =>
                 {
                     notificacoesSkip += notificacoesLimite;
-                    await AtualizarNotificacoes();
+                    await PopularContextMenuNotifications();
                 };
-
-                MenuItemNotifications.DropDownItems.Add(btnMais);
+                contextMenuStripNotifications.Items.Add(btnMais);
             }
-        }
 
-
-        // Crie este método wrapper 'void' para ser chamado de dentro do evento de clique.
-        private async void AtualizarNotificacoesVoid()
-        {
-            await AtualizarNotificacoes();
+            contextMenuStripNotifications.Items.Add(new ToolStripSeparator());
+            var fecharItem = new ToolStripMenuItem("Fechar Notificações");
+            fecharItem.Click += (s, e) => contextMenuStripNotifications.Close();
+            contextMenuStripNotifications.Items.Add(fecharItem);
         }
 
         #endregion
@@ -415,6 +419,11 @@ namespace Trabalho
         }
 
         private void MenuItemHome_DoubleClick(object sender, EventArgs e)
+        {
+
+        }
+
+        private void MenuItemMenu_Click(object sender, EventArgs e)
         {
             foreach (var f in MdiChildren) f.Close();
             _forms.Clear();

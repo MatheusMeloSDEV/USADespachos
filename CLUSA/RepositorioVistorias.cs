@@ -1,4 +1,5 @@
-﻿using MongoDB.Driver;
+﻿using MongoDB.Bson;
+using MongoDB.Driver;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -20,14 +21,38 @@ namespace CLUSA
 
         public async Task UpsertAsync(Vistoria vistoria)
         {
-            // Upsert: Atualiza se encontrar pelo LPCO, ou insere se não encontrar.
             var filter = Builders<Vistoria>.Filter.Eq(v => v.LPCO, vistoria.LPCO);
-            await _colecao.ReplaceOneAsync(filter, vistoria, new ReplaceOptions { IsUpsert = true });
+            var existente = await _colecao.Find(filter).FirstOrDefaultAsync();
+            if (existente != null)
+            {
+                // Atualiza mantendo o Id original
+                vistoria.Id = existente.Id;
+                await _colecao.ReplaceOneAsync(filter, vistoria);
+            }
+            else
+            {
+                // Insere novo
+                if (vistoria.Id == default) // ou == ObjectId.Empty
+                    vistoria.Id = MongoDB.Bson.ObjectId.GenerateNewId();
+                await _colecao.InsertOneAsync(vistoria);
+            }
         }
         public async Task<List<Vistoria>> GetByRefUsaAsync(string refUsa)
         {
             var filter = Builders<Vistoria>.Filter.Eq(v => v.Ref_USA, refUsa);
             return await _colecao.Find(filter).ToListAsync();
+        }
+        public async Task InsertAsync(Vistoria vistoria)
+        {
+            // Gera um novo Id, se não estiver definido
+            if (vistoria.Id == default)
+                vistoria.Id = MongoDB.Bson.ObjectId.GenerateNewId();
+            await _colecao.InsertOneAsync(vistoria);
+        }
+        public async Task<Vistoria?> GetByLPCOAsync(string lpco)
+        {
+            var filter = Builders<Vistoria>.Filter.Eq(v => v.LPCO, lpco ?? "");
+            return await _colecao.Find(filter).FirstOrDefaultAsync();
         }
         /// <summary>
         /// Deleta um registro de vistoria com base no número do LPCO.
@@ -38,6 +63,12 @@ namespace CLUSA
             if (string.IsNullOrEmpty(numeroLpco)) return;
 
             var filter = Builders<Vistoria>.Filter.Eq(v => v.LPCO, numeroLpco);
+            await _colecao.DeleteOneAsync(filter);
+        }
+
+        public async Task DeleteAsync(ObjectId id)
+        {
+            var filter = Builders<Vistoria>.Filter.Eq(x => x.Id, id);
             await _colecao.DeleteOneAsync(filter);
         }
     }
