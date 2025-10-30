@@ -426,7 +426,7 @@ namespace Trabalho
                     if (linha == (linhaConteudoSelecionada))
                     {
                         TableVistorias.RowStyles[linha].SizeType = SizeType.Percent;
-                        TableVistorias.RowStyles[linha].Height = 100;
+                        TableVistorias.RowStyles[linha].Height = 35;
                     }
                     else
                     {

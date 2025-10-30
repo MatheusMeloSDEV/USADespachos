@@ -118,11 +118,11 @@
             TableVistorias.RowStyles.Add(new RowStyle(SizeType.Absolute, 30F));
             TableVistorias.RowStyles.Add(new RowStyle(SizeType.Percent, 0F));
             TableVistorias.RowStyles.Add(new RowStyle(SizeType.Absolute, 30F));
-            TableVistorias.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
+            TableVistorias.RowStyles.Add(new RowStyle(SizeType.Percent, 35F));
             TableVistorias.RowStyles.Add(new RowStyle(SizeType.Absolute, 30F));
-            TableVistorias.RowStyles.Add(new RowStyle(SizeType.Absolute, 250F));
+            TableVistorias.RowStyles.Add(new RowStyle(SizeType.Percent, 40F));
             TableVistorias.RowStyles.Add(new RowStyle(SizeType.Absolute, 30F));
-            TableVistorias.RowStyles.Add(new RowStyle(SizeType.Absolute, 200F));
+            TableVistorias.RowStyles.Add(new RowStyle(SizeType.Percent, 25F));
             TableVistorias.Size = new Size(1118, 952);
             TableVistorias.TabIndex = 0;
             // 
@@ -132,10 +132,10 @@
             DGVProcessosDadoEntrada.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             TableVistorias.SetColumnSpan(DGVProcessosDadoEntrada, 4);
             DGVProcessosDadoEntrada.Dock = DockStyle.Fill;
-            DGVProcessosDadoEntrada.Location = new Point(3, 755);
+            DGVProcessosDadoEntrada.Location = new Point(3, 768);
             DGVProcessosDadoEntrada.Name = "DGVProcessosDadoEntrada";
             DGVProcessosDadoEntrada.RowTemplate.Height = 25;
-            DGVProcessosDadoEntrada.Size = new Size(1112, 194);
+            DGVProcessosDadoEntrada.Size = new Size(1112, 181);
             DGVProcessosDadoEntrada.TabIndex = 29;
             // 
             // label6
@@ -145,7 +145,7 @@
             TableVistorias.SetColumnSpan(label6, 4);
             label6.Dock = DockStyle.Fill;
             label6.Font = new Font("Segoe UI", 11F, FontStyle.Bold);
-            label6.Location = new Point(3, 722);
+            label6.Location = new Point(3, 735);
             label6.Name = "label6";
             label6.Size = new Size(1112, 30);
             label6.TabIndex = 26;
@@ -199,7 +199,7 @@
             TableVistorias.SetColumnSpan(label4, 3);
             label4.Dock = DockStyle.Fill;
             label4.Font = new Font("Segoe UI", 11F, FontStyle.Bold);
-            label4.Location = new Point(3, 442);
+            label4.Location = new Point(3, 407);
             label4.Name = "label4";
             label4.Size = new Size(1082, 30);
             label4.TabIndex = 9;
@@ -212,10 +212,10 @@
             DGVAguardandoChegAgendVistoria.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             TableVistorias.SetColumnSpan(DGVAguardandoChegAgendVistoria, 4);
             DGVAguardandoChegAgendVistoria.Dock = DockStyle.Fill;
-            DGVAguardandoChegAgendVistoria.Location = new Point(3, 475);
+            DGVAguardandoChegAgendVistoria.Location = new Point(3, 440);
             DGVAguardandoChegAgendVistoria.Name = "DGVAguardandoChegAgendVistoria";
             DGVAguardandoChegAgendVistoria.RowTemplate.Height = 25;
-            DGVAguardandoChegAgendVistoria.Size = new Size(1112, 244);
+            DGVAguardandoChegAgendVistoria.Size = new Size(1112, 292);
             DGVAguardandoChegAgendVistoria.TabIndex = 1;
             // 
             // DGVSolicitadoDataVistoria
@@ -227,7 +227,7 @@
             DGVSolicitadoDataVistoria.Location = new Point(3, 150);
             DGVSolicitadoDataVistoria.Name = "DGVSolicitadoDataVistoria";
             DGVSolicitadoDataVistoria.RowTemplate.Height = 25;
-            DGVSolicitadoDataVistoria.Size = new Size(1112, 289);
+            DGVSolicitadoDataVistoria.Size = new Size(1112, 254);
             DGVSolicitadoDataVistoria.TabIndex = 0;
             // 
             // LblSolicitadoDataVistoria
@@ -408,7 +408,7 @@
             BtnSobeSolicitado.BackgroundImage = (Image)resources.GetObject("BtnSobeSolicitado.BackgroundImage");
             BtnSobeSolicitado.BackgroundImageLayout = ImageLayout.Stretch;
             BtnSobeSolicitado.Dock = DockStyle.Fill;
-            BtnSobeSolicitado.Location = new Point(1091, 445);
+            BtnSobeSolicitado.Location = new Point(1091, 410);
             BtnSobeSolicitado.Name = "BtnSobeSolicitado";
             BtnSobeSolicitado.Size = new Size(24, 24);
             BtnSobeSolicitado.TabIndex = 16;

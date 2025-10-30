@@ -98,6 +98,13 @@ namespace Trabalho
             });
             DgvOrgaoAnuente.Columns.Add(new DataGridViewTextBoxColumn
             {
+                DataPropertyName = "Terminal",
+                HeaderText = "Terminal",
+                AutoSizeMode = DataGridViewAutoSizeColumnMode.ColumnHeader,
+                MinimumWidth = 110
+            });
+            DgvOrgaoAnuente.Columns.Add(new DataGridViewTextBoxColumn
+            {
                 DataPropertyName = "Conhecimento",
                 HeaderText = "Conhecimento",
                 AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells,
