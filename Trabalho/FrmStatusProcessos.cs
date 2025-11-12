@@ -10,6 +10,15 @@ namespace Trabalho
 {
     public partial class FrmStatusProcessos : Form
     {
+        private enum BlocoExibido
+        {
+            Nenhum,
+            StatusPadrao,
+            SolicitarNumerario,
+            DIDUIMPParaDigitacao
+        }
+        private BlocoExibido _blocoExibidoAtual = BlocoExibido.Nenhum;
+        private StatusBloco? _statusBlocoAtual;
         private List<Processo> _processosExibidos = new List<Processo>();
         public enum StatusBloco
         {
@@ -73,6 +82,9 @@ namespace Trabalho
 
         private void MostrarItensPorStatus(StatusBloco status)
         {
+            _blocoExibidoAtual = BlocoExibido.StatusPadrao;
+            _statusBlocoAtual = status;
+
             var processos = ObterProcessosPorStatus(status);
             _processosExibidos = processos;
             var blocoInfo = BlocoInfo[status];
@@ -84,24 +96,25 @@ namespace Trabalho
             var dadosExibicao = processos.Select(p => new
             {
                 p.Ref_USA,
+                p.SR,
                 p.Importador,
                 p.Exportador,
                 p.Produto,
-                CE = p.Capa?.CE ?? "-",
                 p.Container,
-                DataAtracacao = p.DataDeAtracacao?.ToString("dd/MM/yyyy") ?? "-",
-                p.PresencaDeCarga,
-                SIGVIG = p.Capa?.SigvigLiberado == true ? "✓ Liberado" :
-                         p.Capa?.SigvigSelecionado == true ? "⚠ Selecionado" : "Pendente",
+                p.PortoDestino,
+                p.Veiculo,
+                p.DataDeAtracacao, // Use DateTime, o DataGridView formata pelo DefaultCellStyle!
+                p.OrgaosAnuentesString,
+                p.FreeTime,
+                p.VencimentoFreeTime,
+                p.VencimentoFMA,
+                p.DI,
                 LPCOs = ProcessoHelper.ObterResumoLPCOs(p),
-                OrgaosAnuentes = p.OrgaosAnuentesString,
-                Parametrizacao = p.ParametrizacaoDI,
-                RascunhoDI = p.RascunhoDI,
-                DataRegistroDI = p.DataRegistroDI?.ToString("dd/MM/yyyy") ?? "-",
-                DataEmbarque = p.DataEmbarque?.ToString("dd/MM/yyyy") ?? "-",
-                p.Status,
-                p.CondicaoProcesso
+                p.HistoricoDoProcesso,
+                p.Pendencia,
+                p.Status
             }).ToList();
+
 
             DGVSelecionado.DataSource = dadosExibicao;
             ConfigurarDataGridView();
@@ -113,64 +126,168 @@ namespace Trabalho
         // UI helpers
         private void ConfigurarDataGridView()
         {
+            DGVSelecionado.Columns.Clear();
+            DGVSelecionado.AutoGenerateColumns = false;
             DGVSelecionado.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
-            DGVSelecionado.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
-            DGVSelecionado.MultiSelect = false;
-            DGVSelecionado.ReadOnly = true;
-            DGVSelecionado.AllowUserToAddRows = false;
             DGVSelecionado.RowHeadersVisible = false;
+            DGVSelecionado.AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.None;
+            DGVSelecionado.DefaultCellStyle.WrapMode = DataGridViewTriState.False;
+            DGVSelecionado.ShowCellToolTips = true;
             DGVSelecionado.BackgroundColor = Color.White;
             DGVSelecionado.AlternatingRowsDefaultCellStyle.BackColor = Color.FromArgb(245, 245, 245);
 
-            if (DGVSelecionado.Columns.Count > 0)
+            var dateCellStyle = new DataGridViewCellStyle { Format = "dd/MM/yyyy" };
+
+            // Adiciona as colunas com largura e header definidos
+            DGVSelecionado.Columns.Add(new DataGridViewTextBoxColumn
             {
-                var headerStyle = new DataGridViewCellStyle
-                {
-                    Font = new Font("Segoe UI", 9F, FontStyle.Bold),
-                    BackColor = Color.FromArgb(230, 230, 230),
-                    ForeColor = Color.Black
-                };
+                DataPropertyName = "Ref_USA",
+                HeaderText = "Ref. USA",
+                AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells,
+                MinimumWidth = 90
+            });
+            DGVSelecionado.Columns.Add(new DataGridViewTextBoxColumn
+            {
+                DataPropertyName = "SR",
+                HeaderText = "S. Ref",
+                AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells,
+                MinimumWidth = 80
+            });
+            DGVSelecionado.Columns.Add(new DataGridViewTextBoxColumn
+            {
+                DataPropertyName = "Importador",
+                HeaderText = "Importador",
+                FillWeight = 140,
+                MinimumWidth = 140
+            });
+            DGVSelecionado.Columns.Add(new DataGridViewTextBoxColumn
+            {
+                DataPropertyName = "Exportador",
+                HeaderText = "Exportador",
+                FillWeight = 140,
+                MinimumWidth = 140
+            });
+            DGVSelecionado.Columns.Add(new DataGridViewTextBoxColumn
+            {
+                DataPropertyName = "Produto",
+                HeaderText = "Produto",
+                FillWeight = 180,
+                MinimumWidth = 200
+            });
+            DGVSelecionado.Columns.Add(new DataGridViewTextBoxColumn
+            {
+                DataPropertyName = "Container",
+                HeaderText = "Container",
+                AutoSizeMode = DataGridViewAutoSizeColumnMode.ColumnHeader,
+                MinimumWidth = 120
+            });
+            DGVSelecionado.Columns.Add(new DataGridViewTextBoxColumn
+            {
+                DataPropertyName = "PortoDestino",
+                HeaderText = "Porto Destino",
+                AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells,
+                MinimumWidth = 110
+            });
+            DGVSelecionado.Columns.Add(new DataGridViewTextBoxColumn
+            {
+                DataPropertyName = "Veiculo",
+                HeaderText = "Veículo",
+                FillWeight = 110,
+                MinimumWidth = 120
+            });
+            DGVSelecionado.Columns.Add(new DataGridViewTextBoxColumn
+            {
+                DataPropertyName = "DataDeAtracacao",
+                HeaderText = "Data de Atracação",
+                AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells,
+                MinimumWidth = 70,
+                DefaultCellStyle = dateCellStyle
+            });
+            DGVSelecionado.Columns.Add(new DataGridViewTextBoxColumn
+            {
+                DataPropertyName = "LPCOs",
+                HeaderText = "LPCOs (Deferidos/Total)",
+                MinimumWidth = 100
+            });
+            DGVSelecionado.Columns.Add(new DataGridViewTextBoxColumn
+            {
+                DataPropertyName = "OrgaosAnuentesString",
+                HeaderText = "Anuente",
+                FillWeight = 90,
+                MinimumWidth = 100
+            });
+            DGVSelecionado.Columns.Add(new DataGridViewTextBoxColumn
+            {
+                DataPropertyName = "FreeTime",
+                HeaderText = "F.T (dias)",
+                AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells,
+                MinimumWidth = 70
+            });
+            DGVSelecionado.Columns.Add(new DataGridViewTextBoxColumn
+            {
+                DataPropertyName = "VencimentoFreeTime",
+                HeaderText = "Venc. F. Time",
+                DefaultCellStyle = dateCellStyle,
+                AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells,
+                MinimumWidth = 100
+            });
+            DGVSelecionado.Columns.Add(new DataGridViewTextBoxColumn
+            {
+                DataPropertyName = "VencimentoFMA",
+                HeaderText = "Venc. FMA",
+                DefaultCellStyle = dateCellStyle,
+                AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells,
+                MinimumWidth = 100
+            });
+            DGVSelecionado.Columns.Add(new DataGridViewTextBoxColumn
+            {
+                DataPropertyName = "DI",
+                HeaderText = "DI",
+                AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells,
+                MinimumWidth = 120
+            });
+            DGVSelecionado.Columns.Add(new DataGridViewTextBoxColumn
+            {
+                DataPropertyName = "HistoricoDoProcesso",
+                HeaderText = "Histórico",
+                FillWeight = 200,
+                MinimumWidth = 200
+            });
+            DGVSelecionado.Columns.Add(new DataGridViewTextBoxColumn
+            {
+                DataPropertyName = "Pendencia",
+                HeaderText = "Pendência",
+                FillWeight = 160,
+                MinimumWidth = 160
+            });
+            DGVSelecionado.Columns.Add(new DataGridViewTextBoxColumn
+            {
+                DataPropertyName = "Status",
+                HeaderText = "Status",
+                FillWeight = 110,
+                MinimumWidth = 120
+            });
 
-                foreach (DataGridViewColumn col in DGVSelecionado.Columns)
-                    col.HeaderCell.Style = headerStyle;
+            // Estilo dos headers (mantém do seu antigo ConfigurarDataGridView)
+            var headerStyle = new DataGridViewCellStyle
+            {
+                Font = new Font("Segoe UI", 9F, FontStyle.Bold),
+                BackColor = Color.FromArgb(230, 230, 230),
+                ForeColor = Color.Black
+            };
 
-                if (DGVSelecionado.Columns.Contains("Ref_USA"))
-                    DGVSelecionado.Columns["Ref_USA"].HeaderText = "Ref. USA";
-
-                if (DGVSelecionado.Columns.Contains("CE"))
-                    DGVSelecionado.Columns["CE"].HeaderText = "CE (Conhecimento)";
-
-                if (DGVSelecionado.Columns.Contains("DataAtracacao"))
-                    DGVSelecionado.Columns["DataAtracacao"].HeaderText = "Data Atracação";
-
-                if (DGVSelecionado.Columns.Contains("PresencaDeCarga"))
-                    DGVSelecionado.Columns["PresencaDeCarga"].HeaderText = "Presença Carga";
-
-                if (DGVSelecionado.Columns.Contains("LPCOs"))
-                    DGVSelecionado.Columns["LPCOs"].HeaderText = "LPCOs (Deferidos/Total)";
-
-                if (DGVSelecionado.Columns.Contains("OrgaosAnuentes"))
-                    DGVSelecionado.Columns["OrgaosAnuentes"].HeaderText = "Órgãos Anuentes";
-
-                if (DGVSelecionado.Columns.Contains("Parametrizacao"))
-                    DGVSelecionado.Columns["Parametrizacao"].HeaderText = "Parametrização";
-
-                if (DGVSelecionado.Columns.Contains("RascunhoDI"))
-                    DGVSelecionado.Columns["RascunhoDI"].HeaderText = "Rascunho DI";
-
-                if (DGVSelecionado.Columns.Contains("DataRegistroDI"))
-                    DGVSelecionado.Columns["DataRegistroDI"].HeaderText = "Data Registro DI";
-
-                if (DGVSelecionado.Columns.Contains("DataEmbarque"))
-                    DGVSelecionado.Columns["DataEmbarque"].HeaderText = "Data Embarque";
-
-                if (DGVSelecionado.Columns.Contains("CondicaoProcesso"))
-                    DGVSelecionado.Columns["CondicaoProcesso"].HeaderText = "Condição Atual";
+            foreach (DataGridViewColumn col in DGVSelecionado.Columns)
+            {
+                col.HeaderCell.Style = headerStyle;
+                col.DefaultCellStyle.Font = new Font("Segoe UI", 10);
+                col.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleLeft;
             }
         }
 
+
         private void AtualizarContadores()
         {
+            // Para os blocos "normais"
             foreach (StatusBloco status in Enum.GetValues(typeof(StatusBloco)))
             {
                 var count = ObterProcessosPorStatus(status).Count;
@@ -179,7 +296,18 @@ namespace Trabalho
                 if (label != null)
                     label.Text = count > 0 ? $"{textoBase}\n({count})" : textoBase;
             }
+
+            // Bloco especial "Solicitar Numerário"
+            var countSolicitarNumerario = ObterProcessosSolicitarNumerario().Count;
+            if (BtnSolicitarNumerario != null)
+                BtnSolicitarNumerario.Text = $"Solicitar Numerário\n({countSolicitarNumerario})";
+
+            // Bloco especial "DI/DUIMP para Digitação"
+            var countDIDuimp = ObterProcessosDIDuimpParaDigitacao().Count;
+            if (BtnDIDUIMPParaDigitacao != null)
+                BtnDIDUIMPParaDigitacao.Text = $"DI/DUIMP para Digitação\n({countDIDuimp})";
         }
+
 
         // Métodos de vinculação de UI
         private Label ObterLabelPorStatus(StatusBloco status)
@@ -198,34 +326,117 @@ namespace Trabalho
                 _ => throw new ArgumentException($"Status inválido: {status}", nameof(status))
             };
         }
+        private List<Processo> ObterProcessosSolicitarNumerario()
+        {
+            // Aqui você define exatamente as regras de entrada/saída
+            return _todosProcessos
+                .Where(p =>
+                    p.DataDeAtracacao.HasValue &&
+                    !p.Numerario
+                ).ToList();
+        }
 
+        private List<Processo> ObterProcessosDIDuimpParaDigitacao()
+        {
+            return _todosProcessos
+                .Where(p =>
+                    p.DataDeAtracacao.HasValue &&
+                    string.IsNullOrWhiteSpace(p.RascunhoDI)
+                ).ToList();
+        }
         // Event handlers por status
         private void BtnAguardandoCE_Click(object sender, EventArgs e) =>
             MostrarItensPorStatus(StatusBloco.AguardandoCE);
-
         private void BtnParaRedestinar_Click(object sender, EventArgs e) =>
             MostrarItensPorStatus(StatusBloco.ParaRedestinar);
-
         private void BtnRedestinados_Click(object sender, EventArgs e) =>
             MostrarItensPorStatus(StatusBloco.Redestinados);
-
         private void BtnAtracadosSPresencaDeCarga_Click(object sender, EventArgs e) =>
             MostrarItensPorStatus(StatusBloco.AtracadosSemPresencaCarga);
-
         private void BtnSituacaoSIGVIG_Click(object sender, EventArgs e) =>
             MostrarItensPorStatus(StatusBloco.SituacaoSIGVIG);
-
         private void BtnAtracadosCPresencaDeCarga_Click(object sender, EventArgs e) =>
             MostrarItensPorStatus(StatusBloco.AtracadosComPresencaCarga);
-
         private void BtnDeferidos_Click(object sender, EventArgs e) =>
             MostrarItensPorStatus(StatusBloco.Deferidos);
+        private void BtnSolicitarNumerario_Click(object sender, EventArgs e)
+        {
+            _blocoExibidoAtual = BlocoExibido.SolicitarNumerario;
+            var processos = ObterProcessosSolicitarNumerario();
+            _processosExibidos = processos;
 
-        private void BtnSolicitarNumerario_Click(object sender, EventArgs e) =>
-            MostrarItensPorStatus(StatusBloco.SolicitarNumerario);
+            var blocoInfo = BlocoInfo[StatusBloco.SolicitarNumerario];
+            LblTitulo.Text = $"{blocoInfo.Nome} ({processos.Count})";
+            LblTitulo.ForeColor = blocoInfo.Cor == Color.Black ? Color.White : Color.Black;
+            LblTitulo.BackColor = blocoInfo.Cor;
 
-        private void BtnDIDUIMPParaDigitacao_Click(object sender, EventArgs e) =>
-            MostrarItensPorStatus(StatusBloco.DIDUIMPParaDigitacao);
+            var dadosExibicao = processos.Select(p => new
+            {
+                p.Ref_USA,
+                p.SR,
+                p.Importador,
+                p.Exportador,
+                p.Produto,
+                p.Container,
+                p.PortoDestino,
+                p.Veiculo,
+                p.DataDeAtracacao, // Use DateTime, o DataGridView formata pelo DefaultCellStyle!
+                p.OrgaosAnuentesString,
+                p.FreeTime,
+                p.VencimentoFreeTime,
+                p.VencimentoFMA,
+                p.DI,
+                LPCOs = ProcessoHelper.ObterResumoLPCOs(p),
+                p.HistoricoDoProcesso,
+                p.Pendencia,
+                p.Status
+            }).ToList();
+
+            DGVSelecionado.DataSource = dadosExibicao;
+            ConfigurarDataGridView();
+
+            Blocos.Visible = false;
+            MostrarItens.Visible = true;
+        }
+        private void BtnDIDUIMPParaDigitacao_Click(object sender, EventArgs e)
+        {
+            _blocoExibidoAtual = BlocoExibido.DIDUIMPParaDigitacao;
+            var processos = ObterProcessosDIDuimpParaDigitacao();
+            _processosExibidos = processos;
+
+            var blocoInfo = BlocoInfo[StatusBloco.DIDUIMPParaDigitacao];
+            LblTitulo.Text = $"{blocoInfo.Nome} ({processos.Count})";
+            LblTitulo.ForeColor = blocoInfo.Cor == Color.Black ? Color.White : Color.Black;
+            LblTitulo.BackColor = blocoInfo.Cor;
+
+            var dadosExibicao = processos.Select(p => new
+            {
+                p.Ref_USA,
+                p.SR,
+                p.Importador,
+                p.Exportador,
+                p.Produto,
+                p.Container,
+                p.PortoDestino,
+                p.Veiculo,
+                p.DataDeAtracacao, // Use DateTime, o DataGridView formata pelo DefaultCellStyle!
+                p.OrgaosAnuentesString,
+                p.FreeTime,
+                p.VencimentoFreeTime,
+                p.VencimentoFMA,
+                p.DI,
+                LPCOs = ProcessoHelper.ObterResumoLPCOs(p),
+                p.HistoricoDoProcesso,
+                p.Pendencia,
+                p.Status
+            }).ToList();
+
+            DGVSelecionado.DataSource = dadosExibicao;
+            ConfigurarDataGridView();
+
+            Blocos.Visible = false;
+            MostrarItens.Visible = true;
+        }
         private async void DGVSelecionado_CellDoubleClick(object sender, DataGridViewCellEventArgs e)
         {
             if (e.RowIndex < 0 || e.RowIndex >= _processosExibidos.Count) return;
@@ -237,6 +448,22 @@ namespace Trabalho
 
             // Se quiser que a atualização já seja async:
             await CarregarProcessosAsync();
+
+            switch (_blocoExibidoAtual)
+            {
+                case BlocoExibido.SolicitarNumerario:
+                    BtnSolicitarNumerario_Click(null, EventArgs.Empty);
+                    break;
+                case BlocoExibido.DIDUIMPParaDigitacao:
+                    BtnDIDUIMPParaDigitacao_Click(null, EventArgs.Empty);
+                    break;
+                case BlocoExibido.StatusPadrao:
+                    if (_statusBlocoAtual.HasValue)
+                        MostrarItensPorStatus(_statusBlocoAtual.Value);
+                    break;
+                default:
+                    break;
+            }
         }
         private void BtnVoltar_Click(object sender, EventArgs e)
         {
