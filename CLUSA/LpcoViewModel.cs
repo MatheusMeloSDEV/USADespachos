@@ -19,6 +19,7 @@ namespace CLUSA
         public string Container { get; set; } = string.Empty;
         public string Origem { get; set; } = string.Empty;
         public string Conhecimento { get; set; } = string.Empty;
+        public string Terminal { get; set; } = string.Empty;
         public string Produto { get; set; } = string.Empty;
         public DateTime? Inspecao { get; set; }
         public DateTime? DataChegada { get; set; }

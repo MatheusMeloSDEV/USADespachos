@@ -348,7 +348,7 @@ namespace Trabalho
 
         }
 
-        private T? ShowSingleFormOfType<T>() where T : Form, new()
+        private T? ShowSingleFormOfType<T>(bool maximizar = true) where T : Form, new()
         {
             panel1.Visible = false;
             if (_forms.TryGetValue(typeof(T), out var form) && !form.IsDisposed)
@@ -366,7 +366,8 @@ namespace Trabalho
                 var novoForm = new T
                 {
                     MdiParent = this,
-                    WindowState = FormWindowState.Maximized
+                    WindowState = maximizar ? FormWindowState.Maximized : FormWindowState.Normal,
+                    AutoScroll = true
                 };
                 novoForm.FormClosed += (s, args) => _forms.Remove(typeof(T));
                 novoForm.Show();
@@ -393,6 +394,7 @@ namespace Trabalho
         private void MenuItemVistoria_Click(object sender, EventArgs e) => ShowSingleFormOfType<FrmVistorias>();
         private void MenuItemFinanceiro_Click(object? sender, EventArgs e) => ShowSingleFormOfType<FrmFinanceiro>();
         private void MenuItemAdmin_Click(object? sender, EventArgs e) => ShowSingleFormOfType<FrmAdmin>();
+        private void MenuItemEmAndamento_Click(object? sender, EventArgs e) => ShowSingleFormOfType<FrmStatusProcessos>();
         private void MenuItemMaximize_Click(object? sender, EventArgs e) => this.WindowState = FormWindowState.Maximized;
         private void MenuItemMinimize_Click(object? sender, EventArgs e) => this.WindowState = FormWindowState.Minimized;
 

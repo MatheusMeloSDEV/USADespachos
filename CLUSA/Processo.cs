@@ -50,6 +50,7 @@ namespace CLUSA
         //adicionados
         public string Container { get; set; } = string.Empty;
         public bool PresencaDeCarga { get; set; } = false;
+        public bool CapaOK { get; set; } = false;
         public bool SIGVIGLiberado { get; set; } = false;
         public bool SIGVIGSelecionado { get; set; } = false;
         public bool ResultadoLab { get; set; } = false;
@@ -60,6 +61,7 @@ namespace CLUSA
         public Capa Capa { get; set; } = new Capa();
 
         public string DI { get; set; } = string.Empty;
+        public string RascunhoDI { get; set; } = string.Empty;
         public DateTime? DataRegistroDI { get; set; } = (DateTime?)null;
         public DateTime? DataDesembaracoDI { get; set; } = (DateTime?)null;
         public DateTime? DataCarregamentoDI { get; set; } = (DateTime?)null;
@@ -72,21 +74,20 @@ namespace CLUSA
         public DateTime? DataEmbarque { get; set; } = (DateTime?)null;
 
         public DateTime? DataRecebOriginais { get; set; } = (DateTime?)null;
-        public string FormaRecOriginais { get; set; } = string.Empty; // Seletor Vários - DHL, UPS, Correio, Fedex, Daytona, 
-        public string[] DocRecebidos { get; set; } = Array.Empty<string>(); // Seletor Varios -  BL, Fatura, Packing List, CO, Fito, CSI, CA, CF (String Concat)
+        public string FormaRecOriginais { get; set; } = string.Empty;
+        public string[] DocRecebidos { get; set; } = Array.Empty<string>();
+        public string Origem { get; set; } = string.Empty;
 
         public bool Amostra { get; set; } = false;
         public bool Desovado { get; set; } = false;
-        public string Pendencia { get; set; } = string.Empty;
+        public bool Redestinacao { get; set; } = false;
+        public bool Numerario { get; set; } = false;
+        public bool SigVig { get; set; } = false;
+
         public string HistoricoDoProcesso { get; set; } = string.Empty;
-
-        public string Origem { get; set; } = string.Empty;
-
+        public string Pendencia { get; set; } = string.Empty;
+        
         public string Status { get; set; } = "Aguardando embarque";
-
-        //Aguardando atracação, Aguardando presença de carga, Aguardando SIGVIG
-        //Aguardando LI/LPCO, Aguardando parametrização LI/LPCO, Aguardando inspeção/coleta LI/LPCO
-        //Aguardando deferimento LI/LPCO, Aguardando registro DI/DUIMP, Aguardando parametrização DI/DUIMP
-        //Aguardando inspeção DI/DUIMP, Aguardando minuta devolução container vazio, Aguardando resultado laboratório, Finalizado
+        public string CondicaoProcesso { get; set; } = "AguardandoCE";
     }
 }

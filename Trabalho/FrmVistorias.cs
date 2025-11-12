@@ -23,6 +23,9 @@ namespace Trabalho
         {
             InitializeComponent();
 
+            this.AutoScroll = true;
+            this.AutoScrollMinSize = new Size(1400, 900);
+
             var client = new MongoClient(ConfigDatabase.MongoConnectionString);
             var database = client.GetDatabase(ConfigDatabase.MongoDatabaseName);
 
@@ -73,6 +76,14 @@ namespace Trabalho
                     .Where(v => v.Status == StatusVistoria.ProcessoDadoEntrada)
                     .OrderBy(v => v.Previsao ?? DateTime.MaxValue)
                     .ToList();
+
+
+                AjustarAlturaDataGridView(DGVAguardandoChegAgendVistoria);
+                AjustarAlturaDataGridView(DGVAguardandoDef);
+                AjustarAlturaDataGridView(DGVLaudo);
+                AjustarAlturaDataGridView(DGVProcessosDadoEntrada);
+                AjustarAlturaDataGridView(DGVSolicitadoDataVistoria);
+                AjustarAlturaDataGridView(DGVVistoriaAgendada);
             }
             catch (Exception ex)
             {
@@ -92,6 +103,29 @@ namespace Trabalho
             ConfigurarGrids();
             await CarregarDadosAsync();
         }
+        private void AjustarAlturaDataGridView(DataGridView dgv)
+        {
+            // Se não tiver linhas, altura = 0
+            if (dgv.Rows.Count == 0)
+            {
+                dgv.Height = 0;
+                dgv.Visible = false; // Opcional: esconder completamente quando vazio
+                return;
+            }
+
+            // Se tiver linhas, calcular altura necessária
+            dgv.Visible = true; // Opcional: mostrar quando tiver dados
+            int alturaTotal = dgv.ColumnHeadersHeight;
+
+            foreach (DataGridViewRow row in dgv.Rows)
+            {
+                if (row.Visible)
+                    alturaTotal += row.Height;
+            }
+
+            dgv.Height = alturaTotal;
+        }
+
         private async Task SincronizarPeriodicamente()
         {
             var alteracoes = await _vistoriaService.SincronizarVistoriasAsync();
@@ -247,7 +281,7 @@ namespace Trabalho
         /// <param name="bsOrigem">O BindingSource da grade de origem.</param>
         /// <param name="bsDestino">O BindingSource da grade de destino.</param>
         /// <param name="novoStatus">O novo status a ser atribuído à vistoria.</param>
-        private async Task MoverVistoria(DataGridView dgvOrigem, BindingSource bsOrigem, BindingSource bsDestino, StatusVistoria novoStatus)
+        private async Task MoverVistoria(DataGridView dgvOrigem, DataGridView dgvDestino, BindingSource bsOrigem, BindingSource bsDestino, StatusVistoria novoStatus)
         {
             if (dgvOrigem.CurrentRow == null || dgvOrigem.CurrentRow.DataBoundItem is not Vistoria vistoriaSelecionada)
             {
@@ -262,52 +296,67 @@ namespace Trabalho
 
                 bsOrigem.Remove(vistoriaSelecionada);
                 bsDestino.Add(vistoriaSelecionada);
+
+                // Ajustar apenas os DataGridViews origem e destino
+                AjustarAlturaDataGridView(dgvOrigem);
+                AjustarAlturaDataGridView(dgvDestino);
             }
             catch (Exception ex)
             {
                 MessageBox.Show($"Erro ao atualizar o status da vistoria: {ex.Message}", "Erro");
                 await CarregarDadosAsync();
+
+                AjustarTodosDataGridViews();
             }
+        }
+        private void AjustarTodosDataGridViews()
+        {
+            AjustarAlturaDataGridView(DGVAguardandoChegAgendVistoria);
+            AjustarAlturaDataGridView(DGVAguardandoDef);
+            AjustarAlturaDataGridView(DGVLaudo);
+            AjustarAlturaDataGridView(DGVProcessosDadoEntrada);
+            AjustarAlturaDataGridView(DGVSolicitadoDataVistoria);
+            AjustarAlturaDataGridView(DGVVistoriaAgendada);
         }
 
         // --- MÉTODOS PARA SUBIR DE ESTÁGIO ---
         private async void BtnSobeSolicitado_Click(object? sender, EventArgs e)
         {
-            await MoverVistoria(DGVAguardandoChegAgendVistoria, _bsAguardandoChegada, _bsSolicitadoData, StatusVistoria.SolicitarDataVistoria);
+            await MoverVistoria(DGVAguardandoChegAgendVistoria, DGVSolicitadoDataVistoria, _bsAguardandoChegada, _bsSolicitadoData, StatusVistoria.SolicitarDataVistoria);
         }
 
         private async void BtnSobeAgendada_Click(object? sender, EventArgs e)
         {
-            await MoverVistoria(DGVSolicitadoDataVistoria, _bsSolicitadoData, _bsVistoriaAgendada, StatusVistoria.VistoriaAgendada);
+            await MoverVistoria(DGVSolicitadoDataVistoria, DGVVistoriaAgendada, _bsSolicitadoData, _bsVistoriaAgendada, StatusVistoria.VistoriaAgendada);
         }
 
         private async void BtnSobeAguardDef_Click(object? sender, EventArgs e)
         {
-            await MoverVistoria(DGVVistoriaAgendada, _bsVistoriaAgendada, _bsAguardandoDef, StatusVistoria.AguardandoDeferimento);
+            await MoverVistoria(DGVVistoriaAgendada, DGVAguardandoDef, _bsVistoriaAgendada, _bsAguardandoDef, StatusVistoria.AguardandoDeferimento);
         }
         private async void BtnSobeLaudo_Click(object sender, EventArgs e)
         {
-            await MoverVistoria(DGVAguardandoDef, _bsAguardandoDef, _bsAguardandoLaudo, StatusVistoria.AguardandoLaudo);
+            await MoverVistoria(DGVAguardandoDef, DGVLaudo, _bsAguardandoDef, _bsAguardandoLaudo, StatusVistoria.AguardandoLaudo);
         }
 
         // --- NOVOS MÉTODOS PARA DESCER DE ESTÁGIO ---
         private async void btnDesceParaAgendada_Click(object? sender, EventArgs e)
         {
-            await MoverVistoria(DGVAguardandoDef, _bsAguardandoDef, _bsVistoriaAgendada, StatusVistoria.VistoriaAgendada);
+            await MoverVistoria(DGVAguardandoDef, DGVSolicitadoDataVistoria, _bsAguardandoDef, _bsVistoriaAgendada, StatusVistoria.VistoriaAgendada);
         }
         private async void BtnDesceDeferimento_Click(object sender, EventArgs e)
         {
-            await MoverVistoria(DGVLaudo, _bsAguardandoLaudo, _bsAguardandoDef, StatusVistoria.AguardandoDeferimento);
+            await MoverVistoria(DGVLaudo, DGVVistoriaAgendada, _bsAguardandoLaudo, _bsAguardandoDef, StatusVistoria.AguardandoDeferimento);
         }
 
         private async void btnDesceParaSolicitado_Click(object? sender, EventArgs e)
         {
-            await MoverVistoria(DGVVistoriaAgendada, _bsVistoriaAgendada, _bsSolicitadoData, StatusVistoria.SolicitarDataVistoria);
+            await MoverVistoria(DGVVistoriaAgendada, DGVSolicitadoDataVistoria, _bsVistoriaAgendada, _bsSolicitadoData, StatusVistoria.SolicitarDataVistoria);
         }
 
         private async void btnDesceParaAguardando_Click(object? sender, EventArgs e)
         {
-            await MoverVistoria(DGVSolicitadoDataVistoria, _bsSolicitadoData, _bsAguardandoChegada, StatusVistoria.AguardandoChegadaParaAgendar);
+            await MoverVistoria(DGVSolicitadoDataVistoria, DGVAguardandoChegAgendVistoria, _bsSolicitadoData, _bsAguardandoChegada, StatusVistoria.AguardandoChegadaParaAgendar);
         }
 
         // O último botão é um pouco diferente, pois ele "finaliza" o processo.
@@ -413,51 +462,6 @@ namespace Trabalho
             {
                 MessageBox.Show($"Erro ao finalizar a vistoria: {ex.Message}", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
-        }
-        private void MostrarSomenteLinhaConteudo(int linhaConteudoSelecionada)
-        {
-            TableVistorias.SuspendLayout();
-            int[] linhasConteudo = { 2, 4, 6, 8 };
-
-            foreach (int linha in linhasConteudo)
-            {
-                if (linha < TableVistorias.RowStyles.Count)
-                {
-                    if (linha == (linhaConteudoSelecionada))
-                    {
-                        TableVistorias.RowStyles[linha].SizeType = SizeType.Percent;
-                        TableVistorias.RowStyles[linha].Height = 35;
-                    }
-                    else
-                    {
-                        TableVistorias.RowStyles[linha].SizeType = SizeType.Absolute;
-                        TableVistorias.RowStyles[linha].Height = 0;
-                    }
-                }
-            }
-            TableVistorias.ResumeLayout();
-        }
-
-
-
-        private void LblSolicitadoDataVistoria_Click(object sender, EventArgs e)
-        {
-            MostrarSomenteLinhaConteudo(8);
-        }
-
-        private void LblVistoriaAgendada_Click(object sender, EventArgs e)
-        {
-            MostrarSomenteLinhaConteudo(6);
-        }
-
-        private void LblAguardandoLaudo_Click(object sender, EventArgs e)
-        {
-            MostrarSomenteLinhaConteudo(2);
-        }
-
-        private void LblAguardandoDeferimento_Click(object sender, EventArgs e)
-        {
-            MostrarSomenteLinhaConteudo(4);
         }
     }
 }

@@ -177,6 +177,7 @@ namespace Trabalho
                         Container = li.Container,
                         Origem = li.Origem,
                         Conhecimento = li.Conhecimento,
+                        Terminal = li.Terminal,
                         DataChegada = li.DataChegada,
                         Inspecao = li.Inspecao,
                         HistoricoDoProcesso = li.HistoricoDoProcesso,

@@ -160,10 +160,10 @@ namespace Trabalho
             TXTProduto.Text = Processo.Produto;
             TXTstatusdoprocesso.Text = Processo.HistoricoDoProcesso;
             TXTpendencia.Text = Processo.Pendencia;
-
+            TxtTerminal.Text = Processo.Terminal;
 
             // Trava os campos de contexto
-            new List<TextBox> { TXTnr, TXTsr, TXTimportador, TXTexportador, TXTProduto }.ForEach(txt => txt.ReadOnly = true);
+            new List<TextBox> { TXTnr, TXTsr, TXTimportador, TXTexportador, TXTProduto, TxtTerminal }.ForEach(txt => txt.ReadOnly = true);
 
             // --- Carrega dados EDITÁVEIS do OrgaoAnuente (a LI) ---
             TXTpendencia.DataBindings.Add("Text", OrgaoAnuente, nameof(OrgaoAnuente.Pendencia), false, DataSourceUpdateMode.OnPropertyChanged);

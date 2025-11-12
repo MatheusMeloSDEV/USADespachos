@@ -28,163 +28,295 @@
         /// </summary>
         private void InitializeComponent()
         {
-            tableLayoutPanel1 = new TableLayoutPanel();
-            lblEmAndamento = new Label();
-            label2 = new Label();
-            label5 = new Label();
-            label6 = new Label();
-            label4 = new Label();
-            label3 = new Label();
-            tableLayoutPanel2 = new TableLayoutPanel();
-            label1 = new Label();
-            tableLayoutPanel1.SuspendLayout();
-            tableLayoutPanel2.SuspendLayout();
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FrmStatusProcessos));
+            Blocos = new TableLayoutPanel();
+            BtnDIDUIMPParaDigitacao = new Label();
+            BtnSolicitarNumerario = new Label();
+            BtnDeferidos = new Label();
+            BtnAguardandoCE = new Label();
+            BtnAtracadosSPresencaDeCarga = new Label();
+            BtnSituacaoSIGVIG = new Label();
+            BtnAtracadosCPresencaDeCarga = new Label();
+            BtnParaRedestinar = new Label();
+            BtnRedestinados = new Label();
+            MostrarItens = new TableLayoutPanel();
+            LblTitulo = new Label();
+            BtnVoltar = new PictureBox();
+            DGVSelecionado = new DataGridView();
+            Blocos.SuspendLayout();
+            MostrarItens.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)BtnVoltar).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)DGVSelecionado).BeginInit();
             SuspendLayout();
             // 
-            // tableLayoutPanel1
+            // Blocos
             // 
-            tableLayoutPanel1.ColumnCount = 3;
-            tableLayoutPanel1.ColumnStyles.Add(new ColumnStyle());
-            tableLayoutPanel1.ColumnStyles.Add(new ColumnStyle());
-            tableLayoutPanel1.ColumnStyles.Add(new ColumnStyle());
-            tableLayoutPanel1.Controls.Add(lblEmAndamento, 0, 0);
-            tableLayoutPanel1.Controls.Add(label2, 0, 1);
-            tableLayoutPanel1.Controls.Add(label5, 1, 1);
-            tableLayoutPanel1.Controls.Add(label6, 2, 1);
-            tableLayoutPanel1.Controls.Add(label4, 1, 0);
-            tableLayoutPanel1.Controls.Add(label3, 2, 0);
-            tableLayoutPanel1.Location = new Point(133, 73);
-            tableLayoutPanel1.Name = "tableLayoutPanel1";
-            tableLayoutPanel1.RowCount = 2;
-            tableLayoutPanel1.RowStyles.Add(new RowStyle());
-            tableLayoutPanel1.RowStyles.Add(new RowStyle());
-            tableLayoutPanel1.Size = new Size(970, 281);
-            tableLayoutPanel1.TabIndex = 11;
+            Blocos.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            Blocos.ColumnCount = 3;
+            Blocos.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 33.3333321F));
+            Blocos.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 33.3333359F));
+            Blocos.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 33.3333359F));
+            Blocos.Controls.Add(BtnDIDUIMPParaDigitacao, 2, 2);
+            Blocos.Controls.Add(BtnSolicitarNumerario, 1, 2);
+            Blocos.Controls.Add(BtnDeferidos, 0, 2);
+            Blocos.Controls.Add(BtnAguardandoCE, 0, 0);
+            Blocos.Controls.Add(BtnAtracadosSPresencaDeCarga, 0, 1);
+            Blocos.Controls.Add(BtnSituacaoSIGVIG, 1, 1);
+            Blocos.Controls.Add(BtnAtracadosCPresencaDeCarga, 2, 1);
+            Blocos.Controls.Add(BtnParaRedestinar, 1, 0);
+            Blocos.Controls.Add(BtnRedestinados, 2, 0);
+            Blocos.Location = new Point(160, 73);
+            Blocos.Name = "Blocos";
+            Blocos.RowCount = 3;
+            Blocos.RowStyles.Add(new RowStyle(SizeType.Percent, 33.3333321F));
+            Blocos.RowStyles.Add(new RowStyle(SizeType.Percent, 33.3333321F));
+            Blocos.RowStyles.Add(new RowStyle(SizeType.Percent, 33.3333321F));
+            Blocos.Size = new Size(944, 397);
+            Blocos.TabIndex = 11;
             // 
-            // lblEmAndamento
+            // BtnDIDUIMPParaDigitacao
             // 
-            lblEmAndamento.BackColor = Color.FromArgb(255, 255, 192);
-            lblEmAndamento.Font = new Font("Segoe UI", 22F);
-            lblEmAndamento.Location = new Point(25, 25);
-            lblEmAndamento.Margin = new Padding(25);
-            lblEmAndamento.Name = "lblEmAndamento";
-            lblEmAndamento.Size = new Size(275, 91);
-            lblEmAndamento.TabIndex = 3;
-            lblEmAndamento.Text = "0 Em Andamento";
-            lblEmAndamento.TextAlign = ContentAlignment.MiddleCenter;
+            BtnDIDUIMPParaDigitacao.AutoSize = true;
+            BtnDIDUIMPParaDigitacao.BackColor = Color.FromArgb(192, 0, 0);
+            BtnDIDUIMPParaDigitacao.Dock = DockStyle.Fill;
+            BtnDIDUIMPParaDigitacao.Font = new Font("Segoe UI", 15F, FontStyle.Bold);
+            BtnDIDUIMPParaDigitacao.Location = new Point(648, 284);
+            BtnDIDUIMPParaDigitacao.Margin = new Padding(20);
+            BtnDIDUIMPParaDigitacao.Name = "BtnDIDUIMPParaDigitacao";
+            BtnDIDUIMPParaDigitacao.Padding = new Padding(30, 15, 30, 15);
+            BtnDIDUIMPParaDigitacao.Size = new Size(276, 93);
+            BtnDIDUIMPParaDigitacao.TabIndex = 11;
+            BtnDIDUIMPParaDigitacao.Text = "DI/DUIMP para Digitação";
+            BtnDIDUIMPParaDigitacao.TextAlign = ContentAlignment.MiddleCenter;
+            BtnDIDUIMPParaDigitacao.UseCompatibleTextRendering = true;
+            BtnDIDUIMPParaDigitacao.Click += BtnDIDUIMPParaDigitacao_Click;
             // 
-            // label2
+            // BtnSolicitarNumerario
             // 
-            label2.BackColor = Color.FromArgb(255, 255, 192);
-            label2.Font = new Font("Segoe UI", 22F);
-            label2.Location = new Point(25, 166);
-            label2.Margin = new Padding(25);
-            label2.Name = "label2";
-            label2.Size = new Size(275, 91);
-            label2.TabIndex = 4;
-            label2.Text = "0 Em Andamento";
-            label2.TextAlign = ContentAlignment.MiddleCenter;
+            BtnSolicitarNumerario.AutoSize = true;
+            BtnSolicitarNumerario.BackColor = Color.FromArgb(255, 192, 192);
+            BtnSolicitarNumerario.Dock = DockStyle.Fill;
+            BtnSolicitarNumerario.Font = new Font("Segoe UI", 15F, FontStyle.Bold);
+            BtnSolicitarNumerario.Location = new Point(334, 284);
+            BtnSolicitarNumerario.Margin = new Padding(20);
+            BtnSolicitarNumerario.Name = "BtnSolicitarNumerario";
+            BtnSolicitarNumerario.Padding = new Padding(30, 15, 30, 15);
+            BtnSolicitarNumerario.Size = new Size(274, 93);
+            BtnSolicitarNumerario.TabIndex = 10;
+            BtnSolicitarNumerario.Text = "Solicitar Numerário";
+            BtnSolicitarNumerario.TextAlign = ContentAlignment.MiddleCenter;
+            BtnSolicitarNumerario.UseCompatibleTextRendering = true;
+            BtnSolicitarNumerario.Click += BtnSolicitarNumerario_Click;
             // 
-            // label5
+            // BtnDeferidos
             // 
-            label5.BackColor = Color.FromArgb(255, 255, 192);
-            label5.Font = new Font("Segoe UI", 22F);
-            label5.Location = new Point(350, 166);
-            label5.Margin = new Padding(25);
-            label5.Name = "label5";
-            label5.Size = new Size(275, 91);
-            label5.TabIndex = 7;
-            label5.Text = "0 Em Andamento";
-            label5.TextAlign = ContentAlignment.MiddleCenter;
+            BtnDeferidos.AutoSize = true;
+            BtnDeferidos.BackColor = Color.Lime;
+            BtnDeferidos.Dock = DockStyle.Fill;
+            BtnDeferidos.Font = new Font("Segoe UI", 15F, FontStyle.Bold);
+            BtnDeferidos.Location = new Point(20, 284);
+            BtnDeferidos.Margin = new Padding(20);
+            BtnDeferidos.Name = "BtnDeferidos";
+            BtnDeferidos.Padding = new Padding(30, 15, 30, 15);
+            BtnDeferidos.Size = new Size(274, 93);
+            BtnDeferidos.TabIndex = 9;
+            BtnDeferidos.Text = "Deferidos";
+            BtnDeferidos.TextAlign = ContentAlignment.MiddleCenter;
+            BtnDeferidos.UseCompatibleTextRendering = true;
+            BtnDeferidos.Click += BtnDeferidos_Click;
             // 
-            // label6
+            // BtnAguardandoCE
             // 
-            label6.BackColor = Color.FromArgb(255, 255, 192);
-            label6.Font = new Font("Segoe UI", 22F);
-            label6.Location = new Point(675, 166);
-            label6.Margin = new Padding(25);
-            label6.Name = "label6";
-            label6.Size = new Size(275, 91);
-            label6.TabIndex = 8;
-            label6.Text = "0 Em Andamento";
-            label6.TextAlign = ContentAlignment.MiddleCenter;
+            BtnAguardandoCE.AutoSize = true;
+            BtnAguardandoCE.BackColor = Color.BlueViolet;
+            BtnAguardandoCE.Dock = DockStyle.Fill;
+            BtnAguardandoCE.Font = new Font("Segoe UI", 15F, FontStyle.Bold);
+            BtnAguardandoCE.Location = new Point(20, 20);
+            BtnAguardandoCE.Margin = new Padding(20);
+            BtnAguardandoCE.Name = "BtnAguardandoCE";
+            BtnAguardandoCE.Padding = new Padding(30, 15, 30, 15);
+            BtnAguardandoCE.Size = new Size(274, 92);
+            BtnAguardandoCE.TabIndex = 3;
+            BtnAguardandoCE.Text = "Aguardando CE";
+            BtnAguardandoCE.TextAlign = ContentAlignment.MiddleCenter;
+            BtnAguardandoCE.UseCompatibleTextRendering = true;
+            BtnAguardandoCE.Click += BtnAguardandoCE_Click;
             // 
-            // label4
+            // BtnAtracadosSPresencaDeCarga
             // 
-            label4.BackColor = Color.FromArgb(255, 255, 192);
-            label4.Font = new Font("Segoe UI", 22F);
-            label4.Location = new Point(350, 25);
-            label4.Margin = new Padding(25);
-            label4.Name = "label4";
-            label4.Size = new Size(275, 91);
-            label4.TabIndex = 6;
-            label4.Text = "0 Em Andamento";
-            label4.TextAlign = ContentAlignment.MiddleCenter;
+            BtnAtracadosSPresencaDeCarga.AutoSize = true;
+            BtnAtracadosSPresencaDeCarga.BackColor = Color.Yellow;
+            BtnAtracadosSPresencaDeCarga.Dock = DockStyle.Fill;
+            BtnAtracadosSPresencaDeCarga.Font = new Font("Segoe UI", 15F, FontStyle.Bold);
+            BtnAtracadosSPresencaDeCarga.Location = new Point(20, 152);
+            BtnAtracadosSPresencaDeCarga.Margin = new Padding(20);
+            BtnAtracadosSPresencaDeCarga.Name = "BtnAtracadosSPresencaDeCarga";
+            BtnAtracadosSPresencaDeCarga.Padding = new Padding(30, 15, 30, 15);
+            BtnAtracadosSPresencaDeCarga.Size = new Size(274, 92);
+            BtnAtracadosSPresencaDeCarga.TabIndex = 4;
+            BtnAtracadosSPresencaDeCarga.Text = "Atracados S/Presença de Carga";
+            BtnAtracadosSPresencaDeCarga.TextAlign = ContentAlignment.MiddleCenter;
+            BtnAtracadosSPresencaDeCarga.UseCompatibleTextRendering = true;
+            BtnAtracadosSPresencaDeCarga.Click += BtnAtracadosSPresencaDeCarga_Click;
             // 
-            // label3
+            // BtnSituacaoSIGVIG
             // 
-            label3.BackColor = Color.FromArgb(255, 255, 192);
-            label3.Font = new Font("Segoe UI", 22F);
-            label3.Location = new Point(675, 25);
-            label3.Margin = new Padding(25);
-            label3.Name = "label3";
-            label3.Size = new Size(275, 91);
-            label3.TabIndex = 5;
-            label3.Text = "0 Em Andamento";
-            label3.TextAlign = ContentAlignment.MiddleCenter;
+            BtnSituacaoSIGVIG.AutoSize = true;
+            BtnSituacaoSIGVIG.BackColor = Color.FromArgb(255, 128, 0);
+            BtnSituacaoSIGVIG.Dock = DockStyle.Fill;
+            BtnSituacaoSIGVIG.Font = new Font("Segoe UI", 15F, FontStyle.Bold);
+            BtnSituacaoSIGVIG.Location = new Point(334, 152);
+            BtnSituacaoSIGVIG.Margin = new Padding(20);
+            BtnSituacaoSIGVIG.Name = "BtnSituacaoSIGVIG";
+            BtnSituacaoSIGVIG.Padding = new Padding(30, 15, 30, 15);
+            BtnSituacaoSIGVIG.Size = new Size(274, 92);
+            BtnSituacaoSIGVIG.TabIndex = 7;
+            BtnSituacaoSIGVIG.Text = "Situação SIGVIG";
+            BtnSituacaoSIGVIG.TextAlign = ContentAlignment.MiddleCenter;
+            BtnSituacaoSIGVIG.UseCompatibleTextRendering = true;
+            BtnSituacaoSIGVIG.Click += BtnSituacaoSIGVIG_Click;
             // 
-            // tableLayoutPanel2
+            // BtnAtracadosCPresencaDeCarga
             // 
-            tableLayoutPanel2.ColumnCount = 2;
-            tableLayoutPanel2.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
-            tableLayoutPanel2.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
-            tableLayoutPanel2.Controls.Add(label1, 0, 0);
-            tableLayoutPanel2.Dock = DockStyle.Fill;
-            tableLayoutPanel2.Location = new Point(0, 0);
-            tableLayoutPanel2.Name = "tableLayoutPanel2";
-            tableLayoutPanel2.RowCount = 3;
-            tableLayoutPanel2.RowStyles.Add(new RowStyle());
-            tableLayoutPanel2.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
-            tableLayoutPanel2.RowStyles.Add(new RowStyle(SizeType.Absolute, 343F));
-            tableLayoutPanel2.Size = new Size(1264, 681);
-            tableLayoutPanel2.TabIndex = 12;
+            BtnAtracadosCPresencaDeCarga.AutoSize = true;
+            BtnAtracadosCPresencaDeCarga.BackColor = Color.Black;
+            BtnAtracadosCPresencaDeCarga.Dock = DockStyle.Fill;
+            BtnAtracadosCPresencaDeCarga.Font = new Font("Segoe UI", 15F, FontStyle.Bold);
+            BtnAtracadosCPresencaDeCarga.ForeColor = Color.White;
+            BtnAtracadosCPresencaDeCarga.Location = new Point(648, 152);
+            BtnAtracadosCPresencaDeCarga.Margin = new Padding(20);
+            BtnAtracadosCPresencaDeCarga.Name = "BtnAtracadosCPresencaDeCarga";
+            BtnAtracadosCPresencaDeCarga.Padding = new Padding(30, 15, 30, 15);
+            BtnAtracadosCPresencaDeCarga.Size = new Size(276, 92);
+            BtnAtracadosCPresencaDeCarga.TabIndex = 8;
+            BtnAtracadosCPresencaDeCarga.Text = "Atracados com Presença de Carga";
+            BtnAtracadosCPresencaDeCarga.TextAlign = ContentAlignment.MiddleCenter;
+            BtnAtracadosCPresencaDeCarga.UseCompatibleTextRendering = true;
+            BtnAtracadosCPresencaDeCarga.Click += BtnAtracadosCPresencaDeCarga_Click;
             // 
-            // label1
+            // BtnParaRedestinar
             // 
-            label1.AutoSize = true;
-            label1.Font = new Font("Segoe UI", 20F);
-            label1.Location = new Point(3, 0);
-            label1.Name = "label1";
-            label1.Size = new Size(200, 37);
-            label1.TabIndex = 0;
-            label1.Text = "Em Andamento";
-            label1.TextAlign = ContentAlignment.MiddleLeft;
+            BtnParaRedestinar.AutoSize = true;
+            BtnParaRedestinar.BackColor = Color.Red;
+            BtnParaRedestinar.Dock = DockStyle.Fill;
+            BtnParaRedestinar.Font = new Font("Segoe UI", 15F, FontStyle.Bold);
+            BtnParaRedestinar.Location = new Point(334, 20);
+            BtnParaRedestinar.Margin = new Padding(20);
+            BtnParaRedestinar.Name = "BtnParaRedestinar";
+            BtnParaRedestinar.Padding = new Padding(30, 15, 30, 15);
+            BtnParaRedestinar.Size = new Size(274, 92);
+            BtnParaRedestinar.TabIndex = 6;
+            BtnParaRedestinar.Text = "Para Redestinar";
+            BtnParaRedestinar.TextAlign = ContentAlignment.MiddleCenter;
+            BtnParaRedestinar.UseCompatibleTextRendering = true;
+            BtnParaRedestinar.Click += BtnParaRedestinar_Click;
+            // 
+            // BtnRedestinados
+            // 
+            BtnRedestinados.AutoSize = true;
+            BtnRedestinados.BackColor = Color.FromArgb(0, 192, 192);
+            BtnRedestinados.Dock = DockStyle.Fill;
+            BtnRedestinados.Font = new Font("Segoe UI", 15F, FontStyle.Bold);
+            BtnRedestinados.Location = new Point(648, 20);
+            BtnRedestinados.Margin = new Padding(20);
+            BtnRedestinados.Name = "BtnRedestinados";
+            BtnRedestinados.Padding = new Padding(30, 15, 30, 15);
+            BtnRedestinados.Size = new Size(276, 92);
+            BtnRedestinados.TabIndex = 5;
+            BtnRedestinados.Text = "Redestinados";
+            BtnRedestinados.TextAlign = ContentAlignment.MiddleCenter;
+            BtnRedestinados.UseCompatibleTextRendering = true;
+            BtnRedestinados.Click += BtnRedestinados_Click;
+            // 
+            // MostrarItens
+            // 
+            MostrarItens.ColumnCount = 2;
+            MostrarItens.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 40F));
+            MostrarItens.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
+            MostrarItens.Controls.Add(LblTitulo, 1, 0);
+            MostrarItens.Controls.Add(BtnVoltar, 0, 0);
+            MostrarItens.Controls.Add(DGVSelecionado, 0, 1);
+            MostrarItens.Dock = DockStyle.Fill;
+            MostrarItens.Location = new Point(0, 0);
+            MostrarItens.Name = "MostrarItens";
+            MostrarItens.RowCount = 3;
+            MostrarItens.RowStyles.Add(new RowStyle(SizeType.Absolute, 40F));
+            MostrarItens.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
+            MostrarItens.RowStyles.Add(new RowStyle(SizeType.Absolute, 343F));
+            MostrarItens.Size = new Size(1264, 681);
+            MostrarItens.TabIndex = 12;
+            // 
+            // LblTitulo
+            // 
+            LblTitulo.AutoSize = true;
+            LblTitulo.Dock = DockStyle.Fill;
+            LblTitulo.Font = new Font("Segoe UI", 20F);
+            LblTitulo.Location = new Point(43, 0);
+            LblTitulo.Name = "LblTitulo";
+            LblTitulo.Size = new Size(1218, 40);
+            LblTitulo.TabIndex = 1;
+            LblTitulo.Text = "Em Andamento";
+            LblTitulo.TextAlign = ContentAlignment.MiddleLeft;
+            // 
+            // BtnVoltar
+            // 
+            BtnVoltar.Dock = DockStyle.Fill;
+            BtnVoltar.Image = (Image)resources.GetObject("BtnVoltar.Image");
+            BtnVoltar.Location = new Point(3, 3);
+            BtnVoltar.Name = "BtnVoltar";
+            BtnVoltar.Size = new Size(34, 34);
+            BtnVoltar.SizeMode = PictureBoxSizeMode.StretchImage;
+            BtnVoltar.TabIndex = 2;
+            BtnVoltar.TabStop = false;
+            BtnVoltar.Click += BtnVoltar_Click;
+            // 
+            // DGVSelecionado
+            // 
+            DGVSelecionado.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            MostrarItens.SetColumnSpan(DGVSelecionado, 3);
+            DGVSelecionado.Dock = DockStyle.Fill;
+            DGVSelecionado.Location = new Point(3, 43);
+            DGVSelecionado.Name = "DGVSelecionado";
+            MostrarItens.SetRowSpan(DGVSelecionado, 2);
+            DGVSelecionado.RowTemplate.Height = 25;
+            DGVSelecionado.Size = new Size(1258, 635);
+            DGVSelecionado.TabIndex = 3;
+            DGVSelecionado.CellDoubleClick += DGVSelecionado_CellDoubleClick;
             // 
             // FrmStatusProcessos
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(1264, 681);
-            Controls.Add(tableLayoutPanel1);
-            Controls.Add(tableLayoutPanel2);
+            Controls.Add(Blocos);
+            Controls.Add(MostrarItens);
             Name = "FrmStatusProcessos";
             Text = "FrmStatusProcessos";
-            tableLayoutPanel1.ResumeLayout(false);
-            tableLayoutPanel2.ResumeLayout(false);
-            tableLayoutPanel2.PerformLayout();
+            Load += FrmStatusProcessos_Load;
+            Blocos.ResumeLayout(false);
+            Blocos.PerformLayout();
+            MostrarItens.ResumeLayout(false);
+            MostrarItens.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)BtnVoltar).EndInit();
+            ((System.ComponentModel.ISupportInitialize)DGVSelecionado).EndInit();
             ResumeLayout(false);
         }
 
         #endregion
 
-        private TableLayoutPanel tableLayoutPanel1;
-        private Label lblEmAndamento;
-        private Label label2;
-        private Label label5;
-        private Label label6;
-        private Label label4;
-        private Label label3;
-        private TableLayoutPanel tableLayoutPanel2;
-        private Label label1;
+        private TableLayoutPanel Blocos;
+        private Label BtnAguardandoCE;
+        private Label BtnAtracadosSPresencaDeCarga;
+        private Label BtnSituacaoSIGVIG;
+        private Label BtnAtracadosCPresencaDeCarga;
+        private Label BtnParaRedestinar;
+        private Label BtnRedestinados;
+        private TableLayoutPanel MostrarItens;
+        private Label BtnDIDUIMPParaDigitacao;
+        private Label BtnSolicitarNumerario;
+        private Label BtnDeferidos;
+        private Label LblTitulo;
+        private PictureBox BtnVoltar;
+        private DataGridView DGVSelecionado;
     }
 }

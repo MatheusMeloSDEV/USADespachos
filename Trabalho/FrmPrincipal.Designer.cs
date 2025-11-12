@@ -52,10 +52,18 @@
             timerReleaseExit = new System.Windows.Forms.Timer(components);
             pictureBox1 = new PictureBox();
             panel1 = new Panel();
+            panel2 = new Panel();
+            tableLayoutPanel1 = new TableLayoutPanel();
+            toolStrip1 = new ToolStrip();
+            toolStripLabel1 = new ToolStripLabel();
+            BtnDone = new ToolStripButton();
+            BtnAddNotifUrg = new ToolStripButton();
             contextMenuStripNotifications = new ContextMenuStrip(components);
             Menu.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)pictureBox1).BeginInit();
             panel1.SuspendLayout();
+            panel2.SuspendLayout();
+            toolStrip1.SuspendLayout();
             SuspendLayout();
             // 
             // Menu
@@ -90,6 +98,7 @@
             MenuItemEmAndamento.Name = "MenuItemEmAndamento";
             MenuItemEmAndamento.Size = new Size(210, 22);
             MenuItemEmAndamento.Text = "Processos em andamento";
+            MenuItemEmAndamento.Click += MenuItemEmAndamento_Click;
             // 
             // MenuItemMaximizar
             // 
@@ -212,13 +221,73 @@
             // 
             // panel1
             // 
-            panel1.BackColor = Color.Transparent;
+            panel1.BackColor = SystemColors.Control;
+            panel1.Controls.Add(panel2);
             panel1.Controls.Add(pictureBox1);
             panel1.Dock = DockStyle.Fill;
             panel1.Location = new Point(0, 0);
             panel1.Name = "panel1";
             panel1.Size = new Size(1264, 681);
             panel1.TabIndex = 5;
+            // 
+            // panel2
+            // 
+            panel2.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left;
+            panel2.BorderStyle = BorderStyle.FixedSingle;
+            panel2.Controls.Add(tableLayoutPanel1);
+            panel2.Controls.Add(toolStrip1);
+            panel2.Location = new Point(22, 61);
+            panel2.Name = "panel2";
+            panel2.Size = new Size(339, 590);
+            panel2.TabIndex = 4;
+            // 
+            // tableLayoutPanel1
+            // 
+            tableLayoutPanel1.ColumnCount = 1;
+            tableLayoutPanel1.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
+            tableLayoutPanel1.Location = new Point(0, 28);
+            tableLayoutPanel1.Name = "tableLayoutPanel1";
+            tableLayoutPanel1.RowCount = 2;
+            tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
+            tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Absolute, 537F));
+            tableLayoutPanel1.Size = new Size(338, 561);
+            tableLayoutPanel1.TabIndex = 1;
+            // 
+            // toolStrip1
+            // 
+            toolStrip1.Items.AddRange(new ToolStripItem[] { toolStripLabel1, BtnDone, BtnAddNotifUrg });
+            toolStrip1.Location = new Point(0, 0);
+            toolStrip1.Name = "toolStrip1";
+            toolStrip1.Size = new Size(337, 25);
+            toolStrip1.TabIndex = 0;
+            toolStrip1.Text = "toolStrip1";
+            // 
+            // toolStripLabel1
+            // 
+            toolStripLabel1.Font = new Font("Segoe UI", 12F);
+            toolStripLabel1.Name = "toolStripLabel1";
+            toolStripLabel1.Size = new Size(162, 22);
+            toolStripLabel1.Text = "Notificações Urgentes";
+            // 
+            // BtnDone
+            // 
+            BtnDone.Alignment = ToolStripItemAlignment.Right;
+            BtnDone.DisplayStyle = ToolStripItemDisplayStyle.Image;
+            BtnDone.Image = (Image)resources.GetObject("BtnDone.Image");
+            BtnDone.ImageTransparentColor = Color.Magenta;
+            BtnDone.Name = "BtnDone";
+            BtnDone.Size = new Size(23, 22);
+            BtnDone.Text = "toolStripButton2";
+            // 
+            // BtnAddNotifUrg
+            // 
+            BtnAddNotifUrg.Alignment = ToolStripItemAlignment.Right;
+            BtnAddNotifUrg.DisplayStyle = ToolStripItemDisplayStyle.Image;
+            BtnAddNotifUrg.Image = (Image)resources.GetObject("BtnAddNotifUrg.Image");
+            BtnAddNotifUrg.ImageTransparentColor = Color.Magenta;
+            BtnAddNotifUrg.Name = "BtnAddNotifUrg";
+            BtnAddNotifUrg.Size = new Size(23, 22);
+            BtnAddNotifUrg.Text = "toolStripButton2";
             // 
             // contextMenuStripNotifications
             // 
@@ -231,13 +300,14 @@
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
+            BackColor = SystemColors.ButtonFace;
             ClientSize = new Size(1264, 681);
             Controls.Add(Menu);
             Controls.Add(panel1);
             IsMdiContainer = true;
             MainMenuStrip = Menu;
             Name = "FrmPrincipal";
-            Text = "Processos em Andamento";
+            Text = "Página Principal";
             WindowState = FormWindowState.Maximized;
             FormClosing += FrmPrincipal_FormClosing;
             Load += FrmPrincipal_Load;
@@ -246,6 +316,10 @@
             Menu.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)pictureBox1).EndInit();
             panel1.ResumeLayout(false);
+            panel2.ResumeLayout(false);
+            panel2.PerformLayout();
+            toolStrip1.ResumeLayout(false);
+            toolStrip1.PerformLayout();
             ResumeLayout(false);
             PerformLayout();
         }
@@ -275,5 +349,11 @@
         private ToolStripMenuItem MenuItemMenu;
         private ToolStripMenuItem vencimentosToolStripMenuItem;
         private ContextMenuStrip contextMenuStripNotifications;
+        private Panel panel2;
+        private ToolStrip toolStrip1;
+        private ToolStripLabel toolStripLabel1;
+        private ToolStripButton BtnDone;
+        private ToolStripButton BtnAddNotifUrg;
+        private TableLayoutPanel tableLayoutPanel1;
     }
 }

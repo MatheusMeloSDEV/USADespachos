@@ -164,7 +164,6 @@ namespace Trabalho
             else
             {
                 processo.VencimentoFMA = null;
-                // Opcional: dtpVencimentoFMA.Value = DateTime.Today; // Ou deixa como está
             }
 
             if (DTPdatadeatracacao.Checked)
@@ -175,13 +174,10 @@ namespace Trabalho
             else
             {
                 processo.VencimentoFreeTime = null;
-                // Opcional: dtpVencimentoFreeTime.Value = DateTime.Today;
             }
-
 
             DateTime? dataMaisAntiga = null;
 
-            // Busca a data mais antiga nas LIs:
             if (processo.LI != null && processo.LI.Count > 0)
             {
                 dataMaisAntiga = processo.LI
@@ -198,11 +194,10 @@ namespace Trabalho
                 }
                 else
                 {
-                    dtpVencimentoLI_LPCO.Value = DateTime.Today; // ou mantenha o valor atual, use o padrão desejado!
+                    dtpVencimentoLI_LPCO.Value = DateTime.Today;
                     dtpVencimentoLI_LPCO.Format = DateTimePickerFormat.Custom;
-                    dtpVencimentoLI_LPCO.CustomFormat = " "; // deixa visualmente em branco
+                    dtpVencimentoLI_LPCO.CustomFormat = " ";
                 }
-
             }
             else
             {
@@ -219,11 +214,11 @@ namespace Trabalho
 
             // Copia os valores dos campos principais do Processo para os campos correspondentes na Capa.
             processo.Capa.Container = processo.Container;
-            processo.Capa.Master = processo.Veiculo; // Assumindo que Veículo/Navio vai para o campo Master da Capa
+            processo.Capa.Master = processo.Veiculo;
             processo.Capa.SigvigSelecionado = processo.SIGVIGSelecionado;
             processo.Capa.SigvigLiberado = processo.SIGVIGLiberado;
 
-            // --- (NOVO) Salva os dados das abas dinâmicas de LI e LPCO ---
+            // --- Salva os dados das abas dinâmicas de LI e LPCO ---
             foreach (TabPage abaLi in TCLi.TabPages)
             {
                 if (abaLi.Controls.OfType<LIEditControl>().FirstOrDefault() is LIEditControl liControl)
@@ -231,13 +226,37 @@ namespace Trabalho
                     liControl.SalvarAlteracoes();
                 }
             }
-            processo.LI.RemoveAll(li => string.IsNullOrWhiteSpace(li.Numero) || li.Numero == "Nova LI");
-        }
 
+            processo.LI.RemoveAll(li => string.IsNullOrWhiteSpace(li.Numero) || li.Numero == "Nova LI");
+
+            // 🆕 ATUALIZA A CONDIÇÃO DO PROCESSO AUTOMATICAMENTE
+            ProcessoHelper.AtualizarCondicaoProcesso(processo);
+        }
         private async void btnAdiciona_Click(object? sender, EventArgs e)
         {
             try
             {
+                // --- VALIDAÇÃO: Verificar se Ref_USA já existe (APENAS no modo Adicionar) ---
+                if (Modo == "Adicionar" && !string.IsNullOrWhiteSpace(TXTnr.Text))
+                {
+                    bool refUsaExiste = await _repositorio.VerificarRefUsaExisteAsync(TXTnr.Text);
+
+                    if (refUsaExiste)
+                    {
+                        MessageBox.Show(
+                            $"A Ref_USA '{TXTnr.Text}' já existe no banco de dados!\n\nPor favor, utilize uma referência diferente.",
+                            "Ref_USA Duplicada",
+                            MessageBoxButtons.OK,
+                            MessageBoxIcon.Warning
+                        );
+
+                        TXTnr.Clear(); // Limpa o campo
+                        TXTnr.Focus(); // Coloca o foco no campo para nova digitação
+                        return; // Para a execução aqui
+                    }
+                }
+
+                // Se passou na validação, continua salvando
                 SalvarDadosDosControles();
 
                 if (Modo == "Adicionar")
@@ -263,6 +282,7 @@ namespace Trabalho
                 MessageBox.Show($"Erro ao salvar o processo: {ex.Message}", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
+
 
         #endregion
 

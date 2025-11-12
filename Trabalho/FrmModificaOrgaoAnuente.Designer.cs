@@ -56,6 +56,8 @@
             TxtNCM = new TextBox();
             TxtLi = new TextBox();
             groupBox2 = new GroupBox();
+            TxtTerminal = new TextBox();
+            label2 = new Label();
             tabControl1 = new TabControl();
             tabPage1 = new TabPage();
             CbParametrizacao = new ComboBox();
@@ -102,7 +104,7 @@
             LBLinspecao.Anchor = AnchorStyles.Top | AnchorStyles.Right;
             LBLinspecao.AutoSize = true;
             LBLinspecao.Font = new Font("Segoe UI", 11F);
-            LBLinspecao.Location = new Point(402, 27);
+            LBLinspecao.Location = new Point(307, 30);
             LBLinspecao.Name = "LBLinspecao";
             LBLinspecao.Size = new Size(68, 20);
             LBLinspecao.TabIndex = 413;
@@ -112,7 +114,7 @@
             // 
             DTPdatadeinspecao.Anchor = AnchorStyles.Top | AnchorStyles.Right;
             DTPdatadeinspecao.Format = DateTimePickerFormat.Short;
-            DTPdatadeinspecao.Location = new Point(369, 51);
+            DTPdatadeinspecao.Location = new Point(274, 54);
             DTPdatadeinspecao.Name = "DTPdatadeinspecao";
             DTPdatadeinspecao.Size = new Size(135, 23);
             DTPdatadeinspecao.TabIndex = 410;
@@ -144,7 +146,7 @@
             Label11.Anchor = AnchorStyles.Top | AnchorStyles.Right;
             Label11.AutoSize = true;
             Label11.Font = new Font("Segoe UI", 12F);
-            Label11.Location = new Point(257, 27);
+            Label11.Location = new Point(172, 30);
             Label11.Name = "Label11";
             Label11.Size = new Size(49, 21);
             Label11.TabIndex = 402;
@@ -155,7 +157,7 @@
             Label9.Anchor = AnchorStyles.Top | AnchorStyles.Right;
             Label9.AutoSize = true;
             Label9.Font = new Font("Segoe UI", 12F);
-            Label9.Location = new Point(110, 27);
+            Label9.Location = new Point(31, 30);
             Label9.Name = "Label9";
             Label9.Size = new Size(70, 21);
             Label9.TabIndex = 401;
@@ -164,7 +166,7 @@
             // TXTsr
             // 
             TXTsr.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-            TXTsr.Location = new Point(232, 51);
+            TXTsr.Location = new Point(147, 54);
             TXTsr.Name = "TXTsr";
             TXTsr.Size = new Size(98, 23);
             TXTsr.TabIndex = 400;
@@ -172,7 +174,7 @@
             // TXTnr
             // 
             TXTnr.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-            TXTnr.Location = new Point(96, 51);
+            TXTnr.Location = new Point(20, 54);
             TXTnr.Name = "TXTnr";
             TXTnr.Size = new Size(98, 23);
             TXTnr.TabIndex = 399;
@@ -353,6 +355,8 @@
             // 
             // groupBox2
             // 
+            groupBox2.Controls.Add(TxtTerminal);
+            groupBox2.Controls.Add(label2);
             groupBox2.Controls.Add(Label9);
             groupBox2.Controls.Add(TXTexportador);
             groupBox2.Controls.Add(Label17);
@@ -371,6 +375,25 @@
             groupBox2.TabIndex = 417;
             groupBox2.TabStop = false;
             groupBox2.Text = "Informações Orgão Anuente";
+            // 
+            // TxtTerminal
+            // 
+            TxtTerminal.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+            TxtTerminal.Location = new Point(433, 54);
+            TxtTerminal.Name = "TxtTerminal";
+            TxtTerminal.Size = new Size(140, 23);
+            TxtTerminal.TabIndex = 418;
+            // 
+            // label2
+            // 
+            label2.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+            label2.AutoSize = true;
+            label2.Font = new Font("Segoe UI", 11F);
+            label2.Location = new Point(470, 31);
+            label2.Name = "label2";
+            label2.Size = new Size(66, 20);
+            label2.TabIndex = 417;
+            label2.Text = "Terminal";
             // 
             // tabControl1
             // 
@@ -612,5 +635,7 @@
         private ComboBox CbParametrizacao;
         private Label label1;
         private ComboBox CbStatusLI;
+        private Label label2;
+        private TextBox TxtTerminal;
     }
 }

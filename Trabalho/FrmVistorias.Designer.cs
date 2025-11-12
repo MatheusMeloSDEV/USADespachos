@@ -56,6 +56,7 @@
             _timer = new System.Windows.Forms.Timer(components);
             toolStrip1 = new ToolStrip();
             BtnRecarrega = new ToolStripButton();
+            panel1 = new Panel();
             TableVistorias.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)DGVProcessosDadoEntrada).BeginInit();
             ((System.ComponentModel.ISupportInitialize)BtnDefere).BeginInit();
@@ -74,10 +75,13 @@
             ((System.ComponentModel.ISupportInitialize)BtnSobeAgendada).BeginInit();
             ((System.ComponentModel.ISupportInitialize)BtnSobeSolicitado).BeginInit();
             toolStrip1.SuspendLayout();
+            panel1.SuspendLayout();
             SuspendLayout();
             // 
             // TableVistorias
             // 
+            TableVistorias.AutoSize = true;
+            TableVistorias.AutoSizeMode = AutoSizeMode.GrowAndShrink;
             TableVistorias.BackColor = SystemColors.ActiveBorder;
             TableVistorias.ColumnCount = 4;
             TableVistorias.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
@@ -106,36 +110,36 @@
             TableVistorias.Controls.Add(btnDesceParaAguardando, 3, 7);
             TableVistorias.Controls.Add(BtnSobeAgendada, 2, 7);
             TableVistorias.Controls.Add(BtnSobeSolicitado, 3, 9);
-            TableVistorias.Dock = DockStyle.Fill;
+            TableVistorias.Dock = DockStyle.Top;
             TableVistorias.Location = new Point(0, 0);
             TableVistorias.Name = "TableVistorias";
             TableVistorias.RowCount = 13;
             TableVistorias.RowStyles.Add(new RowStyle(SizeType.Absolute, 25F));
             TableVistorias.RowStyles.Add(new RowStyle(SizeType.Absolute, 32F));
-            TableVistorias.RowStyles.Add(new RowStyle(SizeType.Percent, 0F));
+            TableVistorias.RowStyles.Add(new RowStyle());
             TableVistorias.RowStyles.Add(new RowStyle(SizeType.Absolute, 30F));
-            TableVistorias.RowStyles.Add(new RowStyle(SizeType.Percent, 0F));
+            TableVistorias.RowStyles.Add(new RowStyle());
             TableVistorias.RowStyles.Add(new RowStyle(SizeType.Absolute, 30F));
-            TableVistorias.RowStyles.Add(new RowStyle(SizeType.Percent, 0F));
+            TableVistorias.RowStyles.Add(new RowStyle());
             TableVistorias.RowStyles.Add(new RowStyle(SizeType.Absolute, 30F));
-            TableVistorias.RowStyles.Add(new RowStyle(SizeType.Percent, 35F));
+            TableVistorias.RowStyles.Add(new RowStyle());
             TableVistorias.RowStyles.Add(new RowStyle(SizeType.Absolute, 30F));
-            TableVistorias.RowStyles.Add(new RowStyle(SizeType.Percent, 40F));
+            TableVistorias.RowStyles.Add(new RowStyle());
             TableVistorias.RowStyles.Add(new RowStyle(SizeType.Absolute, 30F));
-            TableVistorias.RowStyles.Add(new RowStyle(SizeType.Percent, 25F));
+            TableVistorias.RowStyles.Add(new RowStyle());
             TableVistorias.Size = new Size(1118, 952);
             TableVistorias.TabIndex = 0;
             // 
             // DGVProcessosDadoEntrada
             // 
+            DGVProcessosDadoEntrada.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             DGVProcessosDadoEntrada.BackgroundColor = Color.LightGray;
             DGVProcessosDadoEntrada.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             TableVistorias.SetColumnSpan(DGVProcessosDadoEntrada, 4);
-            DGVProcessosDadoEntrada.Dock = DockStyle.Fill;
-            DGVProcessosDadoEntrada.Location = new Point(3, 768);
+            DGVProcessosDadoEntrada.Location = new Point(3, 810);
             DGVProcessosDadoEntrada.Name = "DGVProcessosDadoEntrada";
             DGVProcessosDadoEntrada.RowTemplate.Height = 25;
-            DGVProcessosDadoEntrada.Size = new Size(1112, 181);
+            DGVProcessosDadoEntrada.Size = new Size(1112, 139);
             DGVProcessosDadoEntrada.TabIndex = 29;
             // 
             // label6
@@ -145,7 +149,7 @@
             TableVistorias.SetColumnSpan(label6, 4);
             label6.Dock = DockStyle.Fill;
             label6.Font = new Font("Segoe UI", 11F, FontStyle.Bold);
-            label6.Location = new Point(3, 735);
+            label6.Location = new Point(3, 777);
             label6.Name = "label6";
             label6.Size = new Size(1112, 30);
             label6.TabIndex = 26;
@@ -158,7 +162,7 @@
             BtnDefere.BackgroundImage = (Image)resources.GetObject("BtnDefere.BackgroundImage");
             BtnDefere.BackgroundImageLayout = ImageLayout.Stretch;
             BtnDefere.Dock = DockStyle.Fill;
-            BtnDefere.Location = new Point(1031, 60);
+            BtnDefere.Location = new Point(1031, 117);
             BtnDefere.Name = "BtnDefere";
             BtnDefere.Size = new Size(24, 24);
             BtnDefere.TabIndex = 25;
@@ -167,14 +171,15 @@
             // 
             // DGVLaudo
             // 
+            DGVLaudo.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             DGVLaudo.BackgroundColor = Color.LightGray;
             DGVLaudo.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             TableVistorias.SetColumnSpan(DGVLaudo, 4);
-            DGVLaudo.Dock = DockStyle.Fill;
             DGVLaudo.Location = new Point(3, 60);
             DGVLaudo.Name = "DGVLaudo";
             DGVLaudo.RowTemplate.Height = 25;
-            DGVLaudo.Size = new Size(1112, 1);
+            DGVLaudo.ScrollBars = ScrollBars.None;
+            DGVLaudo.Size = new Size(1112, 51);
             DGVLaudo.TabIndex = 24;
             // 
             // LblAguardandoLaudo
@@ -190,7 +195,6 @@
             LblAguardandoLaudo.TabIndex = 22;
             LblAguardandoLaudo.Text = "Aguardando Laudo";
             LblAguardandoLaudo.TextAlign = ContentAlignment.MiddleCenter;
-            LblAguardandoLaudo.Click += LblAguardandoLaudo_Click;
             // 
             // label4
             // 
@@ -199,7 +203,7 @@
             TableVistorias.SetColumnSpan(label4, 3);
             label4.Dock = DockStyle.Fill;
             label4.Font = new Font("Segoe UI", 11F, FontStyle.Bold);
-            label4.Location = new Point(3, 407);
+            label4.Location = new Point(3, 518);
             label4.Name = "label4";
             label4.Size = new Size(1082, 30);
             label4.TabIndex = 9;
@@ -208,26 +212,28 @@
             // 
             // DGVAguardandoChegAgendVistoria
             // 
+            DGVAguardandoChegAgendVistoria.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             DGVAguardandoChegAgendVistoria.BackgroundColor = Color.LightGray;
             DGVAguardandoChegAgendVistoria.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             TableVistorias.SetColumnSpan(DGVAguardandoChegAgendVistoria, 4);
-            DGVAguardandoChegAgendVistoria.Dock = DockStyle.Fill;
-            DGVAguardandoChegAgendVistoria.Location = new Point(3, 440);
+            DGVAguardandoChegAgendVistoria.Location = new Point(3, 551);
             DGVAguardandoChegAgendVistoria.Name = "DGVAguardandoChegAgendVistoria";
             DGVAguardandoChegAgendVistoria.RowTemplate.Height = 25;
-            DGVAguardandoChegAgendVistoria.Size = new Size(1112, 292);
+            DGVAguardandoChegAgendVistoria.ScrollBars = ScrollBars.None;
+            DGVAguardandoChegAgendVistoria.Size = new Size(1112, 223);
             DGVAguardandoChegAgendVistoria.TabIndex = 1;
             // 
             // DGVSolicitadoDataVistoria
             // 
+            DGVSolicitadoDataVistoria.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             DGVSolicitadoDataVistoria.BackgroundColor = Color.LightGray;
             DGVSolicitadoDataVistoria.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             TableVistorias.SetColumnSpan(DGVSolicitadoDataVistoria, 4);
-            DGVSolicitadoDataVistoria.Dock = DockStyle.Fill;
-            DGVSolicitadoDataVistoria.Location = new Point(3, 150);
+            DGVSolicitadoDataVistoria.Location = new Point(3, 321);
             DGVSolicitadoDataVistoria.Name = "DGVSolicitadoDataVistoria";
             DGVSolicitadoDataVistoria.RowTemplate.Height = 25;
-            DGVSolicitadoDataVistoria.Size = new Size(1112, 254);
+            DGVSolicitadoDataVistoria.ScrollBars = ScrollBars.None;
+            DGVSolicitadoDataVistoria.Size = new Size(1112, 194);
             DGVSolicitadoDataVistoria.TabIndex = 0;
             // 
             // LblSolicitadoDataVistoria
@@ -237,13 +243,12 @@
             TableVistorias.SetColumnSpan(LblSolicitadoDataVistoria, 2);
             LblSolicitadoDataVistoria.Dock = DockStyle.Fill;
             LblSolicitadoDataVistoria.Font = new Font("Segoe UI", 11F, FontStyle.Bold);
-            LblSolicitadoDataVistoria.Location = new Point(3, 117);
+            LblSolicitadoDataVistoria.Location = new Point(3, 288);
             LblSolicitadoDataVistoria.Name = "LblSolicitadoDataVistoria";
             LblSolicitadoDataVistoria.Size = new Size(1052, 30);
             LblSolicitadoDataVistoria.TabIndex = 8;
             LblSolicitadoDataVistoria.Text = "Solicitado Data de Vistoria";
             LblSolicitadoDataVistoria.TextAlign = ContentAlignment.MiddleCenter;
-            LblSolicitadoDataVistoria.Click += LblSolicitadoDataVistoria_Click;
             // 
             // LblVistoriaAgendada
             // 
@@ -252,36 +257,37 @@
             TableVistorias.SetColumnSpan(LblVistoriaAgendada, 2);
             LblVistoriaAgendada.Dock = DockStyle.Fill;
             LblVistoriaAgendada.Font = new Font("Segoe UI", 11F, FontStyle.Bold);
-            LblVistoriaAgendada.Location = new Point(3, 87);
+            LblVistoriaAgendada.Location = new Point(3, 201);
             LblVistoriaAgendada.Name = "LblVistoriaAgendada";
             LblVistoriaAgendada.Size = new Size(1052, 30);
             LblVistoriaAgendada.TabIndex = 7;
             LblVistoriaAgendada.Text = "Vistoria Agendada";
             LblVistoriaAgendada.TextAlign = ContentAlignment.MiddleCenter;
-            LblVistoriaAgendada.Click += LblVistoriaAgendada_Click;
             // 
             // DGVVistoriaAgendada
             // 
+            DGVVistoriaAgendada.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             DGVVistoriaAgendada.BackgroundColor = Color.LightGray;
             DGVVistoriaAgendada.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             TableVistorias.SetColumnSpan(DGVVistoriaAgendada, 4);
-            DGVVistoriaAgendada.Dock = DockStyle.Fill;
-            DGVVistoriaAgendada.Location = new Point(3, 120);
+            DGVVistoriaAgendada.Location = new Point(3, 234);
             DGVVistoriaAgendada.Name = "DGVVistoriaAgendada";
             DGVVistoriaAgendada.RowTemplate.Height = 25;
-            DGVVistoriaAgendada.Size = new Size(1112, 1);
+            DGVVistoriaAgendada.ScrollBars = ScrollBars.None;
+            DGVVistoriaAgendada.Size = new Size(1112, 51);
             DGVVistoriaAgendada.TabIndex = 2;
             // 
             // DGVAguardandoDef
             // 
+            DGVAguardandoDef.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             DGVAguardandoDef.BackgroundColor = Color.LightGray;
             DGVAguardandoDef.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             TableVistorias.SetColumnSpan(DGVAguardandoDef, 4);
-            DGVAguardandoDef.Dock = DockStyle.Fill;
-            DGVAguardandoDef.Location = new Point(3, 90);
+            DGVAguardandoDef.Location = new Point(3, 147);
             DGVAguardandoDef.Name = "DGVAguardandoDef";
             DGVAguardandoDef.RowTemplate.Height = 25;
-            DGVAguardandoDef.Size = new Size(1112, 1);
+            DGVAguardandoDef.ScrollBars = ScrollBars.None;
+            DGVAguardandoDef.Size = new Size(1112, 51);
             DGVAguardandoDef.TabIndex = 3;
             // 
             // LblAguardandoDeferimento
@@ -290,13 +296,12 @@
             LblAguardandoDeferimento.BackColor = SystemColors.Control;
             LblAguardandoDeferimento.Dock = DockStyle.Fill;
             LblAguardandoDeferimento.Font = new Font("Segoe UI", 11F, FontStyle.Bold);
-            LblAguardandoDeferimento.Location = new Point(3, 57);
+            LblAguardandoDeferimento.Location = new Point(3, 114);
             LblAguardandoDeferimento.Name = "LblAguardandoDeferimento";
             LblAguardandoDeferimento.Size = new Size(1022, 30);
             LblAguardandoDeferimento.TabIndex = 6;
             LblAguardandoDeferimento.Text = "Aguardando Deferimento";
             LblAguardandoDeferimento.TextAlign = ContentAlignment.MiddleCenter;
-            LblAguardandoDeferimento.Click += LblAguardandoDeferimento_Click;
             // 
             // BtnDesceDeferimento
             // 
@@ -330,7 +335,7 @@
             btnDesceParaAgendada.BackgroundImage = (Image)resources.GetObject("btnDesceParaAgendada.BackgroundImage");
             btnDesceParaAgendada.BackgroundImageLayout = ImageLayout.Stretch;
             btnDesceParaAgendada.Dock = DockStyle.Fill;
-            btnDesceParaAgendada.Location = new Point(1091, 60);
+            btnDesceParaAgendada.Location = new Point(1091, 117);
             btnDesceParaAgendada.Name = "btnDesceParaAgendada";
             btnDesceParaAgendada.Size = new Size(24, 24);
             btnDesceParaAgendada.TabIndex = 18;
@@ -343,7 +348,7 @@
             BtnSobeLaudo.BackgroundImage = (Image)resources.GetObject("BtnSobeLaudo.BackgroundImage");
             BtnSobeLaudo.BackgroundImageLayout = ImageLayout.Stretch;
             BtnSobeLaudo.Dock = DockStyle.Fill;
-            BtnSobeLaudo.Location = new Point(1061, 60);
+            BtnSobeLaudo.Location = new Point(1061, 117);
             BtnSobeLaudo.Name = "BtnSobeLaudo";
             BtnSobeLaudo.Size = new Size(24, 24);
             BtnSobeLaudo.TabIndex = 21;
@@ -356,7 +361,7 @@
             btnDesceParaSolicitado.BackgroundImage = (Image)resources.GetObject("btnDesceParaSolicitado.BackgroundImage");
             btnDesceParaSolicitado.BackgroundImageLayout = ImageLayout.Stretch;
             btnDesceParaSolicitado.Dock = DockStyle.Fill;
-            btnDesceParaSolicitado.Location = new Point(1091, 90);
+            btnDesceParaSolicitado.Location = new Point(1091, 204);
             btnDesceParaSolicitado.Name = "btnDesceParaSolicitado";
             btnDesceParaSolicitado.Size = new Size(24, 24);
             btnDesceParaSolicitado.TabIndex = 19;
@@ -369,7 +374,7 @@
             BtnSobeAguardDef.BackgroundImage = (Image)resources.GetObject("BtnSobeAguardDef.BackgroundImage");
             BtnSobeAguardDef.BackgroundImageLayout = ImageLayout.Stretch;
             BtnSobeAguardDef.Dock = DockStyle.Fill;
-            BtnSobeAguardDef.Location = new Point(1061, 90);
+            BtnSobeAguardDef.Location = new Point(1061, 204);
             BtnSobeAguardDef.Name = "BtnSobeAguardDef";
             BtnSobeAguardDef.Size = new Size(24, 24);
             BtnSobeAguardDef.TabIndex = 14;
@@ -382,7 +387,7 @@
             btnDesceParaAguardando.BackgroundImage = (Image)resources.GetObject("btnDesceParaAguardando.BackgroundImage");
             btnDesceParaAguardando.BackgroundImageLayout = ImageLayout.Stretch;
             btnDesceParaAguardando.Dock = DockStyle.Fill;
-            btnDesceParaAguardando.Location = new Point(1091, 120);
+            btnDesceParaAguardando.Location = new Point(1091, 291);
             btnDesceParaAguardando.Name = "btnDesceParaAguardando";
             btnDesceParaAguardando.Size = new Size(24, 24);
             btnDesceParaAguardando.TabIndex = 20;
@@ -395,7 +400,7 @@
             BtnSobeAgendada.BackgroundImage = (Image)resources.GetObject("BtnSobeAgendada.BackgroundImage");
             BtnSobeAgendada.BackgroundImageLayout = ImageLayout.Stretch;
             BtnSobeAgendada.Dock = DockStyle.Fill;
-            BtnSobeAgendada.Location = new Point(1061, 120);
+            BtnSobeAgendada.Location = new Point(1061, 291);
             BtnSobeAgendada.Name = "BtnSobeAgendada";
             BtnSobeAgendada.Size = new Size(24, 24);
             BtnSobeAgendada.TabIndex = 15;
@@ -408,7 +413,7 @@
             BtnSobeSolicitado.BackgroundImage = (Image)resources.GetObject("BtnSobeSolicitado.BackgroundImage");
             BtnSobeSolicitado.BackgroundImageLayout = ImageLayout.Stretch;
             BtnSobeSolicitado.Dock = DockStyle.Fill;
-            BtnSobeSolicitado.Location = new Point(1091, 410);
+            BtnSobeSolicitado.Location = new Point(1091, 521);
             BtnSobeSolicitado.Name = "BtnSobeSolicitado";
             BtnSobeSolicitado.Size = new Size(24, 24);
             BtnSobeSolicitado.TabIndex = 16;
@@ -433,15 +438,24 @@
             BtnRecarrega.Size = new Size(23, 22);
             BtnRecarrega.Click += BtnRecarrega_Click;
             // 
+            // panel1
+            // 
+            panel1.AutoScroll = true;
+            panel1.Controls.Add(TableVistorias);
+            panel1.Dock = DockStyle.Fill;
+            panel1.Location = new Point(0, 0);
+            panel1.Name = "panel1";
+            panel1.Size = new Size(1118, 952);
+            panel1.TabIndex = 2;
+            // 
             // FrmVistorias
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            AutoScroll = true;
             ClientSize = new Size(1118, 952);
             ControlBox = false;
             Controls.Add(toolStrip1);
-            Controls.Add(TableVistorias);
+            Controls.Add(panel1);
             Name = "FrmVistorias";
             StartPosition = FormStartPosition.CenterParent;
             Text = "Vistorias";
@@ -467,6 +481,8 @@
             ((System.ComponentModel.ISupportInitialize)BtnSobeSolicitado).EndInit();
             toolStrip1.ResumeLayout(false);
             toolStrip1.PerformLayout();
+            panel1.ResumeLayout(false);
+            panel1.PerformLayout();
             ResumeLayout(false);
             PerformLayout();
         }
@@ -500,5 +516,6 @@
         private System.Windows.Forms.Timer _timer;
         private ToolStrip toolStrip1;
         private ToolStripButton BtnRecarrega;
+        private Panel panel1;
     }
 }

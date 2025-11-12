@@ -54,6 +54,16 @@ namespace CLUSA
 
             return await _processos.Find(filter).ToListAsync();
         }
+        public async Task<bool> VerificarRefUsaExisteAsync(string refUsa)
+        {
+            var processoExistente = await _processos
+                .Find(p => p.Ref_USA == refUsa)
+                .FirstOrDefaultAsync();
+
+            return processoExistente != null; // Retorna true se encontrou
+        }
+
+
         public async Task<Processo?> ObterPorIdAsync(string id)
         {
             return await _processos.Find(p => p.Id == ObjectId.Parse(id)).FirstOrDefaultAsync();
@@ -125,6 +135,7 @@ namespace CLUSA
                 Container = processo.Container,
                 Origem = processo.Origem,
                 Conhecimento = processo.Conhecimento,
+                Terminal = processo.Terminal,
                 DataChegada = processo.DataDeAtracacao,
                 HistoricoDoProcesso = processo.HistoricoDoProcesso,
                 Pendencia = processo.Pendencia,
@@ -162,6 +173,7 @@ namespace CLUSA
                 orgaoParaSalvar.Container = processo.Container;
                 orgaoParaSalvar.Origem = processo.Origem;
                 orgaoParaSalvar.Conhecimento = processo.Conhecimento;
+                orgaoParaSalvar.Terminal = processo.Terminal;
                 orgaoParaSalvar.DataChegada = processo.DataDeAtracacao;
                 orgaoParaSalvar.Inspecao = processo.Inspecao;
                 orgaoParaSalvar.StatusLI = liProcesso.StatusLI;
