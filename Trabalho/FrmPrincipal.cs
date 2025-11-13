@@ -19,6 +19,8 @@ namespace Trabalho
     {
         private readonly RepositorioProcesso _repositorioProcesso;
         private readonly RepositorioNotificacao _notificacaoRepo;
+        private readonly RepositorioNotifUrgente _repoNotificacoesUrgentes;
+        private readonly RepositorioUsers _repositorioUsers;
 
         private readonly Logado _logadoUsuario;
         private readonly Dictionary<Type, Form> _forms = new();
@@ -31,23 +33,24 @@ namespace Trabalho
             InitializeComponent();
             _logadoUsuario = logadoUsuario ?? throw new ArgumentNullException(nameof(logadoUsuario));
 
-            // Inicializa os repositórios
-            _repositorioProcesso = new RepositorioProcesso();
 
-            // O RepositorioProcesso já cria o RepositorioNotificacao, podemos pegá-lo de lá
-            // ou criar uma instância separada se preferir.
+            MenuItemUsuario.Text = _logadoUsuario.Usuario;
+            _repositorioProcesso = new RepositorioProcesso();
+            _repositorioUsers = new RepositorioUsers();
+
             var client = new MongoClient(ConfigDatabase.MongoConnectionString);
             var database = client.GetDatabase(ConfigDatabase.MongoDatabaseName);
             _notificacaoRepo = new RepositorioNotificacao(database);
+            _repoNotificacoesUrgentes = new RepositorioNotifUrgente(database);
 
             if (pictureBox1.Image != null)
             {
-                pictureBox1.Image = SetImageOpacity(pictureBox1.Image, 0.2f); // 50% de transparência
+                pictureBox1.Image = SetImageOpacity(pictureBox1.Image, 0.2f);
             }
             panel1.Visible = true; pictureBox1.Visible = true;
             // Assinatura dos eventos
             this.Shown += FrmPrincipal_Shown;
-            //TCabas.SelectedIndexChanged += TCabas_SelectedIndexChanged; // <-- Evento para carregar abas sob demanda
+
         }
 
 
@@ -55,14 +58,15 @@ namespace Trabalho
 
         private async void FrmPrincipal_Shown(object? sender, EventArgs e)
         {
-            // O formulário já está visível, agora carregamos os dados sem travar.
             await CarregarDadosProcessos();
+
+
         }
 
-        private void FrmPrincipal_Load(object sender, EventArgs e)
+        private async void FrmPrincipal_Load(object sender, EventArgs e)
         {
             this.Icon = Icon.ExtractAssociatedIcon(Application.ExecutablePath);
-            //TCabas.Visible = false; // Esconde as abas até os dados serem carregados
+            await PopularTableLayoutUrgentes();
         }
 
         private void FrmPrincipal_FormClosing(object sender, FormClosingEventArgs e)
@@ -102,86 +106,6 @@ namespace Trabalho
                 Cursor = Cursors.Default;
             }
         }
-
-
-        /// <summary>
-        /// Cria as abas rapidamente, sem preencher o conteúdo.
-        /// </summary>
-        //private void MontarTabsProcessos(List<Processo> processos)
-        //{
-        //    TCabas.SuspendLayout();
-        //    TCabas.TabPages.Clear();
-        //    _abasJaCarregadas.Clear();
-
-        //    // Adiciona as 3 abas principais
-        //    TCabas.TabPages.Add(new TabPage("Data de Atracação") { Name = "DataDeAtracacao", Tag = processos });
-        //    TCabas.TabPages.Add(new TabPage("Órgãos Anuentes") { Name = "OrgaoAnuentes", Tag = processos });
-        //    TCabas.TabPages.Add(new TabPage("Finalizados") { Name = "Finalizados", Tag = processos });
-
-        //    TCabas.ResumeLayout();
-
-        //    // Força o carregamento da primeira aba visível
-        //    if (TCabas.TabPages.Count > 0)
-        //    {
-        //        TCabas_SelectedIndexChanged(TCabas, EventArgs.Empty);
-        //    }
-        //}
-
-        /// <summary>
-        /// Evento disparado QUANDO o usuário clica em uma aba.
-        /// </summary>
-        //private void TCabas_SelectedIndexChanged(object? sender, EventArgs e)
-        //{
-        //    if (TCabas.SelectedTab == null) return;
-        //    var abaSelecionada = TCabas.SelectedTab;
-
-        //    // Se o conteúdo desta aba já foi criado, não faz nada.
-        //    if (_abasJaCarregadas.Contains(abaSelecionada)) return;
-
-        //    // Se for a primeira vez, cria o conteúdo.
-        //    if (abaSelecionada.Tag is List<Processo> processos)
-        //    {
-        //        PopularAbaComControles(abaSelecionada, processos);
-        //        _abasJaCarregadas.Add(abaSelecionada);
-        //    }
-        //}
-
-        /// <summary>
-        /// O "trabalho pesado": cria os controles para UMA aba específica.
-        /// </summary>
-        //private void PopularAbaComControles(TabPage aba, List<Processo> processos)
-        //{
-        //    Cursor = Cursors.WaitCursor;
-        //    aba.SuspendLayout();
-
-        //    var table = CriarTabela();
-        //    aba.Controls.Add(table);
-
-        //    // Filtra a lista de processos com base na aba clicada
-        //    List<string> textosParaLabels = new List<string>();
-        //    switch (aba.Name)
-        //    {
-        //        case "DataDeAtracacao":
-        //            textosParaLabels = processos.Where(p => p.Status != "Finalizado")
-        //                .Select(p => $"{p.Ref_USA} — {p.SR} — {(p.DataDeAtracacao.HasValue ? p.DataDeAtracacao.Value.ToString("dd/MM/yyyy") : "N/A")}").ToList();
-        //            break;
-
-        //        case "OrgaoAnuentes":
-        //            textosParaLabels = processos.Where(p => p.Status != "Finalizado")
-        //               .Select(p => $"{p.Ref_USA} — {p.Importador} — {p.OrgaosAnuentesString}").ToList();
-        //            break;
-
-        //        case "Finalizados":
-        //            textosParaLabels = processos.Where(p => p.Status == "Finalizado")
-        //                .Select(p => $"{p.Ref_USA} — Finalizado em: {(p.DataCarregamentoDI.HasValue ? p.DataCarregamentoDI.Value.ToString("dd/MM/yyyy") : "N/A")}").ToList();
-        //            break;
-        //    }
-
-        //    table.Controls.AddRange(textosParaLabels.Select(CriarLabel).ToArray());
-
-        //    aba.ResumeLayout();
-        //    Cursor = Cursors.Default;
-        //}
 
         #endregion
 
@@ -384,8 +308,8 @@ namespace Trabalho
         private void MenuItemExit_Click(object? sender, EventArgs e)
         {
             _logoutPeloMenu = true;
+            this.DialogResult = DialogResult.OK;
             this.Close();
-            FrmLogin.Instance?.Show();
         }
 
         private void MenuItemProcessoSantos_Click(object? sender, EventArgs e) => ShowSingleFormOfType<frmSantos>();
@@ -400,7 +324,112 @@ namespace Trabalho
 
         #endregion
 
+        #region "Notificações Urgentes"
 
+        private async void BtnAddNotifUrg_Click(object sender, EventArgs e)
+        {
+            var usuariosDestino = (await _repositorioUsers.FindAllAsync())
+                .Where(u => u.Id != _logadoUsuario.Id)
+                .Select(u => new UsuarioDestinoItem { Id = u.Id, NomeUsuario = u.Username })
+                .ToList();
+
+            var frm = new FrmAddNotifUrgente(_logadoUsuario.Id, usuariosDestino);
+            if (frm.ShowDialog() == DialogResult.OK && frm.IdDestinoSelecionado.HasValue)
+            {
+                var notif = new NotifUrgente
+                {
+                    UsuarioOrigemId = _logadoUsuario.Id,
+                    UsuarioDestinoId = frm.IdDestinoSelecionado.Value,
+                    Mensagem = frm.MensagemCriada,
+                    DataEnvio = DateTime.Now,
+                    Done = false
+                };
+                await _repoNotificacoesUrgentes.InsertAsync(notif);
+                await PopularTableLayoutUrgentes();
+            }
+        }
+
+
+        private async Task PopularTableLayoutUrgentes()
+        {
+            TLNotifUrgentes.Controls.Clear();
+            TLNotifUrgentes.RowCount = 0;
+            TLNotifUrgentes.ColumnCount = 1;
+            TLNotifUrgentes.RowStyles.Clear();
+
+            var todosUsuarios = await _repositorioUsers.FindAllAsync();
+            var lookupNome = todosUsuarios.ToDictionary(u => u.Id, u => u.Username);
+
+            var minhas = await _repoNotificacoesUrgentes.GetByUsuarioOrigemAsync(_logadoUsuario.Id);
+            var recebidas = await _repoNotificacoesUrgentes.GetByUsuarioDestinoAsync(_logadoUsuario.Id);
+
+            var todas = minhas.Concat(recebidas)
+                .GroupBy(n => n.Id) // Use o campo único do modelo
+                .Select(g => g.First())
+                .Where(n => !n.Done)
+                .OrderBy(n => n.DataEnvio)
+                .ToList();
+
+            for (int i = 0; i < todas.Count; i++)
+            {
+                var n = todas[i];
+
+                string nomeDestino = lookupNome.TryGetValue(n.UsuarioDestinoId, out var nomeDest) ? nomeDest : n.UsuarioDestinoId.ToString();
+                string nomeOrigem = lookupNome.TryGetValue(n.UsuarioOrigemId, out var nomeOrig) ? nomeOrig : n.UsuarioOrigemId.ToString();
+
+                var notifControl = new NotificacaoUrgente
+                {
+                    Usuario = n.UsuarioOrigemId == _logadoUsuario.Id
+                        ? $"Enviada para: {nomeDestino}"
+                        : $"De: {nomeOrigem}",
+                    Mensagem = n.Mensagem,
+                    MensagemReadOnly = true,
+                    BotaoEditarVisible = n.UsuarioOrigemId == _logadoUsuario.Id
+                };
+
+                notifControl.BtnExcluir.Visible = n.UsuarioOrigemId == _logadoUsuario.Id;
+                notifControl.ExcluirClick += async (s, e) =>
+                {
+                    var confirma = MessageBox.Show("Tem certeza que deseja excluir esta notificação?", "Confirmação", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+                    if (confirma == DialogResult.Yes)
+                    {
+                        await _repoNotificacoesUrgentes.DeleteAsync(n.Id);
+                        await PopularTableLayoutUrgentes();
+                    }
+                };
+
+                notifControl.DoneClick += async (s, e) =>
+                {
+                    n.Done = true;
+                    await _repoNotificacoesUrgentes.UpdateAsync(n);
+                    await PopularTableLayoutUrgentes();
+                };
+
+                notifControl.EditClick += async (s, e) =>
+                {
+                    // Torna mensagem editável
+                    notifControl.MensagemReadOnly = false;
+                    notifControl.FocusMensagem(); // Adicione método público no UserControl
+                };
+
+                notifControl.MensagemEditada += async (s, novaMensagem) =>
+                {
+                    n.Mensagem = novaMensagem;
+                    await _repoNotificacoesUrgentes.UpdateAsync(n);
+                    notifControl.MensagemReadOnly = true;
+                    MessageBox.Show("Mensagem atualizada com sucesso!", "Sucesso", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    await PopularTableLayoutUrgentes();
+                };
+
+                TLNotifUrgentes.RowStyles.Add(new RowStyle(SizeType.Absolute, notifControl.Height));
+                TLNotifUrgentes.Controls.Add(notifControl, 0, i);
+            }
+        }
+
+
+
+
+        #endregion
         private void lblEmAndamento_Click(object sender, EventArgs e)
         {
 
@@ -430,6 +459,12 @@ namespace Trabalho
             foreach (var f in MdiChildren) f.Close();
             _forms.Clear();
             panel1.Visible = true; pictureBox1.Visible = true;
+        }
+
+        private void MenuItemChangePassword_Click(object sender, EventArgs e)
+        {
+            var frm = new FrmMudarSenha(_logadoUsuario);
+            frm.ShowDialog();
         }
     }
 }

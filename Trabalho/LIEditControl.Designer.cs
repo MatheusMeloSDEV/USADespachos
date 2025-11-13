@@ -87,7 +87,7 @@
             groupBox5.Size = new Size(736, 83);
             groupBox5.TabIndex = 819;
             groupBox5.TabStop = false;
-            groupBox5.Text = "Dados Li";
+            groupBox5.Text = "Dados LI";
             // 
             // tableLayoutPanel1
             // 

@@ -41,11 +41,7 @@
             tLogado = new System.Windows.Forms.Timer(components);
             tErro = new System.Windows.Forms.Timer(components);
             btnFechar = new Button();
-            ftLua = new PictureBox();
-            ftSol = new PictureBox();
             ((System.ComponentModel.ISupportInitialize)check).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)ftLua).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)ftSol).BeginInit();
             SuspendLayout();
             // 
             // lblError
@@ -103,22 +99,22 @@
             lblPassword.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             lblPassword.AutoSize = true;
             lblPassword.BackColor = Color.Transparent;
-            lblPassword.Location = new Point(268, 240);
+            lblPassword.Location = new Point(286, 240);
             lblPassword.Name = "lblPassword";
-            lblPassword.Size = new Size(57, 15);
+            lblPassword.Size = new Size(39, 15);
             lblPassword.TabIndex = 21;
-            lblPassword.Text = "Password";
+            lblPassword.Text = "Senha";
             // 
             // lblUsername
             // 
             lblUsername.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             lblUsername.AutoSize = true;
             lblUsername.BackColor = Color.Transparent;
-            lblUsername.Location = new Point(268, 187);
+            lblUsername.Location = new Point(278, 187);
             lblUsername.Name = "lblUsername";
-            lblUsername.Size = new Size(60, 15);
+            lblUsername.Size = new Size(47, 15);
             lblUsername.TabIndex = 20;
-            lblUsername.Text = "Username";
+            lblUsername.Text = "Usuário";
             // 
             // txtPassword
             // 
@@ -159,30 +155,6 @@
             btnFechar.UseVisualStyleBackColor = false;
             btnFechar.Click += BtnFechar_Click;
             // 
-            // ftLua
-            // 
-            ftLua.Image = (Image)resources.GetObject("ftLua.Image");
-            ftLua.Location = new Point(12, 12);
-            ftLua.Name = "ftLua";
-            ftLua.Size = new Size(43, 42);
-            ftLua.SizeMode = PictureBoxSizeMode.StretchImage;
-            ftLua.TabIndex = 27;
-            ftLua.TabStop = false;
-            ftLua.Click += FtLua_Click;
-            // 
-            // ftSol
-            // 
-            ftSol.BackColor = SystemColors.ControlDarkDark;
-            ftSol.Image = (Image)resources.GetObject("ftSol.Image");
-            ftSol.Location = new Point(12, 12);
-            ftSol.Name = "ftSol";
-            ftSol.Size = new Size(43, 42);
-            ftSol.SizeMode = PictureBoxSizeMode.StretchImage;
-            ftSol.TabIndex = 28;
-            ftSol.TabStop = false;
-            ftSol.Visible = false;
-            ftSol.Click += FtSol_Click;
-            // 
             // FrmLogin
             // 
             AcceptButton = btnLogin;
@@ -191,8 +163,6 @@
             BackColor = SystemColors.Control;
             ClientSize = new Size(800, 450);
             ControlBox = false;
-            Controls.Add(ftSol);
-            Controls.Add(ftLua);
             Controls.Add(btnFechar);
             Controls.Add(lblError);
             Controls.Add(check);
@@ -209,9 +179,8 @@
             Text = "   Login";
             TransparencyKey = Color.Transparent;
             Load += FrmLogin_Load;
+            Shown += FrmLogin_Shown;
             ((System.ComponentModel.ISupportInitialize)check).EndInit();
-            ((System.ComponentModel.ISupportInitialize)ftLua).EndInit();
-            ((System.ComponentModel.ISupportInitialize)ftSol).EndInit();
             ResumeLayout(false);
             PerformLayout();
         }
@@ -228,7 +197,5 @@
         private System.Windows.Forms.Timer tLogado;
         private System.Windows.Forms.Timer tErro;
         private Button btnFechar;
-        private PictureBox ftLua;
-        private PictureBox ftSol;
     }
 }

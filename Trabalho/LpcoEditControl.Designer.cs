@@ -55,7 +55,7 @@
             CbMotivoExigencia.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             CbMotivoExigencia.FlatStyle = FlatStyle.Flat;
             CbMotivoExigencia.FormattingEnabled = true;
-            CbMotivoExigencia.Items.AddRange(new object[] { "EXIGÊNCIA PENDENTE", "EXIGÊNCIA CUMPRIDA", "DEFERIDO" });
+            CbMotivoExigencia.Items.AddRange(new object[] { "EXIGÊNCIA PENDENTE", "EXIGÊNCIA CUMPRIDA", "DEFERIDO", "CANCELADA" });
             CbMotivoExigencia.Location = new Point(345, 69);
             CbMotivoExigencia.Name = "CbMotivoExigencia";
             CbMotivoExigencia.Size = new Size(135, 23);

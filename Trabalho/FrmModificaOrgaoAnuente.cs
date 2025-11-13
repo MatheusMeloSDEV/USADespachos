@@ -1,4 +1,5 @@
 ﻿using CLUSA;
+using MongoDB.Driver;
 using System.Data;
 
 namespace Trabalho
@@ -8,13 +9,20 @@ namespace Trabalho
         public OrgaoAnuente OrgaoAnuente { get; set; }
         public Processo Processo { get; set; }
         private bool _dadosForamAlterados = false;
+
         public bool IsViewOnly { get; set; } = false;
         private readonly RepositorioOrgaoAnuente _repositorioOrgaoAnuente;
         private readonly RepositorioProcesso _repositorioProcesso;
+        private readonly RepositorioVistorias _repositorioVistorias;
 
         public FrmModificaOrgaoAnuente(RepositorioOrgaoAnuente repositorioOrgaoAnuente, RepositorioProcesso repositorioProcesso)
         {
             InitializeComponent();
+
+            var client = new MongoClient(ConfigDatabase.MongoConnectionString);
+            var database = client.GetDatabase(ConfigDatabase.MongoDatabaseName);
+
+            _repositorioVistorias = new RepositorioVistorias(database);
             _repositorioOrgaoAnuente = repositorioOrgaoAnuente;
             _repositorioProcesso = repositorioProcesso;
             OrgaoAnuente = new OrgaoAnuente();
@@ -273,7 +281,7 @@ namespace Trabalho
             _dadosForamAlterados = true;
             this.Text += "*";
         }
-        private void SalvarDadosDosControles()
+        private async Task SalvarDadosDosControlesAsync()
         {
             this.ValidateChildren(); // Força a atualização de todos os bindings
 
@@ -302,6 +310,15 @@ namespace Trabalho
 
                 if (abaLpco.Controls.Find("DtpDataDeferimentoLPCO", true).FirstOrDefault() is DateTimePicker dtpLpcoDef)
                     lpco.DataDeferimentoLPCO = dtpLpcoDef.Checked ? dtpLpcoDef.Value : null;
+
+                if (lpco.MotivoExigencia.ToUpperInvariant() == "CANCELADA" && !string.IsNullOrWhiteSpace(lpco.LPCO))
+                {
+                    var v = await _repositorioVistorias.GetByLPCOAsync(lpco.LPCO);
+                    if (v != null)
+                    {
+                        await _repositorioVistorias.DeleteByLpcoAsync(lpco.LPCO);
+                    }
+                }
             }
         }
         private void ConfigurarDatePickerNulavel(DateTimePicker dtp, DateTime? data)
@@ -330,7 +347,7 @@ namespace Trabalho
         {
             try
             {
-                SalvarDadosDosControles();
+                await SalvarDadosDosControlesAsync();
 
                 await _repositorioOrgaoAnuente.UpdateAsync(OrgaoAnuente);
 

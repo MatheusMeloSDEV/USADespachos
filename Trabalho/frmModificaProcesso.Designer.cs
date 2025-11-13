@@ -100,13 +100,15 @@
             DTPdatadeatracacao = new DateTimePicker();
             DTPdatadeembarque = new DateTimePicker();
             groupBox1 = new GroupBox();
-            CbCapa = new CheckBox();
+            txtCE = new TextBox();
+            label28 = new Label();
             TxtContainer = new TextBox();
             label8 = new Label();
             txtOrigem = new TextBox();
             label3 = new Label();
             TXTportodedestino = new TextBox();
             label14 = new Label();
+            CbCapa = new CheckBox();
             groupBox4 = new GroupBox();
             CbLiberado = new CheckBox();
             CbSelecionado = new CheckBox();
@@ -389,9 +391,9 @@
             // 
             NUMfreetime.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             NUMfreetime.DataBindings.Add(new Binding("Value", BsModificaProcesso, "FreeTime", true));
-            NUMfreetime.Location = new Point(974, 55);
+            NUMfreetime.Location = new Point(969, 55);
             NUMfreetime.Name = "NUMfreetime";
-            NUMfreetime.Size = new Size(97, 23);
+            NUMfreetime.Size = new Size(110, 23);
             NUMfreetime.TabIndex = 800;
             // 
             // label17
@@ -420,7 +422,7 @@
             label15.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             label15.AutoSize = true;
             label15.Font = new Font("Microsoft Sans Serif", 9.75F);
-            label15.Location = new Point(988, 36);
+            label15.Location = new Point(990, 36);
             label15.Name = "label15";
             label15.Size = new Size(69, 16);
             label15.TabIndex = 283;
@@ -923,7 +925,8 @@
             // 
             groupBox1.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left;
             groupBox1.AutoSizeMode = AutoSizeMode.GrowAndShrink;
-            groupBox1.Controls.Add(CbCapa);
+            groupBox1.Controls.Add(txtCE);
+            groupBox1.Controls.Add(label28);
             groupBox1.Controls.Add(TxtContainer);
             groupBox1.Controls.Add(label8);
             groupBox1.Controls.Add(txtOrigem);
@@ -959,18 +962,26 @@
             groupBox1.TabStop = false;
             groupBox1.Text = "Informações Gerais";
             // 
-            // CbCapa
+            // txtCE
             // 
-            CbCapa.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
-            CbCapa.AutoSize = true;
-            CbCapa.DataBindings.Add(new Binding("Checked", BsModificaProcesso, "CapaOK", true));
-            CbCapa.Font = new Font("Microsoft Sans Serif", 9.75F);
-            CbCapa.Location = new Point(993, 90);
-            CbCapa.Name = "CbCapa";
-            CbCapa.Size = new Size(59, 20);
-            CbCapa.TabIndex = 804;
-            CbCapa.Text = "Capa";
-            CbCapa.UseVisualStyleBackColor = true;
+            txtCE.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            txtCE.Cursor = Cursors.IBeam;
+            txtCE.DataBindings.Add(new Binding("Text", BsModificaProcesso, "CE", true));
+            txtCE.Location = new Point(969, 111);
+            txtCE.Name = "txtCE";
+            txtCE.Size = new Size(110, 23);
+            txtCE.TabIndex = 810;
+            // 
+            // label28
+            // 
+            label28.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            label28.AutoSize = true;
+            label28.Font = new Font("Microsoft Sans Serif", 9.75F);
+            label28.Location = new Point(1012, 92);
+            label28.Name = "label28";
+            label28.Size = new Size(25, 16);
+            label28.TabIndex = 811;
+            label28.Text = "CE";
             // 
             // TxtContainer
             // 
@@ -1034,6 +1045,19 @@
             label14.Size = new Size(107, 16);
             label14.TabIndex = 807;
             label14.Text = "Porto de Destino";
+            // 
+            // CbCapa
+            // 
+            CbCapa.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            CbCapa.AutoSize = true;
+            CbCapa.DataBindings.Add(new Binding("Checked", BsModificaProcesso, "CapaOK", true));
+            CbCapa.Font = new Font("Microsoft Sans Serif", 9.75F);
+            CbCapa.Location = new Point(346, 125);
+            CbCapa.Name = "CbCapa";
+            CbCapa.Size = new Size(59, 20);
+            CbCapa.TabIndex = 804;
+            CbCapa.Text = "Capa";
+            CbCapa.UseVisualStyleBackColor = true;
             // 
             // groupBox4
             // 
@@ -1223,6 +1247,7 @@
             // groupBox5
             // 
             groupBox5.Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            groupBox5.Controls.Add(CbCapa);
             groupBox5.Controls.Add(CbSigVig);
             groupBox5.Controls.Add(checkBox1);
             groupBox5.Controls.Add(checkBox2);
@@ -1244,7 +1269,7 @@
             CbSigVig.AutoSize = true;
             CbSigVig.DataBindings.Add(new Binding("Checked", BsModificaProcesso, "SigVig", true));
             CbSigVig.Font = new Font("Microsoft Sans Serif", 9.75F);
-            CbSigVig.Location = new Point(346, 113);
+            CbSigVig.Location = new Point(346, 99);
             CbSigVig.Name = "CbSigVig";
             CbSigVig.Size = new Size(66, 20);
             CbSigVig.TabIndex = 806;
@@ -1257,7 +1282,7 @@
             checkBox1.AutoSize = true;
             checkBox1.DataBindings.Add(new Binding("Checked", BsModificaProcesso, "Redestinacao", true));
             checkBox1.Font = new Font("Microsoft Sans Serif", 9.75F);
-            checkBox1.Location = new Point(346, 61);
+            checkBox1.Location = new Point(346, 47);
             checkBox1.Name = "checkBox1";
             checkBox1.Size = new Size(104, 20);
             checkBox1.TabIndex = 805;
@@ -1270,7 +1295,7 @@
             checkBox2.AutoSize = true;
             checkBox2.DataBindings.Add(new Binding("Checked", BsModificaProcesso, "Numerario", true));
             checkBox2.Font = new Font("Microsoft Sans Serif", 9.75F);
-            checkBox2.Location = new Point(346, 87);
+            checkBox2.Location = new Point(346, 73);
             checkBox2.Name = "checkBox2";
             checkBox2.Size = new Size(89, 20);
             checkBox2.TabIndex = 804;
@@ -1422,5 +1447,7 @@
         private CheckBox checkBox1;
         private CheckBox checkBox2;
         private CheckBox CbSigVig;
+        private TextBox txtCE;
+        private Label label28;
     }
 }

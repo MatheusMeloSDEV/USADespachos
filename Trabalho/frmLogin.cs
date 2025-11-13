@@ -20,17 +20,16 @@ namespace Trabalho
         private async void FrmLogin_Load(object sender, EventArgs e)
         {
             Icon = Icon.ExtractAssociatedIcon(Application.ExecutablePath);
-            AutoUpdater.Start("https://raw.githubusercontent.com/SEU_USUARIO/SEU_REPOSITORIO/main/update.xml");
             _repositorio = new RepositorioUsers();
-            await VerificarAtualizacoes();
+            await VerificarAtualizacoesAsync();
         }
 
-        // Dentro da classe FrmLogin
-        private async Task VerificarAtualizacoes()
+
+        private async Task VerificarAtualizacoesAsync()
         {
             var atualizador = new AtualizadorGithub(
-                "https://api.github.com/repos/MatheusMeloSDEV/UsaDespachos",
-                ".exe", ".msi"
+                "https://api.github.com/repos/MatheusMeloSDEV/Trabalho",
+                "atualizacao.zip"
             );
 
             bool atualizarAgora = false;
@@ -51,18 +50,24 @@ namespace Trabalho
 
             atualizador.DownloadConcluido += path =>
             {
-                MessageBox.Show($"Download concluído: {path}");
-                // Fecha a aplicação para o instalador poder rodar.
+                MessageBox.Show($"Download concluído: {path}\nO programa será encerrado para atualizar.");
                 Application.Exit();
             };
 
-            atualizador.Erro += msg => MessageBox.Show($"Erro: {msg}");
+            atualizador.Erro += msg =>
+            {
+                MessageBox.Show($"Erro: {msg}");
+            };
 
             try
             {
                 if (AtualizadorGithub.TemConexaoInternet())
                 {
                     await atualizador.VerificarAtualizacaoAsync();
+                }
+                else
+                {
+                    MessageBox.Show("Sem conexão com a internet.");
                 }
             }
             catch (Exception ex)
@@ -72,11 +77,12 @@ namespace Trabalho
 
             if (atualizarAgora)
             {
-                // Desabilita o form de login para o usuário não interagir
                 this.Enabled = false;
                 await atualizador.BaixarEInstalarAsync();
             }
         }
+
+
         private void BtnLogin_Click(object sender, EventArgs e)
         {
             var user = new Users
@@ -196,34 +202,6 @@ namespace Trabalho
             Application.Exit();
         }
 
-        private void FtLua_Click(object sender, EventArgs e)
-        {
-            ApplyDarkMode();
-        }
-
-        private void FtSol_Click(object sender, EventArgs e)
-        {
-            ApplyLightMode();
-        }
-
-        private void ApplyDarkMode()
-        {
-            ftLua.Visible = false;
-            ftSol.Visible = true;
-
-            SetThemeColors(SystemColors.ControlDarkDark, SystemColors.ControlDark);
-            Escuro = true;
-        }
-
-        private void ApplyLightMode()
-        {
-            ftSol.Visible = false;
-            ftLua.Visible = true;
-
-            SetThemeColors(SystemColors.Control, SystemColors.Control);
-            Escuro = false;
-        }
-
         private void SetThemeColors(Color backgroundColor, Color inputBackgroundColor)
         {
             BackColor = backgroundColor;
@@ -232,6 +210,11 @@ namespace Trabalho
             txtUsername.BackColor = inputBackgroundColor;
             btnFechar.BackColor = inputBackgroundColor;
             btnLogin.BackColor = inputBackgroundColor;
+        }
+
+        private void FrmLogin_Shown(object sender, EventArgs e)
+        {
+            ShowLoginScreen();
         }
     }
 }

@@ -155,6 +155,7 @@ namespace Trabalho
             processo.DataEmbarque = DTPdatadeembarque.Checked ? DTPdatadeembarque.Value : null;
             processo.DataRecebOriginais = DTPDataRecOriginais.Checked ? DTPDataRecOriginais.Value : null;
             processo.DataMinutaDI = dtpDataMinuta.Checked ? dtpDataMinuta.Value : null;
+            processo.Capa.CE = txtCE.Text;
 
             if (DTPdatadeatracacao.Checked)
             {
@@ -226,6 +227,8 @@ namespace Trabalho
                     liControl.SalvarAlteracoes();
                 }
             }
+
+            
 
             processo.LI.RemoveAll(li => string.IsNullOrWhiteSpace(li.Numero) || li.Numero == "Nova LI");
 

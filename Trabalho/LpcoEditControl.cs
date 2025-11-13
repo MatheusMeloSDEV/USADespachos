@@ -1,14 +1,21 @@
 ﻿using CLUSA;
+using MongoDB.Driver;
 
 namespace Trabalho
 {
     public partial class LpcoEditControl : UserControl
     {
         private LpcoInfo? _lpco;
+        private readonly RepositorioVistorias _repositorioVistorias;
 
         public LpcoEditControl()
         {
             InitializeComponent();
+
+            var client = new MongoClient(ConfigDatabase.MongoConnectionString);
+            var database = client.GetDatabase(ConfigDatabase.MongoDatabaseName);
+
+            _repositorioVistorias = new RepositorioVistorias(database);
         }
 
         public void VincularDados(LpcoInfo lpco)
@@ -38,7 +45,7 @@ namespace Trabalho
 
         }
 
-        public void SalvarAlteracoes()
+        public async void SalvarAlteracoes()
         {
             if (_lpco == null) return;
 
@@ -46,6 +53,15 @@ namespace Trabalho
 
             _lpco.DataRegistroLPCO = DtpDataRegistroLPCO.Checked ? DtpDataRegistroLPCO.Value : null;
             _lpco.DataDeferimentoLPCO = DtpDataDeferimentoLPCO.Checked ? DtpDataDeferimentoLPCO.Value : null;
+
+            if (CbMotivoExigencia.Text.ToUpperInvariant() == "CANCELADA" && !string.IsNullOrWhiteSpace(TxtLPCO.Text))
+            {
+                var v = await _repositorioVistorias.GetByLPCOAsync(TxtLPCO.Text);
+                if (v != null)
+                {
+                    await _repositorioVistorias.DeleteByLpcoAsync(TxtLPCO.Text);
+                }
+            }
         }
 
         private void ConfigurarDatePickerNulavel(DateTimePicker dtp, DateTime? data)

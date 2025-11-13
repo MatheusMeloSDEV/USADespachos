@@ -34,9 +34,6 @@
             MenuItemHome = new ToolStripMenuItem();
             MenuItemMenu = new ToolStripMenuItem();
             MenuItemEmAndamento = new ToolStripMenuItem();
-            MenuItemMaximizar = new ToolStripMenuItem();
-            MenuItemMinimizar = new ToolStripMenuItem();
-            MenuItemExit = new ToolStripMenuItem();
             MenuItemNotifications = new ToolStripMenuItem();
             planilhasToolStripMenuItem = new ToolStripMenuItem();
             santosToolStripMenuItem = new ToolStripMenuItem();
@@ -45,6 +42,9 @@
             itajaíToolStripMenuItem = new ToolStripMenuItem();
             MenuItemProcessosItajai = new ToolStripMenuItem();
             MenuItemOrgaoAnuente1 = new ToolStripMenuItem();
+            MenuItemUsuario = new ToolStripMenuItem();
+            MenuItemChangePassword = new ToolStripMenuItem();
+            MenuItemExit = new ToolStripMenuItem();
             MenuItemAdmin = new ToolStripMenuItem();
             MenuItemVistoria = new ToolStripMenuItem();
             vencimentosToolStripMenuItem = new ToolStripMenuItem();
@@ -53,10 +53,9 @@
             pictureBox1 = new PictureBox();
             panel1 = new Panel();
             panel2 = new Panel();
-            tableLayoutPanel1 = new TableLayoutPanel();
+            TLNotifUrgentes = new TableLayoutPanel();
             toolStrip1 = new ToolStrip();
             toolStripLabel1 = new ToolStripLabel();
-            BtnDone = new ToolStripButton();
             BtnAddNotifUrg = new ToolStripButton();
             contextMenuStripNotifications = new ContextMenuStrip(components);
             Menu.SuspendLayout();
@@ -68,7 +67,7 @@
             // 
             // Menu
             // 
-            Menu.Items.AddRange(new ToolStripItem[] { MenuItemHome, MenuItemNotifications, planilhasToolStripMenuItem, MenuItemAdmin, MenuItemVistoria, vencimentosToolStripMenuItem, MenuitemFinanceiro });
+            Menu.Items.AddRange(new ToolStripItem[] { MenuItemHome, MenuItemNotifications, planilhasToolStripMenuItem, MenuItemUsuario, MenuItemAdmin, MenuItemVistoria, vencimentosToolStripMenuItem, MenuitemFinanceiro });
             Menu.Location = new Point(0, 0);
             Menu.Name = "Menu";
             Menu.Size = new Size(1264, 34);
@@ -78,7 +77,7 @@
             // MenuItemHome
             // 
             MenuItemHome.DisplayStyle = ToolStripItemDisplayStyle.Image;
-            MenuItemHome.DropDownItems.AddRange(new ToolStripItem[] { MenuItemMenu, MenuItemEmAndamento, MenuItemMaximizar, MenuItemMinimizar, MenuItemExit });
+            MenuItemHome.DropDownItems.AddRange(new ToolStripItem[] { MenuItemMenu, MenuItemEmAndamento });
             MenuItemHome.Image = (Image)resources.GetObject("MenuItemHome.Image");
             MenuItemHome.Margin = new Padding(0, 5, 0, 5);
             MenuItemHome.Name = "MenuItemHome";
@@ -99,27 +98,6 @@
             MenuItemEmAndamento.Size = new Size(210, 22);
             MenuItemEmAndamento.Text = "Processos em andamento";
             MenuItemEmAndamento.Click += MenuItemEmAndamento_Click;
-            // 
-            // MenuItemMaximizar
-            // 
-            MenuItemMaximizar.Name = "MenuItemMaximizar";
-            MenuItemMaximizar.Size = new Size(210, 22);
-            MenuItemMaximizar.Text = "Maximizar";
-            MenuItemMaximizar.Click += MenuItemMaximize_Click;
-            // 
-            // MenuItemMinimizar
-            // 
-            MenuItemMinimizar.Name = "MenuItemMinimizar";
-            MenuItemMinimizar.Size = new Size(210, 22);
-            MenuItemMinimizar.Text = "Minimizar";
-            MenuItemMinimizar.Click += MenuItemMinimize_Click;
-            // 
-            // MenuItemExit
-            // 
-            MenuItemExit.Name = "MenuItemExit";
-            MenuItemExit.Size = new Size(210, 22);
-            MenuItemExit.Text = "Sair";
-            MenuItemExit.Click += MenuItemExit_Click;
             // 
             // MenuItemNotifications
             // 
@@ -178,6 +156,29 @@
             MenuItemOrgaoAnuente1.Text = "Orgão Anuente";
             MenuItemOrgaoAnuente1.Click += MenuItemOrgaoAnuente_Click;
             // 
+            // MenuItemUsuario
+            // 
+            MenuItemUsuario.Alignment = ToolStripItemAlignment.Right;
+            MenuItemUsuario.DropDownItems.AddRange(new ToolStripItem[] { MenuItemChangePassword, MenuItemExit });
+            MenuItemUsuario.Image = (Image)resources.GetObject("MenuItemUsuario.Image");
+            MenuItemUsuario.Name = "MenuItemUsuario";
+            MenuItemUsuario.Size = new Size(58, 30);
+            MenuItemUsuario.Text = "User";
+            // 
+            // MenuItemChangePassword
+            // 
+            MenuItemChangePassword.Name = "MenuItemChangePassword";
+            MenuItemChangePassword.Size = new Size(143, 22);
+            MenuItemChangePassword.Text = "Mudar senha";
+            MenuItemChangePassword.Click += MenuItemChangePassword_Click;
+            // 
+            // MenuItemExit
+            // 
+            MenuItemExit.Name = "MenuItemExit";
+            MenuItemExit.Size = new Size(143, 22);
+            MenuItemExit.Text = "Sair";
+            MenuItemExit.Click += MenuItemExit_Click;
+            // 
             // MenuItemAdmin
             // 
             MenuItemAdmin.Alignment = ToolStripItemAlignment.Right;
@@ -234,31 +235,34 @@
             // 
             panel2.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left;
             panel2.BorderStyle = BorderStyle.FixedSingle;
-            panel2.Controls.Add(tableLayoutPanel1);
+            panel2.Controls.Add(TLNotifUrgentes);
             panel2.Controls.Add(toolStrip1);
             panel2.Location = new Point(22, 61);
             panel2.Name = "panel2";
-            panel2.Size = new Size(339, 590);
+            panel2.Size = new Size(450, 590);
             panel2.TabIndex = 4;
             // 
-            // tableLayoutPanel1
+            // TLNotifUrgentes
             // 
-            tableLayoutPanel1.ColumnCount = 1;
-            tableLayoutPanel1.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
-            tableLayoutPanel1.Location = new Point(0, 28);
-            tableLayoutPanel1.Name = "tableLayoutPanel1";
-            tableLayoutPanel1.RowCount = 2;
-            tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
-            tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Absolute, 537F));
-            tableLayoutPanel1.Size = new Size(338, 561);
-            tableLayoutPanel1.TabIndex = 1;
+            TLNotifUrgentes.AutoSize = true;
+            TLNotifUrgentes.AutoSizeMode = AutoSizeMode.GrowAndShrink;
+            TLNotifUrgentes.ColumnCount = 2;
+            TLNotifUrgentes.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
+            TLNotifUrgentes.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 30F));
+            TLNotifUrgentes.Location = new Point(0, 28);
+            TLNotifUrgentes.Name = "TLNotifUrgentes";
+            TLNotifUrgentes.RowCount = 2;
+            TLNotifUrgentes.RowStyles.Add(new RowStyle(SizeType.Absolute, 30F));
+            TLNotifUrgentes.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
+            TLNotifUrgentes.Size = new Size(30, 30);
+            TLNotifUrgentes.TabIndex = 1;
             // 
             // toolStrip1
             // 
-            toolStrip1.Items.AddRange(new ToolStripItem[] { toolStripLabel1, BtnDone, BtnAddNotifUrg });
+            toolStrip1.Items.AddRange(new ToolStripItem[] { toolStripLabel1, BtnAddNotifUrg });
             toolStrip1.Location = new Point(0, 0);
             toolStrip1.Name = "toolStrip1";
-            toolStrip1.Size = new Size(337, 25);
+            toolStrip1.Size = new Size(448, 25);
             toolStrip1.TabIndex = 0;
             toolStrip1.Text = "toolStrip1";
             // 
@@ -269,16 +273,6 @@
             toolStripLabel1.Size = new Size(162, 22);
             toolStripLabel1.Text = "Notificações Urgentes";
             // 
-            // BtnDone
-            // 
-            BtnDone.Alignment = ToolStripItemAlignment.Right;
-            BtnDone.DisplayStyle = ToolStripItemDisplayStyle.Image;
-            BtnDone.Image = (Image)resources.GetObject("BtnDone.Image");
-            BtnDone.ImageTransparentColor = Color.Magenta;
-            BtnDone.Name = "BtnDone";
-            BtnDone.Size = new Size(23, 22);
-            BtnDone.Text = "toolStripButton2";
-            // 
             // BtnAddNotifUrg
             // 
             BtnAddNotifUrg.Alignment = ToolStripItemAlignment.Right;
@@ -287,7 +281,8 @@
             BtnAddNotifUrg.ImageTransparentColor = Color.Magenta;
             BtnAddNotifUrg.Name = "BtnAddNotifUrg";
             BtnAddNotifUrg.Size = new Size(23, 22);
-            BtnAddNotifUrg.Text = "toolStripButton2";
+            BtnAddNotifUrg.Text = "Nova mensagem";
+            BtnAddNotifUrg.Click += BtnAddNotifUrg_Click;
             // 
             // contextMenuStripNotifications
             // 
@@ -338,9 +333,6 @@
         private ToolStripMenuItem MenuItemOrgaoAnuente1;
         private ToolStripMenuItem MenuItemAdmin;
         private ToolStripMenuItem MenuitemFinanceiro;
-        private ToolStripMenuItem MenuItemMaximizar;
-        private ToolStripMenuItem MenuItemMinimizar;
-        private ToolStripMenuItem MenuItemExit;
         private ToolStripMenuItem MenuItemEmAndamento;
         private System.Windows.Forms.Timer timerReleaseExit;
         private ToolStripMenuItem MenuItemVistoria;
@@ -352,8 +344,10 @@
         private Panel panel2;
         private ToolStrip toolStrip1;
         private ToolStripLabel toolStripLabel1;
-        private ToolStripButton BtnDone;
         private ToolStripButton BtnAddNotifUrg;
-        private TableLayoutPanel tableLayoutPanel1;
+        private TableLayoutPanel TLNotifUrgentes;
+        private ToolStripMenuItem MenuItemUsuario;
+        private ToolStripMenuItem MenuItemExit;
+        private ToolStripMenuItem MenuItemChangePassword;
     }
 }

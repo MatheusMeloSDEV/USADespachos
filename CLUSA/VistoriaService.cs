@@ -37,9 +37,10 @@ namespace CLUSA
                     && li.LPCO.Any(lpco =>
                         (lpco.NomeOrgao ?? "").ToUpperInvariant() == "MAPA" &&
                         string.IsNullOrEmpty(lpco.ParametrizacaoLPCO) &&
-                        (lpco.MotivoExigencia ?? "").ToUpperInvariant() != "DEFERIDO"))
+                        (lpco.MotivoExigencia ?? "").ToUpperInvariant() != "DEFERIDO" &&
+                        (lpco.MotivoExigencia ?? "").ToUpperInvariant() != "CANCELADA"))
                 .ToList();
-
+                        
             foreach (var li in lisSemParametrizacao)
             {
                 var primeiroLpcoMapa = li.LPCO?.FirstOrDefault(lpco =>
@@ -92,7 +93,9 @@ namespace CLUSA
                 .Where(x => x.LPCO.NomeOrgao == "MAPA"
                             && !string.IsNullOrEmpty(x.LPCO.LPCO)
                             && parametrizacoesAlvo.Contains(x.LPCO.ParametrizacaoLPCO.ToUpper())
-                            && x.LPCO.MotivoExigencia?.ToUpper() != "DEFERIDO");
+                            && x.LPCO.MotivoExigencia?.ToUpper() != "DEFERIDO"
+                            && x.LPCO.MotivoExigencia?.ToUpper() != "CANCELADA");
+
 
             foreach (var item in lpsVistoria)
             {
@@ -136,7 +139,11 @@ namespace CLUSA
                 var lpcoMapa = li.LPCO.FirstOrDefault(lpco =>
                     (lpco.NomeOrgao ?? "").ToUpperInvariant() == "MAPA");
 
-                    
+                if (lpcoMapa != null && (lpcoMapa.MotivoExigencia?.ToUpperInvariant() == "CANCELADA"))
+                {
+                    continue;
+                }
+
                 if (lpcoMapa != null && !string.IsNullOrEmpty(lpcoMapa.ParametrizacaoLPCO))
                 {
                     await _repoVistorias.DeleteAsync(vistoria.Id);

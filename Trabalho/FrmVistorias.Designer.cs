@@ -57,6 +57,7 @@
             toolStrip1 = new ToolStrip();
             BtnRecarrega = new ToolStripButton();
             panel1 = new Panel();
+            BtnCancelada = new PictureBox();
             TableVistorias.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)DGVProcessosDadoEntrada).BeginInit();
             ((System.ComponentModel.ISupportInitialize)BtnDefere).BeginInit();
@@ -76,6 +77,7 @@
             ((System.ComponentModel.ISupportInitialize)BtnSobeSolicitado).BeginInit();
             toolStrip1.SuspendLayout();
             panel1.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)BtnCancelada).BeginInit();
             SuspendLayout();
             // 
             // TableVistorias
@@ -110,6 +112,7 @@
             TableVistorias.Controls.Add(btnDesceParaAguardando, 3, 7);
             TableVistorias.Controls.Add(BtnSobeAgendada, 2, 7);
             TableVistorias.Controls.Add(BtnSobeSolicitado, 3, 9);
+            TableVistorias.Controls.Add(BtnCancelada, 3, 11);
             TableVistorias.Dock = DockStyle.Top;
             TableVistorias.Location = new Point(0, 0);
             TableVistorias.Name = "TableVistorias";
@@ -146,12 +149,12 @@
             // 
             label6.AutoSize = true;
             label6.BackColor = SystemColors.Control;
-            TableVistorias.SetColumnSpan(label6, 4);
+            TableVistorias.SetColumnSpan(label6, 3);
             label6.Dock = DockStyle.Fill;
             label6.Font = new Font("Segoe UI", 11F, FontStyle.Bold);
             label6.Location = new Point(3, 777);
             label6.Name = "label6";
-            label6.Size = new Size(1112, 30);
+            label6.Size = new Size(1082, 30);
             label6.TabIndex = 26;
             label6.Text = "Processos Dado Entrada";
             label6.TextAlign = ContentAlignment.MiddleCenter;
@@ -448,6 +451,18 @@
             panel1.Size = new Size(1118, 952);
             panel1.TabIndex = 2;
             // 
+            // BtnCancelada
+            // 
+            BtnCancelada.Dock = DockStyle.Fill;
+            BtnCancelada.Image = (Image)resources.GetObject("BtnCancelada.Image");
+            BtnCancelada.Location = new Point(1091, 780);
+            BtnCancelada.Name = "BtnCancelada";
+            BtnCancelada.Size = new Size(24, 24);
+            BtnCancelada.SizeMode = PictureBoxSizeMode.StretchImage;
+            BtnCancelada.TabIndex = 30;
+            BtnCancelada.TabStop = false;
+            BtnCancelada.Click += BtnCancelada_Click;
+            // 
             // FrmVistorias
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
@@ -483,6 +498,7 @@
             toolStrip1.PerformLayout();
             panel1.ResumeLayout(false);
             panel1.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)BtnCancelada).EndInit();
             ResumeLayout(false);
             PerformLayout();
         }
@@ -517,5 +533,6 @@
         private ToolStrip toolStrip1;
         private ToolStripButton BtnRecarrega;
         private Panel panel1;
+        private PictureBox BtnCancelada;
     }
 }

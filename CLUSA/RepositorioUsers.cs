@@ -64,6 +64,8 @@ namespace CLUSA
             {
                 log.log = true;
                 log.admin = usuarioEncontrado.Admin;
+                log.Usuario = usuarioEncontrado.Username;
+                log.Id = usuarioEncontrado.Id;
             }
 
             return log;

@@ -1,5 +1,4 @@
 ﻿using System.Diagnostics;
-using System.Security.Cryptography;
 using System.Text.Json;
 
 namespace CLUSA
@@ -7,17 +6,16 @@ namespace CLUSA
     public class AtualizadorGithub
     {
         private readonly string repoUrl;
-        private readonly string[] extensoesAceitas;
+        private readonly string nomeZip;
 
         public event Action<string, string>? AtualizacaoDisponivel;
         public event Action<string>? DownloadConcluido;
         public event Action<string>? Erro;
-        public event Action? Atualizado;
 
-        public AtualizadorGithub(string repoUrl, params string[] extensoesAceitas)
+        public AtualizadorGithub(string repoUrl, string nomeZip = "atualizacao.zip")
         {
             this.repoUrl = repoUrl.TrimEnd('/');
-            this.extensoesAceitas = extensoesAceitas.Length > 0 ? extensoesAceitas : new[] { ".exe" };
+            this.nomeZip = nomeZip;
         }
 
         public async Task VerificarAtualizacaoAsync(string? versaoAtual = null)
@@ -68,7 +66,7 @@ namespace CLUSA
             foreach (var asset in assets.EnumerateArray())
             {
                 var nome = asset.GetProperty("name").GetString();
-                if (!string.IsNullOrEmpty(nome) && extensoesAceitas.Any(ext => nome.EndsWith(ext, StringComparison.OrdinalIgnoreCase)))
+                if (!string.IsNullOrEmpty(nome) && nome.Equals(nomeZip, StringComparison.OrdinalIgnoreCase))
                 {
                     downloadUrl = asset.GetProperty("browser_download_url").GetString();
                     nomeArquivo = nome;
@@ -78,45 +76,41 @@ namespace CLUSA
 
             if (string.IsNullOrEmpty(downloadUrl))
             {
-                Log("Instalador não encontrado.");
-                Erro?.Invoke("Não foi encontrado um instalador para download.");
+                Log("Arquivo de atualização (.zip) não encontrado.");
+                Erro?.Invoke("Não foi encontrado o arquivo .zip para download.");
                 return;
             }
 
-            string tempPath = Path.Combine(Path.GetTempPath(), nomeArquivo);
+            string tempPath = Path.Combine(Path.GetTempPath(), nomeArquivo!);
             using (var download = await client.GetAsync(downloadUrl))
             using (var fs = new FileStream(tempPath, FileMode.Create, FileAccess.Write, FileShare.None))
             {
                 await download.Content.CopyToAsync(fs);
             }
 
-            string hash = CalcularHashSHA256(tempPath);
-            Log($"Download concluído: {tempPath} | SHA256: {hash}");
-
             DownloadConcluido?.Invoke(tempPath);
 
             try
             {
+                string batPath = Path.Combine(Path.GetTempPath(), "update-executa.bat");
+                string exeName = "Trabalho.exe"; // Substitua pelo nome do seu executável real
+                string destFolder = @"C:\\Program Files (x86)\\UsaDespachos"; // Ajuste conforme instalação
+
+                File.WriteAllText(batPath,
+                    $"@echo off\r\ntaskkill /IM {exeName} /F\r\ntimeout /t 2 /nobreak\r\npowershell -Command \"Expand-Archive -Path '{tempPath}' -DestinationPath '{destFolder}' -Force\"\r\nstart \"\" \"{destFolder}\\{exeName}\"\r\n");
+
                 Process.Start(new ProcessStartInfo
                 {
-                    FileName = tempPath,
-                    Arguments = "/VERYSILENT",
-                    UseShellExecute = true
+                    FileName = batPath,
+                    UseShellExecute = true,
+                    Verb = "runas"
                 });
             }
             catch (Exception ex)
             {
-                Log($"Erro ao iniciar o instalador: {ex.Message}");
-                Erro?.Invoke($"Erro ao iniciar o instalador: {ex.Message}");
+                Log($"Erro ao executar atualizador: {ex.Message}");
+                Erro?.Invoke($"Erro ao executar atualizador: {ex.Message}");
             }
-        }
-
-        private static string CalcularHashSHA256(string filePath)
-        {
-            using var sha256 = SHA256.Create();
-            using var stream = File.OpenRead(filePath);
-            var hash = sha256.ComputeHash(stream);
-            return BitConverter.ToString(hash).Replace("-", "").ToLowerInvariant();
         }
 
         private static void Log(string mensagem)

@@ -463,5 +463,57 @@ namespace Trabalho
                 MessageBox.Show($"Erro ao finalizar a vistoria: {ex.Message}", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
+
+        private async void BtnCancelada_Click(object sender, EventArgs e)
+        {
+            // 1. Só age na grid DGVProcessosDadoEntrada
+            if (DGVProcessosDadoEntrada.CurrentRow == null || DGVProcessosDadoEntrada.CurrentRow.DataBoundItem is not Vistoria vistoriaSelecionada)
+            {
+                MessageBox.Show("Por favor, selecione um item para cancelar.", "Aviso", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            var resultado = MessageBox.Show(
+                $"Tem certeza que deseja marcar a vistoria do LPCO '{vistoriaSelecionada.LPCO}' como CANCELADA?",
+                "Confirmar Cancelamento", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+
+            if (resultado == DialogResult.No) return;
+
+            try
+            {
+                // 2. Busca o Processo principal no banco de dados.
+                var processo = await _repositorioProcesso.GetByRefUsaAsync(vistoriaSelecionada.Ref_USA);
+                if (processo == null)
+                {
+                    MessageBox.Show("Processo original não encontrado. Não é possível atualizar o status.", "Erro");
+                    return;
+                }
+
+                // 3. Encontra o LPCO específico dentro da lista de LIs do processo.
+                var lpcoParaAtualizar = processo.LI
+                    .SelectMany(li => li.LPCO)
+                    .FirstOrDefault(lpco => lpco.LPCO == vistoriaSelecionada.LPCO);
+
+                if (lpcoParaAtualizar != null)
+                {
+                    // Atualiza o status do LPCO para "CANCELADA".
+                    lpcoParaAtualizar.MotivoExigencia = "CANCELADA";
+                    await _repositorioProcesso.UpdateAsync(processo);
+                }
+
+                // 4. Deleta o registro da vistoria.
+                await _repositorioVistorias.DeleteByLpcoAsync(vistoriaSelecionada.LPCO);
+
+                // 5. Remove da grid.
+                _bsProcessosDadoEntrada.Remove(vistoriaSelecionada);
+
+                MessageBox.Show("Vistoria cancelada e LPCO atualizado como CANCELADA!", "Sucesso", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Erro ao cancelar a vistoria: {ex.Message}", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
     }
 }

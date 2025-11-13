@@ -46,6 +46,7 @@ namespace CLUSA
         public string Terminal { get; set; } = string.Empty;
         public string Conhecimento { get; set; } = string.Empty;
         public string Armador { get; set; } = string.Empty;
+        public string CE { get; set; } = string.Empty;
 
         //adicionados
         public string Container { get; set; } = string.Empty;
