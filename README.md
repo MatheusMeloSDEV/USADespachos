@@ -141,14 +141,12 @@ Trabalho/
 
 ## 👥 Contribuidores
 
-- **MatheusMeloSDEV** - Desenvolvedor Principal
-- **MaquitoMarco** - Contribuidor
-- **GDpromg** - Contribuidor
+- **MatheusMeloSDEV** - Desenvolvedor
 
 ## 📧 Contato
 
 - GitHub: [@MatheusMeloSDEV](https://github.com/MatheusMeloSDEV)
-- Email: [Seu email aqui]
+- Email: [matheusmvsj@gmail.com]
 
 ## 📄 Licença
 
@@ -158,8 +156,6 @@ Este projeto está licenciado sob a Licença MIT - veja o arquivo [LICENSE](LICE
 
 - FIAP (Faculdade de Informática e Administração Paulista)
 - TechChallenge community
-- Todos os contribuidores que ajudaram no desenvolvimento
 
 ---
 
-**Desenvolvido com ❤️ por Matheus Santos**
