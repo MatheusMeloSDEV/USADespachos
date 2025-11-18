@@ -1,10 +1,11 @@
-﻿using System;
+﻿using CLUSA; // Models e ProcessoHelper aqui
+using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using CLUSA; // Models e ProcessoHelper aqui
 
 namespace Trabalho
 {
@@ -48,8 +49,10 @@ namespace Trabalho
                 { StatusBloco.DIDUIMPParaDigitacao, ("DI/DUIMP para Digitação", Color.FromArgb(192,0,0)) }
             };
 
+        private List<dynamic> _dadosExibicaoAtual = new();
+        private string? _ultimaColunaOrdenada = null;
+        private bool _ultimaDirecaoAscendente = true;
         private List<Processo> _todosProcessos = new();
-
         public FrmStatusProcessos()
         {
             InitializeComponent();
@@ -93,52 +96,58 @@ namespace Trabalho
             LblTitulo.ForeColor = blocoInfo.Cor == Color.Black ? Color.White : Color.Black;
             LblTitulo.BackColor = blocoInfo.Cor;
 
-            var dadosExibicao = processos.Select(p => new
-            {
-                p.Ref_USA,
-                p.SR,
-                p.Importador,
-                p.Exportador,
-                p.Produto,
-                p.Container,
-                p.PortoDestino,
-                p.Veiculo,
-                p.DataDeAtracacao, // Use DateTime, o DataGridView formata pelo DefaultCellStyle!
-                p.OrgaosAnuentesString,
-                p.FreeTime,
-                p.VencimentoFreeTime,
-                p.VencimentoFMA,
-                p.DI,
-                LPCOs = ProcessoHelper.ObterResumoLPCOs(p),
-                p.HistoricoDoProcesso,
-                p.Pendencia,
-                p.Status
-            }).ToList();
+            var dadosExibicao = processos
+                .OrderBy(p => (p.Ref_USA?.Trim().EndsWith("ITJ", StringComparison.OrdinalIgnoreCase) ?? false) ? 1 : 0) // ITJ no final
+                .ThenBy(p => string.IsNullOrWhiteSpace(p.Ref_USA) ? 1 : 0) // Ref_USA vazio mais abaixo
+                .ThenBy(p => ExtrairAnoNumero(p.Ref_USA)) // Ordena normalmente
+                .Select(p => new {
+                    p.Ref_USA,
+                    p.SR,
+                    p.Importador,
+                    p.Veiculo,
+                    p.DataDeAtracacao,
+                    p.Terminal,
+                    p.LocalDeDesembaraco,
+                    p.Container,
+                    p.Redestinacao,
+                    p.CE,
+                    p.FreeTime,
+                    p.VencimentoFreeTime,
+                    p.VencimentoFMA,
+                    p.CapaOK,
+                    p.Numerario,
+                    p.RascunhoDI,
+                    p.Pendencia,
+                    p.Status,
+                })
+                .ToList();
 
 
-            DGVSelecionado.DataSource = dadosExibicao;
-            ConfigurarDataGridView();
+            _dadosExibicaoAtual = dadosExibicao.Cast<dynamic>().ToList();
+
+            DGVSelecionado.DataSource = _dadosExibicaoAtual;
+            ConfigurarColunasDataGridViewProcesso();
 
             Blocos.Visible = false;
             MostrarItens.Visible = true;
         }
 
         // UI helpers
-        private void ConfigurarDataGridView()
+        private void ConfigurarColunasDataGridViewProcesso()
         {
             DGVSelecionado.Columns.Clear();
+
+            // --- Configuração Geral da Grade ---
             DGVSelecionado.AutoGenerateColumns = false;
-            DGVSelecionado.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
+            DGVSelecionado.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill; // Mantém o preenchimento
             DGVSelecionado.RowHeadersVisible = false;
             DGVSelecionado.AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.None;
             DGVSelecionado.DefaultCellStyle.WrapMode = DataGridViewTriState.False;
             DGVSelecionado.ShowCellToolTips = true;
-            DGVSelecionado.BackgroundColor = Color.White;
-            DGVSelecionado.AlternatingRowsDefaultCellStyle.BackColor = Color.FromArgb(245, 245, 245);
-
             var dateCellStyle = new DataGridViewCellStyle { Format = "dd/MM/yyyy" };
 
-            // Adiciona as colunas com largura e header definidos
+            // --- Adicionando as Colunas com Largura Mínima ---
+
             DGVSelecionado.Columns.Add(new DataGridViewTextBoxColumn
             {
                 DataPropertyName = "Ref_USA",
@@ -150,29 +159,42 @@ namespace Trabalho
             {
                 DataPropertyName = "SR",
                 HeaderText = "S. Ref",
-                AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells,
-                MinimumWidth = 80
+                MinimumWidth = 60
             });
             DGVSelecionado.Columns.Add(new DataGridViewTextBoxColumn
             {
                 DataPropertyName = "Importador",
                 HeaderText = "Importador",
+                AutoSizeMode = DataGridViewAutoSizeColumnMode.ColumnHeader,
+                MinimumWidth = 80 // <-- MUDANÇA
+            });
+            DGVSelecionado.Columns.Add(new DataGridViewTextBoxColumn
+            {
+                DataPropertyName = "Veiculo",
+                HeaderText = "Veículo",
+                FillWeight = 140,
+                MinimumWidth = 80 // <-- MUDANÇA
+            });
+            DGVSelecionado.Columns.Add(new DataGridViewTextBoxColumn
+            {
+                DataPropertyName = "DataDeAtracacao",
+                HeaderText = "Data de Atracação",
+                AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells,
+                MinimumWidth = 70 // <-- MUDANÇA
+            });
+            DGVSelecionado.Columns.Add(new DataGridViewTextBoxColumn
+            {
+                DataPropertyName = "Terminal",
+                HeaderText = "Terminal",
                 FillWeight = 140,
                 MinimumWidth = 140
             });
             DGVSelecionado.Columns.Add(new DataGridViewTextBoxColumn
             {
-                DataPropertyName = "Exportador",
-                HeaderText = "Exportador",
-                FillWeight = 140,
-                MinimumWidth = 140
-            });
-            DGVSelecionado.Columns.Add(new DataGridViewTextBoxColumn
-            {
-                DataPropertyName = "Produto",
-                HeaderText = "Produto",
-                FillWeight = 180,
-                MinimumWidth = 200
+                DataPropertyName = "LocalDeDesembaraco",
+                HeaderText = "Local",
+                AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells,
+                MinimumWidth = 120 // <-- MUDANÇA
             });
             DGVSelecionado.Columns.Add(new DataGridViewTextBoxColumn
             {
@@ -181,47 +203,26 @@ namespace Trabalho
                 AutoSizeMode = DataGridViewAutoSizeColumnMode.ColumnHeader,
                 MinimumWidth = 120
             });
-            DGVSelecionado.Columns.Add(new DataGridViewTextBoxColumn
+            DGVSelecionado.Columns.Add(new DataGridViewCheckBoxColumn
             {
-                DataPropertyName = "PortoDestino",
-                HeaderText = "Porto Destino",
-                AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells,
-                MinimumWidth = 110
+                DataPropertyName = "Redestinacao",
+                HeaderText = "Redes.",
+                AutoSizeMode = DataGridViewAutoSizeColumnMode.ColumnHeader,
+                MinimumWidth = 50
             });
             DGVSelecionado.Columns.Add(new DataGridViewTextBoxColumn
             {
-                DataPropertyName = "Veiculo",
-                HeaderText = "Veículo",
-                FillWeight = 110,
-                MinimumWidth = 120
-            });
-            DGVSelecionado.Columns.Add(new DataGridViewTextBoxColumn
-            {
-                DataPropertyName = "DataDeAtracacao",
-                HeaderText = "Data de Atracação",
-                AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells,
-                MinimumWidth = 70,
-                DefaultCellStyle = dateCellStyle
-            });
-            DGVSelecionado.Columns.Add(new DataGridViewTextBoxColumn
-            {
-                DataPropertyName = "LPCOs",
-                HeaderText = "LPCOs (Deferidos/Total)",
-                MinimumWidth = 100
-            });
-            DGVSelecionado.Columns.Add(new DataGridViewTextBoxColumn
-            {
-                DataPropertyName = "OrgaosAnuentesString",
-                HeaderText = "Anuente",
+                DataPropertyName = "CE",
+                HeaderText = "CE",
                 FillWeight = 90,
-                MinimumWidth = 100
+                MinimumWidth = 100 // <-- MUDANÇA
             });
             DGVSelecionado.Columns.Add(new DataGridViewTextBoxColumn
             {
                 DataPropertyName = "FreeTime",
-                HeaderText = "F.T (dias)",
+                HeaderText = "F.T",
                 AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells,
-                MinimumWidth = 70
+                MinimumWidth = 40 // <-- MUDANÇA
             });
             DGVSelecionado.Columns.Add(new DataGridViewTextBoxColumn
             {
@@ -229,7 +230,7 @@ namespace Trabalho
                 HeaderText = "Venc. F. Time",
                 DefaultCellStyle = dateCellStyle,
                 AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells,
-                MinimumWidth = 100
+                MinimumWidth = 100 // <-- MUDANÇA
             });
             DGVSelecionado.Columns.Add(new DataGridViewTextBoxColumn
             {
@@ -237,54 +238,193 @@ namespace Trabalho
                 HeaderText = "Venc. FMA",
                 DefaultCellStyle = dateCellStyle,
                 AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells,
-                MinimumWidth = 100
+                MinimumWidth = 100 // <-- MUDANÇA
+            });
+            DGVSelecionado.Columns.Add(new DataGridViewCheckBoxColumn
+            {
+                DataPropertyName = "CapaOK",
+                HeaderText = "Capa",
+                AutoSizeMode = DataGridViewAutoSizeColumnMode.ColumnHeader,
+                MinimumWidth = 40
+            });
+            DGVSelecionado.Columns.Add(new DataGridViewCheckBoxColumn
+            {
+                DataPropertyName = "Numerario",
+                HeaderText = "Num.",
+                AutoSizeMode = DataGridViewAutoSizeColumnMode.ColumnHeader,
+                MinimumWidth = 40
             });
             DGVSelecionado.Columns.Add(new DataGridViewTextBoxColumn
             {
-                DataPropertyName = "DI",
-                HeaderText = "DI",
+                DataPropertyName = "RascunhoDI",
+                HeaderText = "Rascunho DI",
                 AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells,
                 MinimumWidth = 120
-            });
-            DGVSelecionado.Columns.Add(new DataGridViewTextBoxColumn
-            {
-                DataPropertyName = "HistoricoDoProcesso",
-                HeaderText = "Histórico",
-                FillWeight = 200,
-                MinimumWidth = 200
             });
             DGVSelecionado.Columns.Add(new DataGridViewTextBoxColumn
             {
                 DataPropertyName = "Pendencia",
                 HeaderText = "Pendência",
                 FillWeight = 160,
-                MinimumWidth = 160
+                MinimumWidth = 160 // <-- MUDANÇA
             });
             DGVSelecionado.Columns.Add(new DataGridViewTextBoxColumn
             {
                 DataPropertyName = "Status",
                 HeaderText = "Status",
-                FillWeight = 110,
-                MinimumWidth = 120
+                FillWeight = 180,
+                MinimumWidth = 120 // <-- MUDANÇA
             });
 
-            // Estilo dos headers (mantém do seu antigo ConfigurarDataGridView)
-            var headerStyle = new DataGridViewCellStyle
+            foreach (DataGridViewColumn coluna in DGVSelecionado.Columns)
             {
-                Font = new Font("Segoe UI", 9F, FontStyle.Bold),
-                BackColor = Color.FromArgb(230, 230, 230),
-                ForeColor = Color.Black
-            };
+                coluna.DefaultCellStyle.Font = new Font("Segoe UI", 10);
+                coluna.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleLeft;
+                coluna.SortMode = DataGridViewColumnSortMode.Programmatic;
+
+                // Centralizar checkbox
+                if (coluna is DataGridViewCheckBoxColumn || coluna.HeaderText == "F.T")
+                {
+                    coluna.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
+                }
+            }
+        }
+        private void DGVSelecionado_ColumnHeaderMouseClick(object sender, DataGridViewCellMouseEventArgs e)
+        {
+            var coluna = DGVSelecionado.Columns[e.ColumnIndex];
+            var propriedade = coluna.DataPropertyName;
+            if (string.IsNullOrWhiteSpace(propriedade) || _dadosExibicaoAtual.Count == 0) return;
+
+            // Alternância asc/desc
+            bool ascendente = true;
+            if (_ultimaColunaOrdenada == propriedade)
+                ascendente = !_ultimaDirecaoAscendente;
+            _ultimaColunaOrdenada = propriedade;
+            _ultimaDirecaoAscendente = ascendente;
+
+            // Busca o tipo da propriedade usando reflection na primeira linha
+            var primeiroItem = _dadosExibicaoAtual[0];
+            var propInfo = primeiroItem.GetType().GetProperty(propriedade);
+            if (propInfo == null) return;
+
+            List<dynamic> novaLista;
+
+            // ---- Lógica especial para Ref_USA ----
+            if (propriedade == "Ref_USA")
+            {
+                Func<dynamic, bool> itjFinalizado = d => ((d.Ref_USA as string)?.Trim().EndsWith("ITJ", StringComparison.OrdinalIgnoreCase) ?? false);
+                Func<dynamic, bool> refUsaVazio = d => string.IsNullOrWhiteSpace((string?)d.Ref_USA);
+
+                var ordered = _dadosExibicaoAtual
+                    .OrderBy(d => itjFinalizado(d) ? 1 : 0) // ITJ fica no final
+                    .ThenBy(d => refUsaVazio(d) ? 1 : 0);   // depois Ref_USA vazios
+
+                if (ascendente)
+                    novaLista = ordered.ThenBy(d => ExtrairAnoNumero((string?)d.Ref_USA)).ToList();
+                else
+                    novaLista = ordered.ThenByDescending(d => ExtrairAnoNumero((string?)d.Ref_USA)).ToList();
+            }
+
+
+            else if (propInfo.PropertyType == typeof(DateTime) || propInfo.PropertyType == typeof(DateTime?))
+            {
+                if (ascendente)
+                {
+                    novaLista = _dadosExibicaoAtual
+                        .OrderBy(d => propInfo.GetValue(d) == null ? 1 : 0)
+                        .ThenBy(d => (DateTime?)propInfo.GetValue(d) ?? DateTime.MinValue)
+                        .ToList();
+                }
+                else
+                {
+                    novaLista = _dadosExibicaoAtual
+                        .OrderBy(d => propInfo.GetValue(d) == null ? 1 : 0)
+                        .ThenByDescending(d => (DateTime?)propInfo.GetValue(d) ?? DateTime.MinValue)
+                        .ToList();
+                }
+            }
+            else if (propInfo.PropertyType == typeof(string))
+            {
+                if (ascendente)
+                {
+                    novaLista = _dadosExibicaoAtual
+                        .OrderBy(d => string.IsNullOrWhiteSpace((string?)propInfo.GetValue(d)) ? 1 : 0)
+                        .ThenBy(d => (string?)propInfo.GetValue(d) ?? "")
+                        .ToList();
+                }
+                else
+                {
+                    novaLista = _dadosExibicaoAtual
+                        .OrderBy(d => string.IsNullOrWhiteSpace((string?)propInfo.GetValue(d)) ? 1 : 0)
+                        .ThenByDescending(d => (string?)propInfo.GetValue(d) ?? "")
+                        .ToList();
+                }
+            }
+            else if (propInfo.PropertyType == typeof(bool) || propInfo.PropertyType == typeof(bool?))
+            {
+                if (ascendente)
+                {
+                    novaLista = _dadosExibicaoAtual.OrderBy(d => (bool?)propInfo.GetValue(d) ?? false).ToList();
+                }
+                else
+                {
+                    novaLista = _dadosExibicaoAtual.OrderByDescending(d => (bool?)propInfo.GetValue(d) ?? false).ToList();
+                }
+            }
+            else if (Nullable.GetUnderlyingType(propInfo.PropertyType) != null)
+            {
+                if (ascendente)
+                {
+                    novaLista = _dadosExibicaoAtual
+                        .OrderBy(d => propInfo.GetValue(d) == null ? 1 : 0)
+                        .ThenBy(d => Convert.ToDecimal(propInfo.GetValue(d) ?? 0))
+                        .ToList();
+                }
+                else
+                {
+                    novaLista = _dadosExibicaoAtual
+                        .OrderBy(d => propInfo.GetValue(d) == null ? 1 : 0)
+                        .ThenByDescending(d => Convert.ToDecimal(propInfo.GetValue(d) ?? 0))
+                        .ToList();
+                }
+            }
+            else
+            {
+                if (ascendente)
+                {
+                    novaLista = _dadosExibicaoAtual.OrderBy(d => propInfo.GetValue(d) ?? 0).ToList();
+                }
+                else
+                {
+                    novaLista = _dadosExibicaoAtual.OrderByDescending(d => propInfo.GetValue(d) ?? 0).ToList();
+                }
+            }
+
+            // Atualiza o grid
+            DGVSelecionado.DataSource = null;
+            DGVSelecionado.DataSource = novaLista;
+            _dadosExibicaoAtual = novaLista;
 
             foreach (DataGridViewColumn col in DGVSelecionado.Columns)
             {
-                col.HeaderCell.Style = headerStyle;
-                col.DefaultCellStyle.Font = new Font("Segoe UI", 10);
-                col.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleLeft;
+                col.HeaderCell.SortGlyphDirection = (col.Name == coluna.Name)
+                    ? (ascendente ? SortOrder.Ascending : SortOrder.Descending)
+                    : SortOrder.None;
             }
         }
-
-
+        private (int ano, int numero) ExtrairAnoNumero(string refUsa)
+        {
+            if (string.IsNullOrWhiteSpace(refUsa)) return (0, 0);
+            string refLimpa = refUsa.Split(' ').FirstOrDefault() ?? refUsa;
+            var partes = refLimpa.Split('/');
+            int numero = 0, ano = 0;
+            if (partes.Length == 2)
+            {
+                int.TryParse(partes[0], out numero);
+                int.TryParse(partes[1], out ano);
+            }
+            return (ano, numero);
+        }
         private void AtualizarContadores()
         {
             // Para os blocos "normais"
@@ -370,31 +510,36 @@ namespace Trabalho
             LblTitulo.ForeColor = blocoInfo.Cor == Color.Black ? Color.White : Color.Black;
             LblTitulo.BackColor = blocoInfo.Cor;
 
-            var dadosExibicao = processos.Select(p => new
-            {
-                p.Ref_USA,
-                p.SR,
-                p.Importador,
-                p.Exportador,
-                p.Produto,
-                p.Container,
-                p.PortoDestino,
-                p.Veiculo,
-                p.DataDeAtracacao, // Use DateTime, o DataGridView formata pelo DefaultCellStyle!
-                p.OrgaosAnuentesString,
-                p.FreeTime,
-                p.VencimentoFreeTime,
-                p.VencimentoFMA,
-                p.DI,
-                LPCOs = ProcessoHelper.ObterResumoLPCOs(p),
-                p.HistoricoDoProcesso,
-                p.Pendencia,
-                p.Status
-            }).ToList();
+            var dadosExibicao = processos
+                .OrderBy(p => (p.Ref_USA?.Trim().EndsWith("ITJ", StringComparison.OrdinalIgnoreCase) ?? false) ? 1 : 0) // ITJ no final
+                .ThenBy(p => string.IsNullOrWhiteSpace(p.Ref_USA) ? 1 : 0) // Ref_USA vazio mais abaixo
+                .ThenBy(p => ExtrairAnoNumero(p.Ref_USA)) // Ordena normalmente
+                .Select(p => new {
+                    p.Ref_USA,
+                    p.SR,
+                    p.Importador,
+                    p.Veiculo,
+                    p.DataDeAtracacao,
+                    p.Terminal,
+                    p.LocalDeDesembaraco,
+                    p.Container,
+                    p.Redestinacao,
+                    p.CE,
+                    p.FreeTime,
+                    p.VencimentoFreeTime,
+                    p.VencimentoFMA,
+                    p.CapaOK,
+                    p.Numerario,
+                    p.RascunhoDI,
+                    p.Pendencia,
+                    p.Status,
+                })
+                .ToList();
+
 
             DGVSelecionado.DataSource = dadosExibicao;
-            ConfigurarDataGridView();
-
+            ConfigurarColunasDataGridViewProcesso();
+            
             Blocos.Visible = false;
             MostrarItens.Visible = true;
         }
@@ -409,30 +554,35 @@ namespace Trabalho
             LblTitulo.ForeColor = blocoInfo.Cor == Color.Black ? Color.White : Color.Black;
             LblTitulo.BackColor = blocoInfo.Cor;
 
-            var dadosExibicao = processos.Select(p => new
-            {
-                p.Ref_USA,
-                p.SR,
-                p.Importador,
-                p.Exportador,
-                p.Produto,
-                p.Container,
-                p.PortoDestino,
-                p.Veiculo,
-                p.DataDeAtracacao, // Use DateTime, o DataGridView formata pelo DefaultCellStyle!
-                p.OrgaosAnuentesString,
-                p.FreeTime,
-                p.VencimentoFreeTime,
-                p.VencimentoFMA,
-                p.DI,
-                LPCOs = ProcessoHelper.ObterResumoLPCOs(p),
-                p.HistoricoDoProcesso,
-                p.Pendencia,
-                p.Status
-            }).ToList();
+            var dadosExibicao = processos
+                .OrderBy(p => (p.Ref_USA?.Trim().EndsWith("ITJ", StringComparison.OrdinalIgnoreCase) ?? false) ? 1 : 0) // ITJ no final
+                .ThenBy(p => string.IsNullOrWhiteSpace(p.Ref_USA) ? 1 : 0) // Ref_USA vazio mais abaixo
+                .ThenBy(p => ExtrairAnoNumero(p.Ref_USA)) // Ordena normalmente
+                .Select(p => new {
+                    p.Ref_USA,
+                    p.SR,
+                    p.Importador,
+                    p.Veiculo,
+                    p.DataDeAtracacao,
+                    p.Terminal,
+                    p.LocalDeDesembaraco,
+                    p.Container,
+                    p.Redestinacao,
+                    p.CE,
+                    p.FreeTime,
+                    p.VencimentoFreeTime,
+                    p.VencimentoFMA,
+                    p.CapaOK,
+                    p.Numerario,
+                    p.RascunhoDI,
+                    p.Pendencia,
+                    p.Status,
+                })
+                .ToList();
+
 
             DGVSelecionado.DataSource = dadosExibicao;
-            ConfigurarDataGridView();
+            ConfigurarColunasDataGridViewProcesso();
 
             Blocos.Visible = false;
             MostrarItens.Visible = true;

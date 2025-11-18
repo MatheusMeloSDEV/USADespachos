@@ -45,7 +45,12 @@ namespace Trabalho
             try
             {
                 var registros = await _repositorio.ListarExcetoSufixoRefUsaAsync("ITJ");
-                var registrosOrdenados = registros.OrderBy(p => ExtrairAnoNumero(p.Ref_USA)).ToList();
+                var registrosFiltrados = registros.Where(p => p.Status != "Finalizado");
+
+                var registrosOrdenados = registrosFiltrados
+                    .OrderBy(p => p.DataDeAtracacao == null || p.DataDeAtracacao == DateTime.MinValue ? 1 : 0) // primeiro os com data
+                    .ThenBy(p => p.DataDeAtracacao ?? DateTime.MaxValue)
+                    .ToList();
                 _listaOriginal = registrosOrdenados;
 
                 BsProcesso.DataSource = registrosOrdenados;
@@ -83,50 +88,21 @@ namespace Trabalho
             {
                 DataPropertyName = "SR",
                 HeaderText = "S. Ref",
-                AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells,
-                MinimumWidth = 80
+                MinimumWidth = 60
             });
             DGVSantos.Columns.Add(new DataGridViewTextBoxColumn
             {
                 DataPropertyName = "Importador",
                 HeaderText = "Importador",
-                FillWeight = 140,
-                MinimumWidth = 140 // <-- MUDANÇA
-            });
-            DGVSantos.Columns.Add(new DataGridViewTextBoxColumn
-            {
-                DataPropertyName = "Exportador",
-                HeaderText = "Exportador",
-                FillWeight = 140,
-                MinimumWidth = 140 // <-- MUDANÇA
-            });
-            DGVSantos.Columns.Add(new DataGridViewTextBoxColumn
-            {
-                DataPropertyName = "Produto",
-                HeaderText = "Produto",
-                FillWeight = 180,
-                MinimumWidth = 200 // <-- MUDANÇA
-            });
-            DGVSantos.Columns.Add(new DataGridViewTextBoxColumn
-            {
-                DataPropertyName = "Container",
-                HeaderText = "Container",
                 AutoSizeMode = DataGridViewAutoSizeColumnMode.ColumnHeader,
-                MinimumWidth = 120
-            });
-            DGVSantos.Columns.Add(new DataGridViewTextBoxColumn
-            {
-                DataPropertyName = "PortoDestino",
-                HeaderText = "Porto Destino",
-                AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells,
-                MinimumWidth = 110
+                MinimumWidth = 80 // <-- MUDANÇA
             });
             DGVSantos.Columns.Add(new DataGridViewTextBoxColumn
             {
                 DataPropertyName = "Veiculo",
                 HeaderText = "Veículo",
-                FillWeight = 110,
-                MinimumWidth = 120 // <-- MUDANÇA
+                FillWeight = 140,
+                MinimumWidth = 80 // <-- MUDANÇA
             });
             DGVSantos.Columns.Add(new DataGridViewTextBoxColumn
             {
@@ -137,17 +113,45 @@ namespace Trabalho
             });
             DGVSantos.Columns.Add(new DataGridViewTextBoxColumn
             {
-                DataPropertyName = "OrgaosAnuentesString",
-                HeaderText = "Anuente",
+                DataPropertyName = "Terminal",
+                HeaderText = "Terminal",
+                FillWeight = 140,
+                MinimumWidth = 140
+            });
+            DGVSantos.Columns.Add(new DataGridViewTextBoxColumn
+            {
+                DataPropertyName = "LocalDeDesembaraco",
+                HeaderText = "Local",
+                AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells,
+                MinimumWidth = 120 // <-- MUDANÇA
+            });
+            DGVSantos.Columns.Add(new DataGridViewTextBoxColumn
+            {
+                DataPropertyName = "Container",
+                HeaderText = "Container",
+                AutoSizeMode = DataGridViewAutoSizeColumnMode.ColumnHeader,
+                MinimumWidth = 120
+            });
+            DGVSantos.Columns.Add(new DataGridViewCheckBoxColumn
+            {
+                DataPropertyName = "Redestinacao",
+                HeaderText = "Redes.",
+                AutoSizeMode = DataGridViewAutoSizeColumnMode.ColumnHeader,
+                MinimumWidth = 50
+            });
+            DGVSantos.Columns.Add(new DataGridViewTextBoxColumn
+            {
+                DataPropertyName = "CE",
+                HeaderText = "CE",
                 FillWeight = 90,
                 MinimumWidth = 100 // <-- MUDANÇA
             });
             DGVSantos.Columns.Add(new DataGridViewTextBoxColumn
             {
                 DataPropertyName = "FreeTime",
-                HeaderText = "F.T (dias)",
+                HeaderText = "F.T",
                 AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells,
-                MinimumWidth = 70 // <-- MUDANÇA
+                MinimumWidth = 40 // <-- MUDANÇA
             });
             DGVSantos.Columns.Add(new DataGridViewTextBoxColumn
             {
@@ -165,19 +169,26 @@ namespace Trabalho
                 AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells,
                 MinimumWidth = 100 // <-- MUDANÇA
             });
-            DGVSantos.Columns.Add(new DataGridViewTextBoxColumn
+            DGVSantos.Columns.Add(new DataGridViewCheckBoxColumn
             {
-                DataPropertyName = "DI",
-                HeaderText = "DI",
-                AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells,
-                MinimumWidth = 120
+                DataPropertyName = "CapaOK",
+                HeaderText = "Capa",
+                AutoSizeMode = DataGridViewAutoSizeColumnMode.ColumnHeader,
+                MinimumWidth = 40
+            });
+            DGVSantos.Columns.Add(new DataGridViewCheckBoxColumn
+            {
+                DataPropertyName = "Numerario",
+                HeaderText = "Num.",
+                AutoSizeMode = DataGridViewAutoSizeColumnMode.ColumnHeader,
+                MinimumWidth = 40
             });
             DGVSantos.Columns.Add(new DataGridViewTextBoxColumn
             {
-                DataPropertyName = "HistoricoDoProcesso",
-                HeaderText = "Histórico",
-                FillWeight = 200,
-                MinimumWidth = 200 // <-- MUDANÇA
+                DataPropertyName = "RascunhoDI",
+                HeaderText = "Rascunho DI",
+                AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells,
+                MinimumWidth = 120
             });
             DGVSantos.Columns.Add(new DataGridViewTextBoxColumn
             {
@@ -190,51 +201,21 @@ namespace Trabalho
             {
                 DataPropertyName = "Status",
                 HeaderText = "Status",
-                FillWeight = 110,
+                FillWeight = 180,
                 MinimumWidth = 120 // <-- MUDANÇA
             });
 
-            // Aplica um estilo padrão a todas as colunas
             foreach (DataGridViewColumn coluna in DGVSantos.Columns)
             {
                 coluna.DefaultCellStyle.Font = new Font("Segoe UI", 10);
                 coluna.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleLeft;
-            }
-        }
+                coluna.SortMode = DataGridViewColumnSortMode.Programmatic;
 
-        // Cole este método dentro de frmSantos.cs e também em frmItajai.cs
-
-        private async void DGV_CellDoubleClick(object? sender, DataGridViewCellEventArgs e)
-        {
-            // Garante que o clique não foi no cabeçalho da coluna
-            if (e.RowIndex < 0) return;
-
-            // Pega o processo selecionado na linha clicada a partir do BindingSource
-            if (BsProcesso.Current is not Processo processoSelecionado)
-            {
-                MessageBox.Show("Não foi possível identificar o processo selecionado.", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                return;
-            }
-
-            try
-            {
-                // Abre o formulário de edição passando o processo selecionado
-                using var frm = new FrmModificaProcesso
+                // Centralizar checkbox
+                if (coluna is DataGridViewCheckBoxColumn || coluna.HeaderText == "F.T")
                 {
-                    processo = processoSelecionado,
-                    Modo = "Visualizar",
-                    Visualização = true // <-- Esta é a chave para travar os campos na tela de edição
-                };
-
-                frm.ShowDialog();
-
-                // Após fechar a tela de visualização, recarrega a grade para garantir que os
-                // dados estejam sempre atualizados, caso outro usuário tenha feito alguma alteração.
-                await CarregarDadosAsync();
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Erro ao abrir a tela de visualização: {ex.Message}", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    coluna.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
+                }
             }
         }
 

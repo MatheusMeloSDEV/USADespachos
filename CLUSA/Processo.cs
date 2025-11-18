@@ -61,6 +61,8 @@ namespace CLUSA
 
         public Capa Capa { get; set; } = new Capa();
 
+
+        public string LocalDeDesembaraco { get; set; } = string.Empty;
         public string DI { get; set; } = string.Empty;
         public string RascunhoDI { get; set; } = string.Empty;
         public DateTime? DataRegistroDI { get; set; } = (DateTime?)null;

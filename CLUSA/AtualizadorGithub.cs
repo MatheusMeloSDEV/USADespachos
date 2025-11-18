@@ -93,8 +93,8 @@ namespace CLUSA
             try
             {
                 string batPath = Path.Combine(Path.GetTempPath(), "update-executa.bat");
-                string exeName = "Trabalho.exe"; // Substitua pelo nome do seu executável real
-                string destFolder = @"C:\\Program Files (x86)\\UsaDespachos"; // Ajuste conforme instalação
+                string exeName = "Trabalho.exe";
+                string destFolder = @"C:\\Program Files (x86)\\UsaDespachos"; 
 
                 File.WriteAllText(batPath,
                     $"@echo off\r\ntaskkill /IM {exeName} /F\r\ntimeout /t 2 /nobreak\r\npowershell -Command \"Expand-Archive -Path '{tempPath}' -DestinationPath '{destFolder}' -Force\"\r\nstart \"\" \"{destFolder}\\{exeName}\"\r\n");
@@ -115,9 +115,12 @@ namespace CLUSA
 
         private static void Log(string mensagem)
         {
-            string logPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "atualizador.log");
+            string pastaLog = @"C:\UsaDespachos";
+            Directory.CreateDirectory(pastaLog);
+            string logPath = Path.Combine(pastaLog, "atualizador.log");
             File.AppendAllText(logPath, $"[{DateTime.Now:yyyy-MM-dd HH:mm:ss}] {mensagem}{Environment.NewLine}");
         }
+
 
         public static bool TemConexaoInternet()
         {

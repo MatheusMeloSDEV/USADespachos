@@ -1,96 +1,64 @@
-﻿using System.Windows.Forms;
-
-namespace Trabalho
+﻿namespace Trabalho
 {
-    partial class frmSantos
+    partial class frmFinalizados
     {
-        private System.ComponentModel.IContainer components = null;
-        private BindingSource BsProcesso;
         /// <summary>
-        /// Liberar recursos utilizados.
+        /// Required designer variable.
         /// </summary>
+        private System.ComponentModel.IContainer components = null;
+
+        /// <summary>
+        /// Clean up any resources being used.
+        /// </summary>
+        /// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
         protected override void Dispose(bool disposing)
         {
             if (disposing && (components != null))
             {
                 components.Dispose();
-                BsProcesso.Dispose();
             }
             base.Dispose(disposing);
         }
 
+        #region Windows Form Designer generated code
 
+        /// <summary>
+        /// Required method for Designer support - do not modify
+        /// the contents of this method with the code editor.
+        /// </summary>
         private void InitializeComponent()
         {
             components = new System.ComponentModel.Container();
-            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(frmSantos));
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(frmFinalizados));
             DataGridViewCellStyle dataGridViewCellStyle1 = new DataGridViewCellStyle();
             DataGridViewCellStyle dataGridViewCellStyle2 = new DataGridViewCellStyle();
             DataGridViewCellStyle dataGridViewCellStyle3 = new DataGridViewCellStyle();
-            BsProcesso = new BindingSource(components);
             TSMenuItajai = new ToolStrip();
-            BtnAdicionar = new ToolStripButton();
-            toolStripSeparator2 = new ToolStripSeparator();
-            toolStripButton1 = new ToolStripButton();
-            toolStripSeparator4 = new ToolStripSeparator();
             BtnRemover = new ToolStripButton();
-            toolStripSeparator3 = new ToolStripSeparator();
-            BtnExportar = new ToolStripButton();
             BtnAjuda = new ToolStripButton();
             BtnCancelar = new ToolStripButton();
             BtnPesquisar = new ToolStripButton();
             toolStripSeparator1 = new ToolStripSeparator();
             CmbPesquisar = new ToolStripComboBox();
             TxtPesquisar = new ToolStripTextBox();
-            DGVSantos = new DataGridView();
             panel1 = new Panel();
-            ((System.ComponentModel.ISupportInitialize)BsProcesso).BeginInit();
+            DGVFinalizados = new DataGridView();
+            BsProcesso = new BindingSource(components);
             TSMenuItajai.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)DGVSantos).BeginInit();
             panel1.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)DGVFinalizados).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)BsProcesso).BeginInit();
             SuspendLayout();
             // 
             // TSMenuItajai
             // 
             TSMenuItajai.AutoSize = false;
-            TSMenuItajai.Items.AddRange(new ToolStripItem[] { BtnAdicionar, toolStripSeparator2, toolStripButton1, toolStripSeparator4, BtnRemover, toolStripSeparator3, BtnExportar, BtnAjuda, BtnCancelar, BtnPesquisar, toolStripSeparator1, CmbPesquisar, TxtPesquisar });
+            TSMenuItajai.Items.AddRange(new ToolStripItem[] { BtnRemover, BtnAjuda, BtnCancelar, BtnPesquisar, toolStripSeparator1, CmbPesquisar, TxtPesquisar });
             TSMenuItajai.Location = new Point(0, 0);
             TSMenuItajai.Name = "TSMenuItajai";
             TSMenuItajai.Size = new Size(800, 40);
-            TSMenuItajai.TabIndex = 3;
+            TSMenuItajai.TabIndex = 4;
             TSMenuItajai.Text = "toolStrip1";
-            // 
-            // BtnAdicionar
-            // 
-            BtnAdicionar.Image = (Image)resources.GetObject("BtnAdicionar.Image");
-            BtnAdicionar.ImageTransparentColor = Color.Magenta;
-            BtnAdicionar.Margin = new Padding(0);
-            BtnAdicionar.Name = "BtnAdicionar";
-            BtnAdicionar.Size = new Size(78, 40);
-            BtnAdicionar.Text = "Adicionar";
-            BtnAdicionar.Click += BtnAdicionar_Click;
-            // 
-            // toolStripSeparator2
-            // 
-            toolStripSeparator2.Margin = new Padding(5, 0, 5, 0);
-            toolStripSeparator2.Name = "toolStripSeparator2";
-            toolStripSeparator2.Size = new Size(6, 40);
-            // 
-            // toolStripButton1
-            // 
-            toolStripButton1.Image = (Image)resources.GetObject("toolStripButton1.Image");
-            toolStripButton1.ImageTransparentColor = SystemColors.Menu;
-            toolStripButton1.Margin = new Padding(0);
-            toolStripButton1.Name = "toolStripButton1";
-            toolStripButton1.Size = new Size(57, 40);
-            toolStripButton1.Text = "Editar";
-            toolStripButton1.Click += BtnEditar_Click;
-            // 
-            // toolStripSeparator4
-            // 
-            toolStripSeparator4.Margin = new Padding(5, 0, 5, 0);
-            toolStripSeparator4.Name = "toolStripSeparator4";
-            toolStripSeparator4.Size = new Size(6, 40);
             // 
             // BtnRemover
             // 
@@ -101,22 +69,6 @@ namespace Trabalho
             BtnRemover.Size = new Size(74, 40);
             BtnRemover.Text = "Remover";
             BtnRemover.Click += BtnExcluir_Click;
-            // 
-            // toolStripSeparator3
-            // 
-            toolStripSeparator3.Margin = new Padding(5, 0, 5, 0);
-            toolStripSeparator3.Name = "toolStripSeparator3";
-            toolStripSeparator3.Size = new Size(6, 40);
-            // 
-            // BtnExportar
-            // 
-            BtnExportar.Image = (Image)resources.GetObject("BtnExportar.Image");
-            BtnExportar.ImageTransparentColor = Color.Magenta;
-            BtnExportar.Margin = new Padding(0);
-            BtnExportar.Name = "BtnExportar";
-            BtnExportar.Size = new Size(70, 40);
-            BtnExportar.Text = "Exportar";
-            BtnExportar.Click += BtnExportar_Click;
             // 
             // BtnAjuda
             // 
@@ -129,7 +81,6 @@ namespace Trabalho
             BtnAjuda.Name = "BtnAjuda";
             BtnAjuda.Size = new Size(24, 37);
             BtnAjuda.Text = "?";
-            BtnAjuda.Click += BtnAjuda_Click;
             // 
             // BtnCancelar
             // 
@@ -176,14 +127,24 @@ namespace Trabalho
             TxtPesquisar.Name = "TxtPesquisar";
             TxtPesquisar.Size = new Size(150, 40);
             // 
-            // DGVSantos
+            // panel1
             // 
-            DGVSantos.AllowUserToAddRows = false;
-            DGVSantos.AllowUserToDeleteRows = false;
-            DGVSantos.AllowUserToResizeRows = false;
+            panel1.AutoSizeMode = AutoSizeMode.GrowAndShrink;
+            panel1.Controls.Add(DGVFinalizados);
+            panel1.Dock = DockStyle.Fill;
+            panel1.Location = new Point(0, 40);
+            panel1.Name = "panel1";
+            panel1.Size = new Size(800, 410);
+            panel1.TabIndex = 5;
+            // 
+            // DGVFinalizados
+            // 
+            DGVFinalizados.AllowUserToAddRows = false;
+            DGVFinalizados.AllowUserToDeleteRows = false;
+            DGVFinalizados.AllowUserToResizeRows = false;
             dataGridViewCellStyle1.BackColor = Color.WhiteSmoke;
-            DGVSantos.AlternatingRowsDefaultCellStyle = dataGridViewCellStyle1;
-            DGVSantos.BackgroundColor = Color.White;
+            DGVFinalizados.AlternatingRowsDefaultCellStyle = dataGridViewCellStyle1;
+            DGVFinalizados.BackgroundColor = Color.White;
             dataGridViewCellStyle2.Alignment = DataGridViewContentAlignment.MiddleLeft;
             dataGridViewCellStyle2.BackColor = Color.DarkGray;
             dataGridViewCellStyle2.Font = new Font("Segoe UI", 9.75F, FontStyle.Bold, GraphicsUnit.Point, 0);
@@ -191,8 +152,8 @@ namespace Trabalho
             dataGridViewCellStyle2.SelectionBackColor = SystemColors.Highlight;
             dataGridViewCellStyle2.SelectionForeColor = SystemColors.HighlightText;
             dataGridViewCellStyle2.WrapMode = DataGridViewTriState.True;
-            DGVSantos.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle2;
-            DGVSantos.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            DGVFinalizados.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle2;
+            DGVFinalizados.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             dataGridViewCellStyle3.Alignment = DataGridViewContentAlignment.MiddleLeft;
             dataGridViewCellStyle3.BackColor = Color.White;
             dataGridViewCellStyle3.Font = new Font("Segoe UI", 9.75F, FontStyle.Regular, GraphicsUnit.Point, 0);
@@ -200,65 +161,53 @@ namespace Trabalho
             dataGridViewCellStyle3.SelectionBackColor = Color.LightBlue;
             dataGridViewCellStyle3.SelectionForeColor = Color.Black;
             dataGridViewCellStyle3.WrapMode = DataGridViewTriState.False;
-            DGVSantos.DefaultCellStyle = dataGridViewCellStyle3;
-            DGVSantos.Dock = DockStyle.Fill;
-            DGVSantos.EnableHeadersVisualStyles = false;
-            DGVSantos.Location = new Point(0, 0);
-            DGVSantos.MultiSelect = false;
-            DGVSantos.Name = "DGVSantos";
-            DGVSantos.ReadOnly = true;
-            DGVSantos.RowHeadersVisible = false;
-            DGVSantos.RowTemplate.Height = 25;
-            DGVSantos.Size = new Size(800, 409);
-            DGVSantos.TabIndex = 2;
-            DGVSantos.CellDoubleClick += DGVSantos_CellDoubleClick;
-            DGVSantos.ColumnHeaderMouseClick += DGV_ColumnHeaderMouseClick;
+            DGVFinalizados.DefaultCellStyle = dataGridViewCellStyle3;
+            DGVFinalizados.Dock = DockStyle.Fill;
+            DGVFinalizados.EnableHeadersVisualStyles = false;
+            DGVFinalizados.Location = new Point(0, 0);
+            DGVFinalizados.MultiSelect = false;
+            DGVFinalizados.Name = "DGVFinalizados";
+            DGVFinalizados.ReadOnly = true;
+            DGVFinalizados.RowHeadersVisible = false;
+            DGVFinalizados.RowTemplate.Height = 25;
+            DGVFinalizados.Size = new Size(800, 410);
+            DGVFinalizados.TabIndex = 2;
+            DGVFinalizados.CellDoubleClick += DGVFinalizados_CellDoubleClick;
             // 
-            // panel1
-            // 
-            panel1.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
-            panel1.AutoSizeMode = AutoSizeMode.GrowAndShrink;
-            panel1.Controls.Add(DGVSantos);
-            panel1.Location = new Point(0, 43);
-            panel1.Name = "panel1";
-            panel1.Size = new Size(800, 409);
-            panel1.TabIndex = 4;
-            // 
-            // frmSantos
+            // frmFinalizados
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(800, 450);
             ControlBox = false;
-            Controls.Add(TSMenuItajai);
             Controls.Add(panel1);
-            Name = "frmSantos";
-            Text = "Gerenciamento de Processos";
-            Shown += FrmSantos_Shown;
-            KeyDown += FrmProcesso_KeyDown;
-            ((System.ComponentModel.ISupportInitialize)BsProcesso).EndInit();
+            Controls.Add(TSMenuItajai);
+            MaximizeBox = false;
+            MinimizeBox = false;
+            Name = "frmFinalizados";
+            Text = "Finalizados";
+            Shown += FrmFinalizados_Shown;
+            KeyDown += FrmFinalizados_KeyDown;
             TSMenuItajai.ResumeLayout(false);
             TSMenuItajai.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)DGVSantos).EndInit();
             panel1.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)DGVFinalizados).EndInit();
+            ((System.ComponentModel.ISupportInitialize)BsProcesso).EndInit();
             ResumeLayout(false);
-
         }
+
+        #endregion
+
         private ToolStrip TSMenuItajai;
-        private ToolStripButton BtnAdicionar;
-        private ToolStripSeparator toolStripSeparator2;
         private ToolStripButton BtnRemover;
-        private ToolStripSeparator toolStripSeparator3;
-        private ToolStripButton BtnExportar;
+        private ToolStripButton BtnAjuda;
         private ToolStripButton BtnCancelar;
         private ToolStripButton BtnPesquisar;
         private ToolStripSeparator toolStripSeparator1;
         private ToolStripComboBox CmbPesquisar;
         private ToolStripTextBox TxtPesquisar;
-        private DataGridView DGVSantos;
-        private ToolStripButton toolStripButton1;
-        private ToolStripSeparator toolStripSeparator4;
         private Panel panel1;
-        private ToolStripButton BtnAjuda;
+        private DataGridView DGVFinalizados;
+        private BindingSource BsProcesso;
     }
 }

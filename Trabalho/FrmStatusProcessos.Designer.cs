@@ -282,6 +282,7 @@
             DGVSelecionado.Size = new Size(1258, 635);
             DGVSelecionado.TabIndex = 3;
             DGVSelecionado.CellDoubleClick += DGVSelecionado_CellDoubleClick;
+            DGVSelecionado.ColumnHeaderMouseClick += DGVSelecionado_ColumnHeaderMouseClick;
             // 
             // FrmStatusProcessos
             // 

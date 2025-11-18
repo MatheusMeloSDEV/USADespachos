@@ -184,13 +184,13 @@ namespace Trabalho
             dgv.Columns.AddRange(new DataGridViewColumn[]
             {
                 new DataGridViewTextBoxColumn { DataPropertyName = "LI", HeaderText = "L.I.", ReadOnly = true, AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells, MinimumWidth = 90 },
-                new DataGridViewTextBoxColumn { DataPropertyName = "LPCO", HeaderText = "LPCO", ReadOnly = true, AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells, MinimumWidth = 120 },
-                new DataGridViewTextBoxColumn { DataPropertyName = "Importador", HeaderText = "Importador", ReadOnly = true, FillWeight = 120, MinimumWidth = 120 },
-                new DataGridViewTextBoxColumn { DataPropertyName = "Container", HeaderText = "Container", ReadOnly = true, AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells, MinimumWidth = 110 },
+                new DataGridViewTextBoxColumn { DataPropertyName = "LPCO", HeaderText = "LPCO", ReadOnly = true, AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells, MinimumWidth = 100 },
+                new DataGridViewTextBoxColumn { DataPropertyName = "Importador", HeaderText = "Importador", ReadOnly = true, AutoSizeMode = DataGridViewAutoSizeColumnMode.ColumnHeader, MinimumWidth = 70 },
+                new DataGridViewTextBoxColumn { DataPropertyName = "Container", HeaderText = "Container", ReadOnly = true, FillWeight = 80, MinimumWidth = 60 },
                 new DataGridViewTextBoxColumn { DataPropertyName = "Ref_USA", HeaderText = "Ref. USA", ReadOnly = true, AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells, MinimumWidth = 90 },
                 new DataGridViewTextBoxColumn { DataPropertyName = "Produto", HeaderText = "Produto", ReadOnly = true, FillWeight = 150, MinimumWidth = 150 },
-                new DataGridViewTextBoxColumn { DataPropertyName = "Terminal", HeaderText = "Terminal", ReadOnly = true, AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells, MinimumWidth = 150 },
-                new DataGridViewTextBoxColumn { DataPropertyName = "Conhecimento", HeaderText = "Conhecimento", ReadOnly = true, AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells, MinimumWidth = 110 },
+                new DataGridViewTextBoxColumn { DataPropertyName = "Terminal", HeaderText = "Terminal", ReadOnly = true, AutoSizeMode = DataGridViewAutoSizeColumnMode.ColumnHeader, MinimumWidth = 120 },
+                new DataGridViewTextBoxColumn { DataPropertyName = "Conhecimento", HeaderText = "Conhecimento", ReadOnly = true, AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells, MinimumWidth = 100 },
                 new DataGridViewTextBoxColumn { DataPropertyName = "Previsao", HeaderText = "Previsão", ReadOnly = true, DefaultCellStyle = new DataGridViewCellStyle { Format = "dd/MM/yyyy" }, AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells, MinimumWidth = 90 },
                 new DataGridViewTextBoxColumn { DataPropertyName = "ParametrizacaoLPCO", HeaderText = "Status LPCO", ReadOnly = true, AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells, MinimumWidth = 100 },
                 new DataGridViewTextBoxColumn

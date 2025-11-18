@@ -319,6 +319,7 @@ namespace Trabalho
         private void MenuItemFinanceiro_Click(object? sender, EventArgs e) => ShowSingleFormOfType<FrmFinanceiro>();
         private void MenuItemAdmin_Click(object? sender, EventArgs e) => ShowSingleFormOfType<FrmAdmin>();
         private void MenuItemEmAndamento_Click(object? sender, EventArgs e) => ShowSingleFormOfType<FrmStatusProcessos>();
+        private void MenuItemFinalizados_Click(object? sender, EventArgs e) => ShowSingleFormOfType<frmFinalizados>();
         private void MenuItemMaximize_Click(object? sender, EventArgs e) => this.WindowState = FormWindowState.Maximized;
         private void MenuItemMinimize_Click(object? sender, EventArgs e) => this.WindowState = FormWindowState.Minimized;
 
@@ -329,7 +330,7 @@ namespace Trabalho
         private async void BtnAddNotifUrg_Click(object sender, EventArgs e)
         {
             var usuariosDestino = (await _repositorioUsers.FindAllAsync())
-                .Where(u => u.Id != _logadoUsuario.Id)
+                .Where(u => u.Id != _logadoUsuario.Id && u.Username != "admin")
                 .Select(u => new UsuarioDestinoItem { Id = u.Id, NomeUsuario = u.Username })
                 .ToList();
 
@@ -466,5 +467,6 @@ namespace Trabalho
             var frm = new FrmMudarSenha(_logadoUsuario);
             frm.ShowDialog();
         }
+
     }
 }

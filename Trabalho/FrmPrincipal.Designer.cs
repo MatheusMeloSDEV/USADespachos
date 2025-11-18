@@ -58,6 +58,7 @@
             toolStripLabel1 = new ToolStripLabel();
             BtnAddNotifUrg = new ToolStripButton();
             contextMenuStripNotifications = new ContextMenuStrip(components);
+            MenuItemFinalizados = new ToolStripMenuItem();
             Menu.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)pictureBox1).BeginInit();
             panel1.SuspendLayout();
@@ -109,7 +110,7 @@
             // 
             // planilhasToolStripMenuItem
             // 
-            planilhasToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { santosToolStripMenuItem, itajaíToolStripMenuItem });
+            planilhasToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { santosToolStripMenuItem, itajaíToolStripMenuItem, MenuItemFinalizados });
             planilhasToolStripMenuItem.Name = "planilhasToolStripMenuItem";
             planilhasToolStripMenuItem.Size = new Size(66, 30);
             planilhasToolStripMenuItem.Text = "Planilhas";
@@ -118,7 +119,7 @@
             // 
             santosToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { MenuItemProcessoSantos, MenuItemOrgaoAnuente });
             santosToolStripMenuItem.Name = "santosToolStripMenuItem";
-            santosToolStripMenuItem.Size = new Size(109, 22);
+            santosToolStripMenuItem.Size = new Size(180, 22);
             santosToolStripMenuItem.Text = "Santos";
             // 
             // MenuItemProcessoSantos
@@ -139,7 +140,7 @@
             // 
             itajaíToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { MenuItemProcessosItajai, MenuItemOrgaoAnuente1 });
             itajaíToolStripMenuItem.Name = "itajaíToolStripMenuItem";
-            itajaíToolStripMenuItem.Size = new Size(109, 22);
+            itajaíToolStripMenuItem.Size = new Size(180, 22);
             itajaíToolStripMenuItem.Text = "Itajaí";
             // 
             // MenuItemProcessosItajai
@@ -291,6 +292,13 @@
             contextMenuStripNotifications.ShowImageMargin = false;
             contextMenuStripNotifications.Size = new Size(36, 4);
             // 
+            // MenuItemFinalizados
+            // 
+            MenuItemFinalizados.Name = "MenuItemFinalizados";
+            MenuItemFinalizados.Size = new Size(180, 22);
+            MenuItemFinalizados.Text = "Finalizados";
+            MenuItemFinalizados.Click += MenuItemFinalizados_Click;
+            // 
             // FrmPrincipal
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
@@ -349,5 +357,6 @@
         private ToolStripMenuItem MenuItemUsuario;
         private ToolStripMenuItem MenuItemExit;
         private ToolStripMenuItem MenuItemChangePassword;
+        private ToolStripMenuItem MenuItemFinalizados;
     }
 }
