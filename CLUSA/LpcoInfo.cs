@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using iText.Kernel.Pdf;
 
 namespace CLUSA
 {
@@ -15,5 +11,6 @@ namespace CLUSA
         public string ParametrizacaoLPCO { get; set; } = string.Empty;
         public bool EmExigencia { get; set; } = false;
         public string MotivoExigencia { get; set; } = string.Empty;
+        public string StatusLPCO { get; set; } = string.Empty;
     }
 }

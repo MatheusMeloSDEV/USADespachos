@@ -12,12 +12,13 @@ namespace Trabalho
         private readonly RepositorioVistorias _repositorioVistorias;
         private readonly RepositorioProcesso _repositorioProcesso;
 
-        private readonly BindingSource _bsAguardandoDef;
-        private readonly BindingSource _bsVistoriaAgendada;
-        private readonly BindingSource _bsSolicitadoData;
-        private readonly BindingSource _bsAguardandoChegada;
-        private readonly BindingSource _bsAguardandoLaudo;
-        private readonly BindingSource _bsProcessosDadoEntrada;
+        // BindingSources
+        private readonly BindingSource _bsAguardandoDef = new();
+        private readonly BindingSource _bsVistoriaAgendada = new();
+        private readonly BindingSource _bsSolicitadoData = new();
+        private readonly BindingSource _bsAguardandoChegada = new();
+        private readonly BindingSource _bsAguardandoLaudo = new();
+        private readonly BindingSource _bsProcessosDadoEntrada = new();
 
         public FrmVistorias()
         {
@@ -32,58 +33,43 @@ namespace Trabalho
             _vistoriaService = new VistoriaService(database);
             _repositorioVistorias = new RepositorioVistorias(database);
             _repositorioProcesso = new RepositorioProcesso();
-
-            _bsAguardandoDef = new BindingSource();
-            _bsVistoriaAgendada = new BindingSource();
-            _bsSolicitadoData = new BindingSource();
-            _bsAguardandoChegada = new BindingSource();
-            _bsAguardandoLaudo = new BindingSource();
-            _bsProcessosDadoEntrada = new BindingSource();
         }
         private async Task CarregarDadosAsync()
         {
             try
             {
                 Cursor = Cursors.WaitCursor;
+
+                // 1. Sincroniza (garante que vistorias novas do banco sejam criadas)
+                // A regra da ANVISA deve estar DENTRO deste método no Service
                 await _vistoriaService.SincronizarVistoriasAsync();
+
+                // 2. Busca dados (I/O)
                 var todasAsVistorias = await _repositorioVistorias.GetAllAsync();
 
-                // MUDANÇA: Os BindingSources agora recebem a lista de 'Vistoria' diretamente.
-                _bsAguardandoLaudo.DataSource = todasAsVistorias
-                    .Where(v => v.Status == StatusVistoria.AguardandoLaudo)
-                    .OrderBy(v => v.Previsao ?? DateTime.MaxValue)
-                    .ToList();
-                _bsAguardandoDef.DataSource = todasAsVistorias
-                    .Where(v => v.Status == StatusVistoria.AguardandoDeferimento)
-                    .OrderBy(v => v.Previsao ?? DateTime.MaxValue)
-                    .ToList();
+                // 3. Processamento Pesado (CPU) - Movemos para Task.Run para não travar a tela
+                var listasProcessadas = await Task.Run(() =>
+                {
+                    return new
+                    {
+                        AguardandoLaudo = FiltrarOrdenar(todasAsVistorias, StatusVistoria.AguardandoLaudo),
+                        AguardandoDef = FiltrarOrdenar(todasAsVistorias, StatusVistoria.AguardandoDeferimento),
+                        Agendada = FiltrarOrdenar(todasAsVistorias, StatusVistoria.VistoriaAgendada),
+                        Solicitado = FiltrarOrdenar(todasAsVistorias, StatusVistoria.SolicitarDataVistoria),
+                        AguardandoChegada = FiltrarOrdenar(todasAsVistorias, StatusVistoria.AguardandoChegadaParaAgendar),
+                        DadoEntrada = FiltrarOrdenar(todasAsVistorias, StatusVistoria.ProcessoDadoEntrada)
+                    };
+                });
 
-                _bsVistoriaAgendada.DataSource = todasAsVistorias
-                    .Where(v => v.Status == StatusVistoria.VistoriaAgendada)
-                    .OrderBy(v => v.Previsao ?? DateTime.MaxValue)
-                    .ToList();
+                // 4. Atualização da UI (Thread Principal)
+                _bsAguardandoLaudo.DataSource = listasProcessadas.AguardandoLaudo;
+                _bsAguardandoDef.DataSource = listasProcessadas.AguardandoDef;
+                _bsVistoriaAgendada.DataSource = listasProcessadas.Agendada;
+                _bsSolicitadoData.DataSource = listasProcessadas.Solicitado;
+                _bsAguardandoChegada.DataSource = listasProcessadas.AguardandoChegada;
+                _bsProcessosDadoEntrada.DataSource = listasProcessadas.DadoEntrada;
 
-                _bsSolicitadoData.DataSource = todasAsVistorias
-                    .Where(v => v.Status == StatusVistoria.SolicitarDataVistoria)
-                    .OrderBy(v => v.Previsao ?? DateTime.MaxValue)
-                    .ToList();
-
-                _bsAguardandoChegada.DataSource = todasAsVistorias
-                    .Where(v => v.Status == StatusVistoria.AguardandoChegadaParaAgendar)
-                    .OrderBy(v => v.Previsao ?? DateTime.MaxValue)
-                    .ToList();
-                _bsProcessosDadoEntrada.DataSource = todasAsVistorias
-                    .Where(v => v.Status == StatusVistoria.ProcessoDadoEntrada)
-                    .OrderBy(v => v.Previsao ?? DateTime.MaxValue)
-                    .ToList();
-
-
-                AjustarAlturaDataGridView(DGVAguardandoChegAgendVistoria);
-                AjustarAlturaDataGridView(DGVAguardandoDef);
-                AjustarAlturaDataGridView(DGVLaudo);
-                AjustarAlturaDataGridView(DGVProcessosDadoEntrada);
-                AjustarAlturaDataGridView(DGVSolicitadoDataVistoria);
-                AjustarAlturaDataGridView(DGVVistoriaAgendada);
+                AjustarTodosDataGridViews();
             }
             catch (Exception ex)
             {
@@ -96,12 +82,13 @@ namespace Trabalho
         }
         private async void FrmVistorias_Shown(object? sender, EventArgs e)
         {
-            _timer.Interval = 60000;
-            _timer.Tick += async (s, e) => await SincronizarPeriodicamente();
-            _timer.Start();
-
             ConfigurarGrids();
             await CarregarDadosAsync();
+
+            // Timer de atualização
+            _timer.Interval = 60000;
+            _timer.Tick += async (s, ev) => await SincronizarPeriodicamente();
+            _timer.Start();
         }
         private void AjustarAlturaDataGridView(DataGridView dgv)
         {
@@ -271,6 +258,13 @@ namespace Trabalho
                     }
                 }
             }
+        }
+        private List<Vistoria> FiltrarOrdenar(List<Vistoria> lista, StatusVistoria status)
+        {
+            return lista
+                .Where(v => v.Status == status)
+                .OrderBy(v => v.Previsao ?? DateTime.MaxValue)
+                .ToList();
         }
         #region "Lógica de Movimentação de Vistorias"
 

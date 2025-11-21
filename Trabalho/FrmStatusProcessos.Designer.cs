@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FrmStatusProcessos));
             Blocos = new TableLayoutPanel();
             BtnDIDUIMPParaDigitacao = new Label();
@@ -43,10 +44,12 @@
             LblTitulo = new Label();
             BtnVoltar = new PictureBox();
             DGVSelecionado = new DataGridView();
+            _bindingSource = new BindingSource(components);
             Blocos.SuspendLayout();
             MostrarItens.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)BtnVoltar).BeginInit();
             ((System.ComponentModel.ISupportInitialize)DGVSelecionado).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)_bindingSource).BeginInit();
             SuspendLayout();
             // 
             // Blocos
@@ -278,7 +281,6 @@
             DGVSelecionado.Location = new Point(3, 43);
             DGVSelecionado.Name = "DGVSelecionado";
             MostrarItens.SetRowSpan(DGVSelecionado, 2);
-            DGVSelecionado.RowTemplate.Height = 25;
             DGVSelecionado.Size = new Size(1258, 635);
             DGVSelecionado.TabIndex = 3;
             DGVSelecionado.CellDoubleClick += DGVSelecionado_CellDoubleClick;
@@ -301,6 +303,7 @@
             MostrarItens.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)BtnVoltar).EndInit();
             ((System.ComponentModel.ISupportInitialize)DGVSelecionado).EndInit();
+            ((System.ComponentModel.ISupportInitialize)_bindingSource).EndInit();
             ResumeLayout(false);
         }
 
@@ -320,5 +323,6 @@
         private Label LblTitulo;
         private PictureBox BtnVoltar;
         private DataGridView DGVSelecionado;
+        private BindingSource _bindingSource;
     }
 }

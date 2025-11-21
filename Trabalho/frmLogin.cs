@@ -1,5 +1,4 @@
-﻿using AutoUpdaterDotNET;
-using CLUSA;
+﻿using CLUSA;
 
 namespace Trabalho
 {
@@ -78,11 +77,9 @@ namespace Trabalho
             if (atualizarAgora)
             {
                 this.Enabled = false;
-                await atualizador.BaixarEInstalarAsync();
+                await atualizador.BaixarEInstalarAppAsync();
             }
         }
-
-
         private void BtnLogin_Click(object sender, EventArgs e)
         {
             var user = new Users

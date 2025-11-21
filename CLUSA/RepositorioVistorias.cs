@@ -1,7 +1,5 @@
 ﻿using MongoDB.Bson;
 using MongoDB.Driver;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace CLUSA
 {
@@ -9,9 +7,10 @@ namespace CLUSA
     {
         private readonly IMongoCollection<Vistoria> _colecao;
 
-        public RepositorioVistorias(IMongoDatabase database)
+        public RepositorioVistorias(IMongoDatabase database = null)
         {
-            _colecao = database.GetCollection<Vistoria>("Vistorias");
+            var db = database ?? ConfigDatabase.GetDatabase();
+            _colecao = db.GetCollection<Vistoria>("Vistorias");
         }
 
         public async Task<List<Vistoria>> GetAllAsync()
@@ -21,19 +20,28 @@ namespace CLUSA
 
         public async Task UpsertAsync(Vistoria vistoria)
         {
+            // Filtra pelo LPCO (que é sua chave única de negócio)
             var filter = Builders<Vistoria>.Filter.Eq(v => v.LPCO, vistoria.LPCO);
-            var existente = await _colecao.Find(filter).FirstOrDefaultAsync();
-            if (existente != null)
+
+            // 1. Tenta buscar o documento existente SOMENTE para pegar o _id correto
+            // (Usamos projeção para trazer apenas o Id, economizando dados)
+            var idExistente = await _colecao
+                .Find(filter)
+                .Project(v => v.Id)
+                .FirstOrDefaultAsync();
+
+            // Verifica se o ID retornado não é vazio (ObjectId.Empty é '0000...')
+            if (idExistente != ObjectId.Empty)
             {
-                // Atualiza mantendo o Id original
-                vistoria.Id = existente.Id;
+                // CRUCIAL: Sobrescreve o ID gerado no 'new Vistoria()' pelo ID que já está no banco
+                vistoria.Id = idExistente;
+
+                // Agora o ReplaceOne funciona porque o _id é idêntico
                 await _colecao.ReplaceOneAsync(filter, vistoria);
             }
             else
             {
-                // Insere novo
-                if (vistoria.Id == default) // ou == ObjectId.Empty
-                    vistoria.Id = MongoDB.Bson.ObjectId.GenerateNewId();
+                // Se não existe, insere o novo (com o ID novo gerado no construtor)
                 await _colecao.InsertOneAsync(vistoria);
             }
         }
@@ -59,9 +67,7 @@ namespace CLUSA
         /// </summary>
         public async Task DeleteByLpcoAsync(string numeroLpco)
         {
-            // Se o número do LPCO for nulo ou vazio, não faz nada.
             if (string.IsNullOrEmpty(numeroLpco)) return;
-
             var filter = Builders<Vistoria>.Filter.Eq(v => v.LPCO, numeroLpco);
             await _colecao.DeleteOneAsync(filter);
         }

@@ -1,37 +1,77 @@
 ﻿using MongoDB.Bson;
 using MongoDB.Driver;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 
 namespace CLUSA
 {
     public class RepositorioProcesso
     {
-        private readonly IMongoCollection<Processo> _processos;
+        private readonly IMongoCollection<Processo> _colecao;
         private readonly RepositorioOrgaoAnuente _repositorioOrgaoAnuente;
         private readonly RepositorioFatura _repositorioFatura;
         private readonly RepositorioRecibo _repositorioRecibo;
         private readonly RepositorioNotificacao _repositorioNotificacao;
         private readonly RepositorioVistorias _repositorioVistorias;
 
-        public RepositorioProcesso()
+        public RepositorioProcesso(IMongoDatabase? database = null)
         {
-            var mongoClient = new MongoClient(ConfigDatabase.MongoConnectionString);
-            var mongoDatabase = mongoClient.GetDatabase(ConfigDatabase.MongoDatabaseName);
 
-            _processos = mongoDatabase.GetCollection<Processo>("PROCESSO");
+            var db = database ?? ConfigDatabase.GetDatabase();
+
+            _colecao = db.GetCollection<Processo>("PROCESSO");
+
             _repositorioOrgaoAnuente = new RepositorioOrgaoAnuente();
             _repositorioFatura = new RepositorioFatura();
             _repositorioRecibo = new RepositorioRecibo();
-            _repositorioNotificacao = new RepositorioNotificacao(mongoDatabase);
-            _repositorioVistorias = new RepositorioVistorias(mongoDatabase);
+            _repositorioNotificacao = new RepositorioNotificacao();
+            _repositorioVistorias = new RepositorioVistorias();
         }
+        // No RepositorioProcesso, crie este método se não existir
+        public async Task<List<string>> ListarRefUsaAtivosAsync()
+        {
+            // Filtra onde Status é diferente de "Finalizado" e projeta apenas o Ref_USA
+            var filter = Builders<Processo>.Filter.Ne(p => p.Status, "Finalizado");
 
+            return await _colecao
+                .Find(filter)
+                .Project(p => p.Ref_USA)
+                .ToListAsync();
+        }
         public async Task<List<Processo>> ListarTodosAsync()
         {
-            return await _processos.Find(FilterDefinition<Processo>.Empty).ToListAsync();
+            return await _colecao.Find(FilterDefinition<Processo>.Empty).ToListAsync();
+        }
+        public async Task<List<Processo>> ListarProcessosAtivosParaStatusAsync()
+        {
+            // A. FILTRO no SERVIDOR: Não traga processos finalizados.
+            var filter = Builders<Processo>.Filter.Ne(p => p.Status, "Finalizado");
+
+            // B. PROJEÇÃO: Defina quais campos são essenciais.
+            // Isso reduz o volume de dados transferidos!
+            var projection = Builders<Processo>.Projection.Include(p => p.Id)
+                .Include(p => p.Ref_USA)
+                .Include(p => p.SR)
+                .Include(p => p.Importador)
+                .Include(p => p.Veiculo)
+                .Include(p => p.DataDeAtracacao)
+                .Include(p => p.Terminal)
+                .Include(p => p.LocalDeDesembaraco)
+                .Include(p => p.Container)
+                .Include(p => p.Redestinacao)
+                .Include(p => p.CE)
+                .Include(p => p.FreeTime)
+                .Include(p => p.VencimentoFreeTime)
+                .Include(p => p.VencimentoFMA)
+                .Include(p => p.CapaOK)
+                .Include(p => p.Numerario)
+                .Include(p => p.RascunhoDI)
+                .Include(p => p.Pendencia)
+                .Include(p => p.Status)
+                .Include(p => p.CondicaoProcesso) // Se você usa este campo para filtering
+                .Include(p => p.Inspecao)
+                // Inclua qualquer outro campo usado no ProcessoHelper.AtualizarCondicaoProcesso
+                ;
+            return await _colecao.Find(filter).ToListAsync();
         }
         public async Task<List<Processo>> ListarExcetoSufixoRefUsaAsync(string sufixoAExcluir)
         {
@@ -42,7 +82,7 @@ namespace CLUSA
             // Usa o operador .Not() para inverter a lógica, trazendo tudo MENOS o que corresponde ao filtro
             var filterFinal = Builders<Processo>.Filter.Not(filterParaExcluir);
 
-            return await _processos.Find(filterFinal).ToListAsync();
+            return await _colecao.Find(filterFinal).ToListAsync();
         }
         public async Task<List<Processo>> ListarPorSufixoRefUsaAsync(string sufixo)
         {
@@ -52,11 +92,11 @@ namespace CLUSA
 
             var filter = Builders<Processo>.Filter.Regex(p => p.Ref_USA, regex);
 
-            return await _processos.Find(filter).ToListAsync();
+            return await _colecao.Find(filter).ToListAsync();
         }
         public async Task<bool> VerificarRefUsaExisteAsync(string refUsa)
         {
-            var processoExistente = await _processos
+            var processoExistente = await _colecao
                 .Find(p => p.Ref_USA == refUsa)
                 .FirstOrDefaultAsync();
 
@@ -66,24 +106,24 @@ namespace CLUSA
 
         public async Task<Processo?> ObterPorIdAsync(string id)
         {
-            return await _processos.Find(p => p.Id == ObjectId.Parse(id)).FirstOrDefaultAsync();
+            return await _colecao.Find(p => p.Id == ObjectId.Parse(id)).FirstOrDefaultAsync();
         }
 
         public async Task<List<string>> ObterValoresUnicosAsync(string campo)
         {
-            var cursor = await _processos.DistinctAsync<string>(campo, FilterDefinition<Processo>.Empty);
+            var cursor = await _colecao.DistinctAsync<string>(campo, FilterDefinition<Processo>.Empty);
             return await cursor.ToListAsync();
         }
 
         public async Task<List<Processo>> PesquisarAsync(string campo, string pesquisa)
         {
             var filter = Builders<Processo>.Filter.Regex(campo, new BsonRegularExpression(new Regex(pesquisa, RegexOptions.IgnoreCase)));
-            return await _processos.Find(filter).ToListAsync();
+            return await _colecao.Find(filter).ToListAsync();
         }
 
         public async Task CreateAsync(Processo processo)
         {
-            await _processos.InsertOneAsync(processo);
+            await _colecao.InsertOneAsync(processo);
             await SincronizarLicencas(processo);
             await _repositorioFatura.CreateAsync(new Fatura(processo));
             await _repositorioRecibo.CreateAsync(new Recibo(processo));
@@ -92,7 +132,7 @@ namespace CLUSA
 
         public async Task UpdateAsync(Processo processo)
         {
-            await _processos.ReplaceOneAsync(p => p.Id == processo.Id, processo);
+            await _colecao.ReplaceOneAsync(p => p.Id == processo.Id, processo);
             await SincronizarLicencas(processo);
             await SincronizarVistorias(processo);
         }
@@ -102,7 +142,7 @@ namespace CLUSA
             var processo = await ObterPorIdAsync(processoId);
             if (processo == null) return;
 
-            await _processos.DeleteOneAsync(p => p.Id == ObjectId.Parse(processoId));
+            await _colecao.DeleteOneAsync(p => p.Id == ObjectId.Parse(processoId));
 
             // CORREÇÃO: Usando o novo nome do método.
             await _repositorioOrgaoAnuente.DeleteAllByRefUsaAsync(processo.Ref_USA);
@@ -114,7 +154,7 @@ namespace CLUSA
         public async Task<Processo?> GetByRefUsaAsync(string refUsa)
         {
             var filter = Builders<Processo>.Filter.Eq(p => p.Ref_USA, refUsa);
-            return await _processos.Find(filter).FirstOrDefaultAsync();
+            return await _colecao.Find(filter).FirstOrDefaultAsync();
         }
         // Dentro da classe RepositorioProcesso.cs
 
@@ -139,12 +179,11 @@ namespace CLUSA
                 DataChegada = processo.DataDeAtracacao,
                 HistoricoDoProcesso = processo.HistoricoDoProcesso,
                 Pendencia = processo.Pendencia,
-                
+
                 Numero = li.Numero,
                 NCM = li.NCM,
                 DataRegistro = li.DataRegistro,
-                LPCO = li.LPCO,
-                StatusLI = li.StatusLI,
+                LPCO = li.LPCO
             };
         }
 
@@ -176,7 +215,6 @@ namespace CLUSA
                 orgaoParaSalvar.Terminal = processo.Terminal;
                 orgaoParaSalvar.DataChegada = processo.DataDeAtracacao;
                 orgaoParaSalvar.Inspecao = processo.Inspecao;
-                orgaoParaSalvar.StatusLI = liProcesso.StatusLI;
 
                 // Atualiza os dados que vêm da LI editada no FrmModificaProcesso
                 orgaoParaSalvar.NCM = liProcesso.NCM;

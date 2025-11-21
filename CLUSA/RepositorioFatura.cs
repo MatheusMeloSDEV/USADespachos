@@ -1,16 +1,15 @@
 ﻿using MongoDB.Driver;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace CLUSA
 {
     public class RepositorioFatura : RepositorioBase<Fatura>
     {
-        // O construtor apenas informa o nome da coleção para a classe base.
-        public RepositorioFatura() : base("Fatura") { }
+        // ATUALIZADO: Aceita o database e repassa para o base
+        public RepositorioFatura(IMongoDatabase? database = null)
+            : base("Fatura", database)
+        {
+        }
 
-        // Mantenha aqui apenas os métodos que são ESPECÍFICOS para Fatura.
-        // Por exemplo, o seu método FindRef, agora em versão async.
         public async Task<List<Fatura>> FindRefAsync()
         {
             var filter = Builders<Fatura>.Filter.And(

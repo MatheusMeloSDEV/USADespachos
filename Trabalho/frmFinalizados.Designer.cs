@@ -169,10 +169,10 @@
             DGVFinalizados.Name = "DGVFinalizados";
             DGVFinalizados.ReadOnly = true;
             DGVFinalizados.RowHeadersVisible = false;
-            DGVFinalizados.RowTemplate.Height = 25;
             DGVFinalizados.Size = new Size(800, 410);
             DGVFinalizados.TabIndex = 2;
             DGVFinalizados.CellDoubleClick += DGVFinalizados_CellDoubleClick;
+            DGVFinalizados.ColumnHeaderMouseClick += DGVFinalizados_ColumnHeaderMouseClick;
             // 
             // frmFinalizados
             // 

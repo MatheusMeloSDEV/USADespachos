@@ -1,7 +1,4 @@
 ﻿using MongoDB.Driver;
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace CLUSA
 {
@@ -9,9 +6,10 @@ namespace CLUSA
     {
         private readonly IMongoCollection<Notificacao> _colecao;
 
-        public RepositorioNotificacao(IMongoDatabase database)
+        public RepositorioNotificacao(IMongoDatabase? database = null)
         {
-            _colecao = database.GetCollection<Notificacao>("Notificacao");
+            var db = database ?? ConfigDatabase.GetDatabase();
+            _colecao = db.GetCollection<Notificacao>("Notificacao");
         }
         public async Task InsertManyAsync(List<Notificacao> notificacoes)
         {
@@ -36,7 +34,7 @@ namespace CLUSA
         public async Task ExcluirPorRefUsaAsync(string refUsa)
         {
             var filtro = Builders<Notificacao>.Filter.Eq(n => n.RefUsa, refUsa);
-            await _colecao.DeleteManyAsync(filtro); 
+            await _colecao.DeleteManyAsync(filtro);
         }
         public async Task<int> ContarNaoVisualizadasAsync()
         {
@@ -62,7 +60,7 @@ namespace CLUSA
                 Builders<Notificacao>.Filter.Eq(n => n.Mensagem, mensagem)
             );
             var update = Builders<Notificacao>.Update.Set(n => n.Visualizado, true);
-            var resultado = await _colecao.UpdateManyAsync(filtro, update); 
+            var resultado = await _colecao.UpdateManyAsync(filtro, update);
 
             if (resultado.ModifiedCount > 0)
             {

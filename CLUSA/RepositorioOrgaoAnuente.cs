@@ -1,8 +1,6 @@
 using MongoDB.Bson;
 using MongoDB.Driver;
-using System.Collections.Generic;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 
 namespace CLUSA
 {
@@ -13,11 +11,10 @@ namespace CLUSA
     {
         private readonly IMongoCollection<OrgaoAnuente> _colecao;
 
-        public RepositorioOrgaoAnuente()
+        public RepositorioOrgaoAnuente(IMongoDatabase? database = null)
         {
-            var client = new MongoClient(ConfigDatabase.MongoConnectionString);
-            var database = client.GetDatabase(ConfigDatabase.MongoDatabaseName);
-            _colecao = database.GetCollection<OrgaoAnuente>("OrgaosAnuentes");
+            var db = database ?? ConfigDatabase.GetDatabase();
+            _colecao = db.GetCollection<OrgaoAnuente>("OrgaosAnuentes");
         }
 
         /// <summary>

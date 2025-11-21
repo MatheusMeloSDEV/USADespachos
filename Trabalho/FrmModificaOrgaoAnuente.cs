@@ -42,7 +42,7 @@ namespace Trabalho
             {
                 ConfigurarModoVisualizacao();
             }
-            else 
+            else
             {
                 AnexarEventoDeAlteracao(this);
             }
@@ -158,7 +158,7 @@ namespace Trabalho
         {
             this.Text = string.IsNullOrWhiteSpace(OrgaoAnuente.Numero)
                 ? "Detalhes da LI"
-        :         $"LI - {OrgaoAnuente.Numero}";
+        : $"LI - {OrgaoAnuente.Numero}";
 
             // --- Carrega dados de CONTEXTO (somente leitura) ---
             TXTnr.Text = Processo.Ref_USA;
@@ -183,7 +183,6 @@ namespace Trabalho
             // --- Carrega dados da LI nos campos do GroupBox "Dados Li" ---
             TxtLi.DataBindings.Add("Text", OrgaoAnuente, nameof(OrgaoAnuente.Numero), false, DataSourceUpdateMode.OnPropertyChanged);
             TxtNCM.DataBindings.Add("Text", OrgaoAnuente, nameof(OrgaoAnuente.NCM), false, DataSourceUpdateMode.OnPropertyChanged);
-            CbStatusLI.DataBindings.Add("Text", OrgaoAnuente, nameof(OrgaoAnuente.StatusLI), false, DataSourceUpdateMode.OnPropertyChanged);
             ConfigurarDatePickerNulavel(DtpDataRegistro, OrgaoAnuente.DataRegistro);
 
             TxtLi.ReadOnly = true;
@@ -336,7 +335,8 @@ namespace Trabalho
                 dtp.Format = DateTimePickerFormat.Custom;
                 dtp.CustomFormat = " ";
             }
-            dtp.ValueChanged += (s, e) => {
+            dtp.ValueChanged += (s, e) =>
+            {
                 if (s is DateTimePicker picker)
                 {
                     picker.Format = picker.Checked ? DateTimePickerFormat.Short : DateTimePickerFormat.Custom;
@@ -357,7 +357,6 @@ namespace Trabalho
                     liNoProcesso.NCM = OrgaoAnuente.NCM;
                     liNoProcesso.DataRegistro = OrgaoAnuente.DataRegistro;
                     liNoProcesso.LPCO = OrgaoAnuente.LPCO;
-                    liNoProcesso.StatusLI = OrgaoAnuente.StatusLI;
                 }
 
                 // Atualiza campos do Processo que podem ter sido editados nesta tela
@@ -391,6 +390,11 @@ namespace Trabalho
         {
             this.DialogResult = DialogResult.Cancel;
             this.Close();
+        }
+
+        private void groupBox1_Enter(object sender, EventArgs e)
+        {
+
         }
     }
 }

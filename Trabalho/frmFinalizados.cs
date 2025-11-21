@@ -345,7 +345,116 @@ namespace Trabalho
                 MessageBox.Show($"Erro ao configurar o autocompletar: {ex.Message}", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }
         }
+        // Adicione esta função dentro da classe frmFinalizados
+
+        private void DGVFinalizados_ColumnHeaderMouseClick(object sender, DataGridViewCellMouseEventArgs e)
+        {
+            // Obtém a fonte de dados atual. Se estiver vazia, não faz nada.
+            // IMPORTANTE: Assumimos que o DataSource é uma List<Processo>
+            if (BsProcesso.DataSource is not List<Processo> listaAtual || listaAtual.Count == 0) return;
+
+            var coluna = DGVFinalizados.Columns[e.ColumnIndex];
+            var propriedade = coluna.DataPropertyName;
+
+            // Se a coluna não tiver propriedade vinculada, ignora
+            if (string.IsNullOrWhiteSpace(propriedade)) return;
+
+            // --- 1. Alternância da Direção (Ascendente / Descendente) ---
+            ListSortDirection direcao = ListSortDirection.Ascending;
+
+            // Se clicou na mesma coluna que já estava ordenada
+            if (_colunaOrdenada != null && _colunaOrdenada.Name == coluna.Name)
+            {
+                // Inverte a direção
+                direcao = (_direcaoOrdenacao == ListSortDirection.Ascending)
+                    ? ListSortDirection.Descending
+                    : ListSortDirection.Ascending;
+            }
+
+            _colunaOrdenada = coluna;
+            _direcaoOrdenacao = direcao;
+
+            // --- 2. Lógica de Ordenação ---
+
+            // Usa Reflection para descobrir o tipo da propriedade e obter seu valor
+            var propInfo = typeof(Processo).GetProperty(propriedade);
+            if (propInfo == null) return;
+
+            List<Processo> listaOrdenada;
+
+            // --- CASO ESPECIAL: REF_USA (formato 0000/00) ---
+            if (propriedade == "Ref_USA")
+            {
+                // Função auxiliar para tratar nulos
+                Func<Processo, bool> itjFinalizado = p => (p.Ref_USA?.Trim().EndsWith("ITJ", StringComparison.OrdinalIgnoreCase) ?? false);
+                Func<Processo, bool> refUsaVazio = p => string.IsNullOrWhiteSpace(p.Ref_USA);
+
+                // Ordena primeiro jogando os "vazios" e "ITJ" para o final (opcional, mas recomendado)
+                var baseQuery = listaAtual
+                    .OrderBy(p => itjFinalizado(p) ? 1 : 0) // ITJ no final
+                    .ThenBy(p => refUsaVazio(p) ? 1 : 0);   // Vazios mais abaixo
+
+                if (direcao == ListSortDirection.Ascending)
+                {
+                    listaOrdenada = baseQuery.ThenBy(p => ExtrairAnoNumero(p.Ref_USA)).ToList();
+                }
+                else
+                {
+                    listaOrdenada = baseQuery.ThenByDescending(p => ExtrairAnoNumero(p.Ref_USA)).ToList();
+                }
+            }
+            // --- CASO GENÉRICO: Datas, Strings, Números ---
+            else
+            {
+                // Helper para jogar nulos para o final na ordenação ascendente
+                // (Você pode ajustar isso se preferir nulos no início)
+
+                if (direcao == ListSortDirection.Ascending)
+                {
+                    listaOrdenada = listaAtual
+                        .OrderBy(p => propInfo.GetValue(p) == null ? 1 : 0) // Nulos pro final
+                        .ThenBy(p => propInfo.GetValue(p))
+                        .ToList();
+                }
+                else
+                {
+                    listaOrdenada = listaAtual
+                        .OrderBy(p => propInfo.GetValue(p) == null ? 1 : 0) // Nulos pro final mesmo no desc
+                        .ThenByDescending(p => propInfo.GetValue(p))
+                        .ToList();
+                }
+            }
+
+            // --- 3. Atualiza o Grid ---
+            BsProcesso.DataSource = listaOrdenada;
+            BsProcesso.ResetBindings(false);
+
+            // --- 4. Atualiza a Seta Visual (Glyph) ---
+            foreach (DataGridViewColumn col in DGVFinalizados.Columns)
+            {
+                col.HeaderCell.SortGlyphDirection = (col.Name == coluna.Name)
+                    ? (direcao == ListSortDirection.Ascending ? SortOrder.Ascending : SortOrder.Descending)
+                    : SortOrder.None;
+            }
+        }
+
+        // Método auxiliar necessário para ordenar Ref_USA corretamente (ano/numero)
+        private (int ano, int numero) ExtrairAnoNumero(string? refUsa)
+        {
+            if (string.IsNullOrWhiteSpace(refUsa)) return (0, 0);
+            var partes = refUsa.Split('/'); // Assume formato "NNNN/AA" ou similar
+            int numero = 0, ano = 0;
+
+            // Tenta extrair número (antes da barra)
+            if (partes.Length > 0) int.TryParse(partes[0], out numero);
+
+            // Tenta extrair ano (depois da barra)
+            if (partes.Length > 1) int.TryParse(partes[1], out ano);
+
+            return (ano, numero);
+        }
     }
+
     public class DisplayItem
     {
         public string DataPropertyName { get; }

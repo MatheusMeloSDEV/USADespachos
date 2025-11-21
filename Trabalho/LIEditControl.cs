@@ -18,7 +18,6 @@ namespace Trabalho
 
             TxtLi.DataBindings.Add("Text", _licenca, nameof(_licenca.Numero), false, DataSourceUpdateMode.OnPropertyChanged);
             TxtNCM.DataBindings.Add("Text", _licenca, nameof(_licenca.NCM), false, DataSourceUpdateMode.OnPropertyChanged);
-            CbStatusLI.DataBindings.Add("Text", _licenca, nameof(_licenca.StatusLI), false, DataSourceUpdateMode.OnPropertyChanged);
             ConfigurarDatePickerNulavel(DtpDataRegistro, _licenca.DataRegistro);
 
             CarregarAbasLpco();
@@ -31,12 +30,6 @@ namespace Trabalho
             itensComboBox.AddRange(Enum.GetNames(typeof(TipoOrgaoAnuente)));
             CBOrgaoAnuente.DataSource = itensComboBox;
             CBOrgaoAnuente.SelectedIndex = 0;
-
-            CbStatusLI.DropDownStyle = ComboBoxStyle.DropDownList;
-            CbStatusLI.FlatStyle = FlatStyle.Flat;
-            CbStatusLI.BackColor = SystemColors.Window; // Ou Color.White
-            CbStatusLI.Enter += (s, e) => CbStatusLI.BackColor = SystemColors.Window;
-            CbStatusLI.Leave += (s, e) => CbStatusLI.BackColor = SystemColors.Window;
 
             CBOrgaoAnuente.DropDownStyle = ComboBoxStyle.DropDownList;
             CBOrgaoAnuente.FlatStyle = FlatStyle.Flat;

@@ -1,7 +1,7 @@
 ﻿using MongoDB.Driver;
-using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
+using System.Collections.Generic;
+using System;
 using System.Threading.Tasks;
 
 namespace CLUSA
@@ -11,6 +11,15 @@ namespace CLUSA
         private readonly RepositorioOrgaoAnuente _repoOrgaoAnuente;
         private readonly RepositorioVistorias _repoVistorias;
         private readonly RepositorioProcesso _repoProcesso;
+
+        // Parametrizações que exigem vistoria física no MAPA
+        private readonly HashSet<string> _parametrizacoesMapaAlvo = new()
+        {
+            "EXAME FÍSICO",
+            "CONFERÊNCIA FÍSICA",
+            "COLETA DE AMOSTRA",
+            "INSPEÇÃO FÍSICA"
+        };
 
         public VistoriaService(IMongoDatabase database)
         {
@@ -23,154 +32,144 @@ namespace CLUSA
         {
             var listaAlteracoes = new List<string>();
 
-            var parametrizacoesAlvo = new HashSet<string> { "EXAME FÍSICO", "CONFERÊNCIA FÍSICA", "COLETA DE AMOSTRA", "INSPEÇÃO FÍSICA" };
-
-            var todasAsLIs = await _repoOrgaoAnuente.GetAllAsync();
-            var vistoriasExistentes = (await _repoVistorias.GetAllAsync()).ToDictionary(v => v.LPCO);
-
-            var todosProcessos = await _repoProcesso.ListarTodosAsync();
+            // 1. Carregamento de Dados
+            // Traz APENAS processos ativos para otimizar
+            var todosProcessos = await _repoProcesso.ListarProcessosAtivosParaStatusAsync();
             var processosDict = todosProcessos.ToDictionary(p => p.Ref_USA);
 
-            var lisSemParametrizacao = todasAsLIs
-                .Where(li => (li.StatusLI ?? "").ToUpperInvariant() == "ENTRADA CONCLUÍDA"
-                    && li.LPCO != null
-                    && li.LPCO.Any(lpco =>
-                        (lpco.NomeOrgao ?? "").ToUpperInvariant() == "MAPA" &&
-                        string.IsNullOrEmpty(lpco.ParametrizacaoLPCO) &&
-                        (lpco.MotivoExigencia ?? "").ToUpperInvariant() != "DEFERIDO" &&
-                        (lpco.MotivoExigencia ?? "").ToUpperInvariant() != "CANCELADA"))
-                .ToList();
-                        
-            foreach (var li in lisSemParametrizacao)
+            var todasAsLIs = await _repoOrgaoAnuente.GetAllAsync();
+
+            // Dicionário de vistorias existentes indexado pelo LPCO
+            var vistoriasExistentes = (await _repoVistorias.GetAllAsync())
+                                      .Where(v => !string.IsNullOrEmpty(v.LPCO))
+                                      .ToDictionary(v => v.LPCO);
+
+            // 2. Loop Único de Processamento
+            foreach (var orgaoAnuente in todasAsLIs)
             {
-                var primeiroLpcoMapa = li.LPCO?.FirstOrDefault(lpco =>
-                    (lpco.NomeOrgao ?? "").ToUpperInvariant() == "MAPA");
+                if (orgaoAnuente.LPCO == null || !orgaoAnuente.LPCO.Any()) continue;
 
-                if (primeiroLpcoMapa == null)
-                    continue;
+                processosDict.TryGetValue(orgaoAnuente.Ref_USA, out var processoPai);
 
-                processosDict.TryGetValue(li.Ref_USA, out var processoCorrespondente);
-
-                var vistoriaEntrada = new Vistoria
+                foreach (var lpcoInfo in orgaoAnuente.LPCO)
                 {
-                    LI = li.Numero,
-                    LPCO = primeiroLpcoMapa.LPCO ?? "",
-                    Importador = li.Importador,
-                    Container = li.Container,
-                    Conhecimento = li.Conhecimento,
-                    Ref_USA = li.Ref_USA,
-                    Produto = li.Produto,
-                    ParametrizacaoLPCO = primeiroLpcoMapa.ParametrizacaoLPCO ?? "",
-                    Terminal = processoCorrespondente?.Terminal ?? string.Empty,
-                    Previsao = processoCorrespondente?.DataDeAtracacao,
-                    Status = StatusVistoria.ProcessoDadoEntrada
-                };
+                    // Verificação de nulidade da propriedade string
+                    if (string.IsNullOrEmpty(lpcoInfo.LPCO)) continue;
 
-                var vistoriaExistente = await _repoVistorias.GetByLPCOAsync(vistoriaEntrada.LPCO);
+                    // --- ANÁLISE DA REGRA DE NEGÓCIO ---
+                    // CORREÇÃO: lpcoInfo é do tipo LpcoInfo, não LPCO
+                    var (deveTerVistoria, statusSugerido) = AnalisarLpco(lpcoInfo);
 
-                bool precisaAtualizar =
-                    vistoriaExistente == null ||
-                    vistoriaExistente.LI != vistoriaEntrada.LI ||
-                    vistoriaExistente.Importador != vistoriaEntrada.Importador ||
-                    vistoriaExistente.Container != vistoriaEntrada.Container ||
-                    vistoriaExistente.Conhecimento != vistoriaEntrada.Conhecimento ||
-                    vistoriaExistente.Ref_USA != vistoriaEntrada.Ref_USA ||
-                    vistoriaExistente.Produto != vistoriaEntrada.Produto ||
-                    vistoriaExistente.ParametrizacaoLPCO != vistoriaEntrada.ParametrizacaoLPCO ||
-                    vistoriaExistente.Terminal != vistoriaEntrada.Terminal ||
-                    vistoriaExistente.Previsao != vistoriaEntrada.Previsao ||
-                    vistoriaExistente.Status != vistoriaEntrada.Status;
-
-                if (precisaAtualizar)
-                {
-                    await _repoVistorias.UpsertAsync(vistoriaEntrada);
-                    listaAlteracoes.Add($"Atualizada ou criada LI: {vistoriaEntrada.LI}");
-                }
-            }
-
-            var lpsVistoria = todasAsLIs
-                .SelectMany(li => li.LPCO.Select(lpco => new { LI = li, LPCO = lpco }))
-                .Where(x => x.LPCO.NomeOrgao == "MAPA"
-                            && !string.IsNullOrEmpty(x.LPCO.LPCO)
-                            && parametrizacoesAlvo.Contains(x.LPCO.ParametrizacaoLPCO.ToUpper())
-                            && x.LPCO.MotivoExigencia?.ToUpper() != "DEFERIDO"
-                            && x.LPCO.MotivoExigencia?.ToUpper() != "CANCELADA");
-
-
-            foreach (var item in lpsVistoria)
-            {
-                if (vistoriasExistentes.ContainsKey(item.LPCO.LPCO))
-                {
-                    continue;
-                }
-
-                processosDict.TryGetValue(item.LI.Ref_USA, out var processoCorrespondente);
-
-                var novaVistoria = new Vistoria
-                {
-                    LI = item.LI.Numero,
-                    LPCO = item.LPCO.LPCO,
-                    Importador = item.LI.Importador,
-                    Container = item.LI.Container,
-                    Conhecimento = item.LI.Conhecimento,
-                    Ref_USA = item.LI.Ref_USA,
-                    Produto = item.LI.Produto,
-                    ParametrizacaoLPCO = item.LPCO.ParametrizacaoLPCO,
-                    Terminal = processoCorrespondente?.Terminal ?? string.Empty,
-                    Previsao = processoCorrespondente?.DataDeAtracacao,
-                    Status = StatusVistoria.AguardandoChegadaParaAgendar
-                };
-
-                await _repoVistorias.UpsertAsync(novaVistoria);
-                listaAlteracoes.Add($"Nova vistoria adicionada para LI {item.LI.Numero}, LPCO: {item.LPCO.LPCO}");
-            }
-
-            var vistoriasProcessoEntrada = (await _repoVistorias.GetAllAsync())
-                .Where(v => v.Status == StatusVistoria.ProcessoDadoEntrada)
-                .ToList();
-
-            foreach (var vistoria in vistoriasProcessoEntrada)
-            {
-                var li = todasAsLIs.FirstOrDefault(x => x.Numero == vistoria.LI);
-
-                if (li == null || li.LPCO == null)
-                    continue;
-
-                var lpcoMapa = li.LPCO.FirstOrDefault(lpco =>
-                    (lpco.NomeOrgao ?? "").ToUpperInvariant() == "MAPA");
-
-                if (lpcoMapa != null && (lpcoMapa.MotivoExigencia?.ToUpperInvariant() == "CANCELADA"))
-                {
-                    continue;
-                }
-
-                if (lpcoMapa != null && !string.IsNullOrEmpty(lpcoMapa.ParametrizacaoLPCO))
-                {
-                    await _repoVistorias.DeleteAsync(vistoria.Id);
-                    listaAlteracoes.Add($"Vistoria excluída para LI {li.Numero}");
-                    processosDict.TryGetValue(li.Ref_USA, out var processoCorrespondente);
-                    if (lpcoMapa.ParametrizacaoLPCO.ToUpperInvariant() != "DOCUMENTAL")
+                    // Cenário A: O LPCO deve ter uma vistoria ativa
+                    if (deveTerVistoria)
                     {
                         var novaVistoria = new Vistoria
                         {
-                            LI = li.Numero,
-                            LPCO = lpcoMapa.LPCO ?? "",
-                            Importador = li.Importador,
-                            Container = li.Container,
-                            Conhecimento = li.Conhecimento,
-                            Ref_USA = li.Ref_USA,
-                            Produto = li.Produto,
-                            ParametrizacaoLPCO = lpcoMapa.ParametrizacaoLPCO,
-                            Terminal = processoCorrespondente?.Terminal ?? string.Empty,
-                            Previsao = processoCorrespondente?.DataDeAtracacao,
-                            Status = StatusVistoria.AguardandoChegadaParaAgendar
+                            // CORREÇÃO: orgaoAnuente.Numero é int, Vistoria.LI é string. Precisa do ToString()
+                            LI = orgaoAnuente.Numero.ToString(),
+                            LPCO = lpcoInfo.LPCO,
+                            Importador = orgaoAnuente.Importador,
+                            Container = orgaoAnuente.Container,
+                            Conhecimento = orgaoAnuente.Conhecimento,
+                            Ref_USA = orgaoAnuente.Ref_USA,
+                            Produto = orgaoAnuente.Produto,
+                            ParametrizacaoLPCO = lpcoInfo.ParametrizacaoLPCO ?? "",
+                            Terminal = processoPai?.Terminal ?? string.Empty,
+                            Previsao = processoPai?.DataDeAtracacao,
+                            Status = statusSugerido
                         };
-                        await _repoVistorias.InsertAsync(novaVistoria);
-                        listaAlteracoes.Add($"Vistoria criada para LI {li.Numero}");
+
+                        if (vistoriasExistentes.TryGetValue(lpcoInfo.LPCO, out var vistoriaDb))
+                        {
+                            // Atualização
+                            bool mudouParametrizacao = vistoriaDb.ParametrizacaoLPCO != novaVistoria.ParametrizacaoLPCO;
+                            novaVistoria.Id = vistoriaDb.Id;
+
+                            if (!mudouParametrizacao)
+                            {
+                                novaVistoria.Status = vistoriaDb.Status;
+                            }
+
+                            if (mudouParametrizacao ||
+                                vistoriaDb.Terminal != novaVistoria.Terminal ||
+                                vistoriaDb.Previsao != novaVistoria.Previsao)
+                            {
+                                await _repoVistorias.UpsertAsync(novaVistoria);
+                                listaAlteracoes.Add($"Atualizado LPCO {lpcoInfo.LPCO}");
+                            }
+                        }
+                        else
+                        {
+                            // Inserção
+                            await _repoVistorias.UpsertAsync(novaVistoria);
+                            listaAlteracoes.Add($"Novo LPCO adicionado: {lpcoInfo.LPCO}");
+                        }
+                    }
+                    // Cenário B: Remover se existir
+                    else if (vistoriasExistentes.ContainsKey(lpcoInfo.LPCO))
+                    {
+                        await _repoVistorias.DeleteByLpcoAsync(lpcoInfo.LPCO);
+                        listaAlteracoes.Add($"Vistoria removida: {lpcoInfo.LPCO}");
                     }
                 }
             }
+
             return listaAlteracoes;
+        }
+
+        /// <summary>
+        /// Analisa um LPCO e determina se ele deve gerar uma vistoria.
+        /// CORREÇÃO: Tipo do parâmetro alterado de LPCO para LpcoInfo
+        /// </summary>
+        /// <summary>
+        /// Analisa um LPCO e determina se ele deve gerar uma vistoria.
+        /// </summary>
+        private (bool DeveTerVistoria, StatusVistoria Status) AnalisarLpco(LpcoInfo lpco)
+        {
+            var nomeOrgao = (lpco.NomeOrgao ?? "").ToUpperInvariant();
+            var motivo = (lpco.MotivoExigencia ?? "").ToUpperInvariant();
+            var parametrizacao = (lpco.ParametrizacaoLPCO ?? "").ToUpperInvariant();
+
+            // CORREÇÃO: Usamos lpco.StatusLPCO agora, pois StatusLI não existe mais no pai
+            var statusLpcoNormalizado = (lpco.StatusLPCO ?? "").ToUpperInvariant();
+
+            // 1. Regra Global: Se Deferido ou Cancelado, nunca gera vistoria
+            if (motivo == "DEFERIDO" || motivo == "CANCELADA")
+            {
+                return (false, StatusVistoria.AguardandoChegadaParaAgendar);
+            }
+
+            // 2. REGRA ANVISA
+            if (nomeOrgao.Contains("ANVISA"))
+            {
+                // Verifica o status no LPCO
+                if ((string.IsNullOrEmpty(parametrizacao) || parametrizacao == "DOCUMENTAL")
+                    && statusLpcoNormalizado == "ENTRADA CONCLUÍDA")
+                {
+                    return (true, StatusVistoria.ProcessoDadoEntrada);
+                }
+
+                return (false, StatusVistoria.AguardandoChegadaParaAgendar);
+            }
+
+            // 3. REGRA MAPA
+            if (nomeOrgao == "MAPA")
+            {
+                if (!string.IsNullOrEmpty(parametrizacao) && _parametrizacoesMapaAlvo.Contains(parametrizacao))
+                {
+                    return (true, StatusVistoria.AguardandoChegadaParaAgendar);
+                }
+
+                // Verifica o status no LPCO
+                if (string.IsNullOrEmpty(parametrizacao) && statusLpcoNormalizado == "ENTRADA CONCLUÍDA")
+                {
+                    return (true, StatusVistoria.ProcessoDadoEntrada);
+                }
+
+                return (false, StatusVistoria.AguardandoChegadaParaAgendar);
+            }
+
+            return (false, StatusVistoria.AguardandoChegadaParaAgendar);
         }
     }
 }

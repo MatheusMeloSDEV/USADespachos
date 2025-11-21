@@ -1,8 +1,4 @@
-﻿using System;
-using System.Runtime.InteropServices;
-using System.Windows.Forms;
-
-public class DataHelper
+﻿public class DataHelper
 {
     public static DateTime? CalcularVencimento(DateTime? dataBase, int dias)
     {

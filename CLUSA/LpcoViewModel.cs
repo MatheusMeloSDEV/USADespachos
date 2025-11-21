@@ -1,5 +1,4 @@
 ﻿using MongoDB.Bson;
-using System;
 
 namespace CLUSA
 {
@@ -11,7 +10,7 @@ namespace CLUSA
         // Dados do Processo / LI
         public string Ref_USA { get; set; } = string.Empty;
         public string Importador { get; set; } = string.Empty;
-        public string NumeroLI { get; set; } = string.Empty; 
+        public string NumeroLI { get; set; } = string.Empty;
         public string LPCO { get; set; } = string.Empty;
         public string NomeOrgao { get; set; } = string.Empty;
         public DateTime? DataRegistroLPCO { get; set; }
@@ -23,7 +22,7 @@ namespace CLUSA
         public string Produto { get; set; } = string.Empty;
         public DateTime? Inspecao { get; set; }
         public DateTime? DataChegada { get; set; }
-        public string StatusLI { get; set; } = string.Empty;
+        public string StatusLPCO { get; set; } = string.Empty;
         public string MotivoExigencia { get; set; } = string.Empty;
         public string Pendencia { get; set; } = string.Empty;
         public string HistoricoDoProcesso { get; set; } = string.Empty;

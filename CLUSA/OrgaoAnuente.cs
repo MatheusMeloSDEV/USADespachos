@@ -5,6 +5,7 @@ namespace CLUSA
 {
     public enum TipoOrgaoAnuente { MAPA, ANVISA, DECEX, IBAMA, INMETRO }
 
+    [BsonIgnoreExtraElements]
     public class OrgaoAnuente
     {
         [BsonId]
@@ -15,7 +16,7 @@ namespace CLUSA
         public string Numero { get; set; } = string.Empty;
         public string NCM { get; set; } = string.Empty;
         public DateTime? DataRegistro { get; set; }
-        
+
 
         // Lista de LPCOs DENTRO desta LI
         public List<LpcoInfo> LPCO { get; set; } = new();
@@ -33,7 +34,6 @@ namespace CLUSA
         public string Produto { get; set; } = string.Empty;
         public DateTime? Inspecao { get; set; }
         public DateTime? DataChegada { get; set; }
-        public string StatusLI { get; set; } = string.Empty;
         public string Pendencia { get; set; } = string.Empty;
         public string HistoricoDoProcesso { get; set; } = string.Empty;
 

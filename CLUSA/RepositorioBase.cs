@@ -1,8 +1,5 @@
 ﻿using MongoDB.Bson;
 using MongoDB.Driver;
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace CLUSA
 {
@@ -14,12 +11,11 @@ namespace CLUSA
     {
         protected readonly IMongoCollection<T> _colecao;
 
-        protected RepositorioBase(string collectionName)
+        protected RepositorioBase(string collectionName, IMongoDatabase? database = null)
         {
-            // Centraliza a conexão com o banco de dados
-            var client = new MongoClient(ConfigDatabase.MongoConnectionString);
-            var database = client.GetDatabase(ConfigDatabase.MongoDatabaseName);
-            _colecao = database.GetCollection<T>(collectionName);
+            var db = database ?? ConfigDatabase.GetDatabase();
+
+            _colecao = db.GetCollection<T>(collectionName);
         }
 
         public async Task<List<T>> ListarTodosAsync()

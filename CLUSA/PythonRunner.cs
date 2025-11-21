@@ -1,7 +1,4 @@
-﻿using System;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
+﻿using System.Diagnostics;
 using System.Text;
 
 namespace CLUSA
@@ -86,10 +83,12 @@ namespace CLUSA
                 using var process = new Process { StartInfo = startInfo };
 
                 // Configura os "ouvintes" (event handlers) para as saídas
-                process.OutputDataReceived += (sender, args) => {
+                process.OutputDataReceived += (sender, args) =>
+                {
                     if (args.Data != null) stdoutBuilder.AppendLine(args.Data);
                 };
-                process.ErrorDataReceived += (sender, args) => {
+                process.ErrorDataReceived += (sender, args) =>
+                {
                     if (args.Data != null) stderrBuilder.AppendLine(args.Data);
                 };
 

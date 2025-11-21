@@ -137,6 +137,12 @@ namespace Trabalho
             });
 
             // --- Colunas de Status ---
+            DgvOrgaoAnuente.Columns.Add(new DataGridViewTextBoxColumn
+            {
+                DataPropertyName = "StatusLPCO",
+                HeaderText = "Status",
+                AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells
+            });
             DgvOrgaoAnuente.Columns.Add(new DataGridViewTextBoxColumn 
             { 
                 DataPropertyName = "MotivoExigencia", 
@@ -159,9 +165,18 @@ namespace Trabalho
 
         private async Task CarregarDadosAsync()
         {
+            // 1. Busca apenas os Ref_USA dos processos ATIVOS
+            var refsAtivos = await _repositorioProcesso.ListarRefUsaAtivosAsync();
+
+            // Cria um HashSet para busca super rápida (O(1))
+            var refsAtivosSet = new HashSet<string>(refsAtivos);
+
+            // 2. Busca todas as LIs
             var todasAsLIs = await _repositorioOrgaoAnuente.GetAllAsync();
 
             var listaMapeada = todasAsLIs
+                // FILTRO NOVO: Só processa se o Ref_USA estiver na lista de ativos
+                .Where(li => refsAtivosSet.Contains(li.Ref_USA))
                 .SelectMany(li =>
                     (li.LPCO.Any() ? li.LPCO : new List<LpcoInfo> { new LpcoInfo() })
                     .Select(lpco => new LpcoViewModel
@@ -182,7 +197,7 @@ namespace Trabalho
                         Inspecao = li.Inspecao,
                         HistoricoDoProcesso = li.HistoricoDoProcesso,
                         Pendencia = li.Pendencia,
-                        StatusLI = li.StatusLI,
+                        StatusLPCO = lpco.StatusLPCO,
 
                         // Dados específicos do LPCO
                         NomeOrgao = lpco.NomeOrgao,
@@ -230,7 +245,7 @@ namespace Trabalho
             // MUDANÇA: A ordem de verificação agora segue a sua nova prioridade.
 
             // 1. Prioridade 1: VERDE
-            if (viewModel.StatusLI?.ToUpper() == "PRONTO PARA ENTRADA")
+            if (viewModel.StatusLPCO?.ToUpper() == "PRONTO PARA ENTRADA")
             {
                 return 1;
             }
@@ -242,7 +257,7 @@ namespace Trabalho
             }
 
             // 3. Prioridade 3: AMARELO
-            if (viewModel.StatusLI?.ToUpper() == "PENDÊNCIA DOCUMENTAL")
+            if (viewModel.StatusLPCO?.ToUpper() == "PENDÊNCIA DOCUMENTAL")
             {
                 return 3;
             }
@@ -265,11 +280,11 @@ namespace Trabalho
                     {
                         row.DefaultCellStyle.BackColor = Color.LightCoral; // Vermelho claro
                     }
-                    else if (viewModel.StatusLI?.ToUpper() == "PRONTO PARA ENTRADA")
+                    else if (viewModel.StatusLPCO?.ToUpper() == "PRONTO PARA ENTRADA")
                     {
                         row.DefaultCellStyle.BackColor = Color.LightGreen;
                     }
-                    else if (viewModel.StatusLI?.ToUpper() == "PENDÊNCIA DOCUMENTAL")
+                    else if (viewModel.StatusLPCO?.ToUpper() == "PENDÊNCIA DOCUMENTAL")
                     {
                         row.DefaultCellStyle.BackColor = Color.Yellow;
                     }

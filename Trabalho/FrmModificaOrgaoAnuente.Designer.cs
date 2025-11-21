@@ -47,8 +47,6 @@
             Exportador = new Label();
             TXTexportador = new TextBox();
             groupBox1 = new GroupBox();
-            label1 = new Label();
-            CbStatusLI = new ComboBox();
             label5 = new Label();
             DtpDataRegistro = new DateTimePicker();
             label3 = new Label();
@@ -60,9 +58,9 @@
             label2 = new Label();
             tabControl1 = new TabControl();
             tabPage1 = new TabPage();
+            CbStatusLPCO = new ComboBox();
             CbParametrizacao = new ComboBox();
             CbMotivoExigencia = new ComboBox();
-            CbEmExigencia = new CheckBox();
             lblDataDeferimento = new Label();
             DtpDataDeferimentoLPCO = new DateTimePicker();
             lblDataRegistro = new Label();
@@ -259,8 +257,6 @@
             // 
             // groupBox1
             // 
-            groupBox1.Controls.Add(label1);
-            groupBox1.Controls.Add(CbStatusLI);
             groupBox1.Controls.Add(label5);
             groupBox1.Controls.Add(DtpDataRegistro);
             groupBox1.Controls.Add(label3);
@@ -273,33 +269,14 @@
             groupBox1.TabIndex = 416;
             groupBox1.TabStop = false;
             groupBox1.Text = "Dados Li";
-            // 
-            // label1
-            // 
-            label1.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-            label1.AutoSize = true;
-            label1.Font = new Font("Segoe UI", 11F);
-            label1.Location = new Point(462, 20);
-            label1.Name = "label1";
-            label1.Size = new Size(64, 20);
-            label1.TabIndex = 425;
-            label1.Text = "Status LI";
-            // 
-            // CbStatusLI
-            // 
-            CbStatusLI.FormattingEnabled = true;
-            CbStatusLI.Items.AddRange(new object[] { "Pronto para Entrada", "Pendência Documental", "Entrada Concluída" });
-            CbStatusLI.Location = new Point(427, 43);
-            CbStatusLI.Name = "CbStatusLI";
-            CbStatusLI.Size = new Size(135, 23);
-            CbStatusLI.TabIndex = 424;
+            groupBox1.Enter += groupBox1_Enter;
             // 
             // label5
             // 
             label5.Anchor = AnchorStyles.Top | AnchorStyles.Right;
             label5.AutoSize = true;
             label5.Font = new Font("Segoe UI", 11F);
-            label5.Location = new Point(298, 20);
+            label5.Location = new Point(414, 20);
             label5.Name = "label5";
             label5.Size = new Size(100, 20);
             label5.TabIndex = 419;
@@ -310,9 +287,9 @@
             DtpDataRegistro.Anchor = AnchorStyles.Top | AnchorStyles.Right;
             DtpDataRegistro.Enabled = false;
             DtpDataRegistro.Format = DateTimePickerFormat.Short;
-            DtpDataRegistro.Location = new Point(290, 44);
+            DtpDataRegistro.Location = new Point(391, 44);
             DtpDataRegistro.Name = "DtpDataRegistro";
-            DtpDataRegistro.Size = new Size(117, 23);
+            DtpDataRegistro.Size = new Size(146, 23);
             DtpDataRegistro.TabIndex = 418;
             // 
             // label3
@@ -320,7 +297,7 @@
             label3.Anchor = AnchorStyles.Top | AnchorStyles.Right;
             label3.AutoSize = true;
             label3.Font = new Font("Segoe UI", 12F);
-            label3.Location = new Point(67, 19);
+            label3.Location = new Point(93, 19);
             label3.Name = "label3";
             label3.Size = new Size(22, 21);
             label3.TabIndex = 420;
@@ -331,7 +308,7 @@
             label4.Anchor = AnchorStyles.Top | AnchorStyles.Right;
             label4.AutoSize = true;
             label4.Font = new Font("Segoe UI", 12F);
-            label4.Location = new Point(189, 20);
+            label4.Location = new Point(261, 20);
             label4.Name = "label4";
             label4.Size = new Size(46, 21);
             label4.TabIndex = 421;
@@ -340,17 +317,17 @@
             // TxtNCM
             // 
             TxtNCM.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-            TxtNCM.Location = new Point(154, 44);
+            TxtNCM.Location = new Point(211, 44);
             TxtNCM.Name = "TxtNCM";
-            TxtNCM.Size = new Size(117, 23);
+            TxtNCM.Size = new Size(146, 23);
             TxtNCM.TabIndex = 419;
             // 
             // TxtLi
             // 
             TxtLi.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-            TxtLi.Location = new Point(20, 44);
+            TxtLi.Location = new Point(31, 44);
             TxtLi.Name = "TxtLi";
-            TxtLi.Size = new Size(117, 23);
+            TxtLi.Size = new Size(146, 23);
             TxtLi.TabIndex = 418;
             // 
             // groupBox2
@@ -407,9 +384,9 @@
             // 
             // tabPage1
             // 
+            tabPage1.Controls.Add(CbStatusLPCO);
             tabPage1.Controls.Add(CbParametrizacao);
             tabPage1.Controls.Add(CbMotivoExigencia);
-            tabPage1.Controls.Add(CbEmExigencia);
             tabPage1.Controls.Add(lblDataDeferimento);
             tabPage1.Controls.Add(DtpDataDeferimentoLPCO);
             tabPage1.Controls.Add(lblDataRegistro);
@@ -423,6 +400,17 @@
             tabPage1.TabIndex = 0;
             tabPage1.Text = "tabPage1";
             tabPage1.UseVisualStyleBackColor = true;
+            // 
+            // CbStatusLPCO
+            // 
+            CbStatusLPCO.Enabled = false;
+            CbStatusLPCO.FormattingEnabled = true;
+            CbStatusLPCO.Items.AddRange(new object[] { "PENDENTE", "CUMPRIDA" });
+            CbStatusLPCO.Location = new Point(420, 70);
+            CbStatusLPCO.Name = "CbStatusLPCO";
+            CbStatusLPCO.Size = new Size(135, 23);
+            CbStatusLPCO.TabIndex = 429;
+            CbStatusLPCO.Text = "Status LPCO...";
             // 
             // CbParametrizacao
             // 
@@ -439,21 +427,11 @@
             CbMotivoExigencia.Enabled = false;
             CbMotivoExigencia.FormattingEnabled = true;
             CbMotivoExigencia.Items.AddRange(new object[] { "PENDENTE", "CUMPRIDA" });
-            CbMotivoExigencia.Location = new Point(400, 73);
+            CbMotivoExigencia.Location = new Point(271, 70);
             CbMotivoExigencia.Name = "CbMotivoExigencia";
             CbMotivoExigencia.Size = new Size(135, 23);
             CbMotivoExigencia.TabIndex = 427;
             CbMotivoExigencia.Text = "Motivo da exigência...";
-            // 
-            // CbEmExigencia
-            // 
-            CbEmExigencia.AutoSize = true;
-            CbEmExigencia.Location = new Point(294, 75);
-            CbEmExigencia.Name = "CbEmExigencia";
-            CbEmExigencia.Size = new Size(100, 19);
-            CbEmExigencia.TabIndex = 426;
-            CbEmExigencia.Text = "Em exigência?";
-            CbEmExigencia.UseVisualStyleBackColor = true;
             // 
             // lblDataDeferimento
             // 
@@ -631,11 +609,9 @@
         private Label lblParametrizacao;
         private Button BtnExcluirLpco;
         private ComboBox CbMotivoExigencia;
-        private CheckBox CbEmExigencia;
         private ComboBox CbParametrizacao;
-        private Label label1;
-        private ComboBox CbStatusLI;
         private Label label2;
         private TextBox TxtTerminal;
+        private ComboBox CbStatusLPCO;
     }
 }

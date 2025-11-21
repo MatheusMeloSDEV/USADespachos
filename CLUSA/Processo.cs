@@ -1,7 +1,5 @@
-﻿using Microsoft.Win32;
-using MongoDB.Bson;
+﻿using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
-using System.ComponentModel;
 
 namespace CLUSA
 {
@@ -89,7 +87,7 @@ namespace CLUSA
 
         public string HistoricoDoProcesso { get; set; } = string.Empty;
         public string Pendencia { get; set; } = string.Empty;
-        
+
         public string Status { get; set; } = "Aguardando embarque";
         public string CondicaoProcesso { get; set; } = "AguardandoCE";
     }

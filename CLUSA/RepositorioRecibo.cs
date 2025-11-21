@@ -1,15 +1,14 @@
 ﻿using MongoDB.Driver;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace CLUSA
 {
     public class RepositorioRecibo : RepositorioBase<Recibo>
     {
-        // O construtor apenas informa o nome da coleção para a classe base.
-        public RepositorioRecibo() : base("Recibo") { }
+        public RepositorioRecibo(IMongoDatabase? database = null)
+            : base("Recibo", database)
+        {
+        }
 
-        // Mantenha aqui apenas os métodos que são ESPECÍFICOS para Recibo.
         public async Task<List<Recibo>> FindRefAsync()
         {
             var filter = Builders<Recibo>.Filter.And(

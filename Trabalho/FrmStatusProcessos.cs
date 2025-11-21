@@ -60,6 +60,8 @@ namespace Trabalho
         }
         private async void FrmStatusProcessos_Load(object? sender, EventArgs e)
         {
+            _bindingSource = new BindingSource();
+            DGVSelecionado.DataSource = _bindingSource;
             await CarregarProcessosAsync();
         }
         // Só filtra pelo status calculado
@@ -74,12 +76,25 @@ namespace Trabalho
         // Chame sempre que abrir/trocar/cadastrar/editar processos
         private async Task CarregarProcessosAsync()
         {
+            Cursor.Current = Cursors.WaitCursor;
+
             var processoService = new RepositorioProcesso();
-            var todos = await processoService.ListarTodosAsync();
-            _todosProcessos = todos.Where(p => !string.Equals(p.Status, "Finalizado", StringComparison.OrdinalIgnoreCase)).ToList();
-            foreach (var p in _todosProcessos)
-                ProcessoHelper.AtualizarCondicaoProcesso(p);
+            var todos = await processoService.ListarProcessosAtivosParaStatusAsync();
+            var processosNaoFinalizados = todos
+                .Where(p => !string.Equals(p.Status, "Finalizado", StringComparison.OrdinalIgnoreCase))
+                .ToList();
+
+            _todosProcessos = await Task.Run(() =>
+            {
+                processosNaoFinalizados.AsParallel().ForAll(p => ProcessoHelper.AtualizarCondicaoProcesso(p));
+                return processosNaoFinalizados;
+            }); 
+
+            _bindingSource.DataSource = _todosProcessos;
+            _bindingSource.DataMember = null;
+
             AtualizarContadores();
+            Cursor.Current = Cursors.Default;
         }
 
 
@@ -89,43 +104,18 @@ namespace Trabalho
             _statusBlocoAtual = status;
 
             var processos = ObterProcessosPorStatus(status);
-            _processosExibidos = processos;
-            var blocoInfo = BlocoInfo[status];
 
+            var processosOrdenados = OrdenarLista(processos);
+
+            _processosExibidos = processosOrdenados;
+            _dadosExibicaoAtual = processosOrdenados.Cast<dynamic>().ToList();
+
+            var blocoInfo = BlocoInfo[status];
             LblTitulo.Text = $"{blocoInfo.Nome} ({processos.Count})";
             LblTitulo.ForeColor = blocoInfo.Cor == Color.Black ? Color.White : Color.Black;
             LblTitulo.BackColor = blocoInfo.Cor;
+            DGVSelecionado.DataSource = _processosExibidos; 
 
-            var dadosExibicao = processos
-                .OrderBy(p => (p.Ref_USA?.Trim().EndsWith("ITJ", StringComparison.OrdinalIgnoreCase) ?? false) ? 1 : 0) // ITJ no final
-                .ThenBy(p => string.IsNullOrWhiteSpace(p.Ref_USA) ? 1 : 0) // Ref_USA vazio mais abaixo
-                .ThenBy(p => ExtrairAnoNumero(p.Ref_USA)) // Ordena normalmente
-                .Select(p => new {
-                    p.Ref_USA,
-                    p.SR,
-                    p.Importador,
-                    p.Veiculo,
-                    p.DataDeAtracacao,
-                    p.Terminal,
-                    p.LocalDeDesembaraco,
-                    p.Container,
-                    p.Redestinacao,
-                    p.CE,
-                    p.FreeTime,
-                    p.VencimentoFreeTime,
-                    p.VencimentoFMA,
-                    p.CapaOK,
-                    p.Numerario,
-                    p.RascunhoDI,
-                    p.Pendencia,
-                    p.Status,
-                })
-                .ToList();
-
-
-            _dadosExibicaoAtual = dadosExibicao.Cast<dynamic>().ToList();
-
-            DGVSelecionado.DataSource = _dadosExibicaoAtual;
             ConfigurarColunasDataGridViewProcesso();
 
             Blocos.Visible = false;
@@ -280,136 +270,118 @@ namespace Trabalho
             {
                 coluna.DefaultCellStyle.Font = new Font("Segoe UI", 10);
                 coluna.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleLeft;
+
+                // Deixe todas como ordenáveis manualmente
                 coluna.SortMode = DataGridViewColumnSortMode.Programmatic;
 
-                // Centralizar checkbox
+                // Centralizar checkbox e "F.T"
                 if (coluna is DataGridViewCheckBoxColumn || coluna.HeaderText == "F.T")
                 {
                     coluna.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
                 }
             }
         }
+        private List<Processo> OrdenarLista(List<Processo> lista)
+        {
+            // 1. Se o usuário NÃO clicou em nenhuma coluna ainda, usa a ordenação PADRÃO (Ref_USA)
+            if (string.IsNullOrEmpty(_ultimaColunaOrdenada))
+            {
+                return lista
+                    .OrderBy(p => (p.Ref_USA?.Trim().EndsWith("ITJ", StringComparison.OrdinalIgnoreCase) ?? false) ? 1 : 0)
+                    .ThenBy(p => string.IsNullOrWhiteSpace(p.Ref_USA) ? 1 : 0)
+                    .ThenBy(p => ExtrairAnoNumero(p.Ref_USA))
+                    .ToList();
+            }
+
+            var propInfo = typeof(Processo).GetProperty(_ultimaColunaOrdenada);
+            if (propInfo == null) return lista;
+
+            // --- LÓGICA ESPECIAL PARA REF_USA (ITJ FIXO NO FUNDO) ---
+            if (_ultimaColunaOrdenada == "Ref_USA")
+            {
+                Func<Processo, bool> ehITJ = p => (p.Ref_USA?.Trim().EndsWith("ITJ", StringComparison.OrdinalIgnoreCase) ?? false);
+                Func<Processo, bool> ehVazio = p => string.IsNullOrWhiteSpace(p.Ref_USA);
+
+                // 1. Cria a "Base" da ordenação.
+                // Ao usar OrderBy fixo aqui, criamos uma regra que NÃO muda com o clique do usuário.
+                // ITJ ganha peso 1 (fundo), Normais ganham peso 0 (topo).
+                var queryBase = lista
+                    .OrderBy(p => ehITJ(p) ? 1 : 0)    // REGRA DE OURO: ITJ sempre vai para o grupo de baixo
+                    .ThenBy(p => ehVazio(p) ? 1 : 0);  // Vazios ficam abaixo dos normais, mas acima ou junto com ITJ dependendo da lógica
+
+                // 2. Aplica a ordenação do usuário (Asc/Desc) APENAS no conteúdo (Ano/Número)
+                if (_ultimaDirecaoAscendente)
+                {
+                    return queryBase
+                        .ThenBy(p => ExtrairAnoNumero(p.Ref_USA))
+                        .ToList();
+                }
+                else
+                {
+                    return queryBase
+                        .ThenByDescending(p => ExtrairAnoNumero(p.Ref_USA))
+                        .ToList();
+                }
+            }
+
+            // Função auxiliar para tratar nulos na ordenação
+            bool IsEmpty(object? v) => v == null || (v is string s && string.IsNullOrWhiteSpace(s));
+
+            if (_ultimaDirecaoAscendente)
+            {
+                return lista
+                    .OrderBy(p => IsEmpty(propInfo.GetValue(p)) ? 1 : 0) // Nulos no final
+                    .ThenBy(p => propInfo.GetValue(p))
+                    .ToList();
+            }
+            else
+            {
+                return lista
+                    .OrderBy(p => IsEmpty(propInfo.GetValue(p)) ? 1 : 0) // Nulos no final
+                    .ThenByDescending(p => propInfo.GetValue(p))
+                    .ToList();
+            }
+        }
         private void DGVSelecionado_ColumnHeaderMouseClick(object sender, DataGridViewCellMouseEventArgs e)
         {
             var coluna = DGVSelecionado.Columns[e.ColumnIndex];
             var propriedade = coluna.DataPropertyName;
-            if (string.IsNullOrWhiteSpace(propriedade) || _dadosExibicaoAtual.Count == 0) return;
 
-            // Alternância asc/desc
-            bool ascendente = true;
+            // Validação básica
+            if (string.IsNullOrWhiteSpace(propriedade) || _processosExibidos.Count == 0) return;
+
+            // 1. Define a Direção (Alterna Ascendente/Descendente)
             if (_ultimaColunaOrdenada == propriedade)
-                ascendente = !_ultimaDirecaoAscendente;
-            _ultimaColunaOrdenada = propriedade;
-            _ultimaDirecaoAscendente = ascendente;
-
-            // Busca o tipo da propriedade usando reflection na primeira linha
-            var primeiroItem = _dadosExibicaoAtual[0];
-            var propInfo = primeiroItem.GetType().GetProperty(propriedade);
-            if (propInfo == null) return;
-
-            List<dynamic> novaLista;
-
-            // ---- Lógica especial para Ref_USA ----
-            if (propriedade == "Ref_USA")
             {
-                Func<dynamic, bool> itjFinalizado = d => ((d.Ref_USA as string)?.Trim().EndsWith("ITJ", StringComparison.OrdinalIgnoreCase) ?? false);
-                Func<dynamic, bool> refUsaVazio = d => string.IsNullOrWhiteSpace((string?)d.Ref_USA);
-
-                var ordered = _dadosExibicaoAtual
-                    .OrderBy(d => itjFinalizado(d) ? 1 : 0) // ITJ fica no final
-                    .ThenBy(d => refUsaVazio(d) ? 1 : 0);   // depois Ref_USA vazios
-
-                if (ascendente)
-                    novaLista = ordered.ThenBy(d => ExtrairAnoNumero((string?)d.Ref_USA)).ToList();
-                else
-                    novaLista = ordered.ThenByDescending(d => ExtrairAnoNumero((string?)d.Ref_USA)).ToList();
-            }
-
-
-            else if (propInfo.PropertyType == typeof(DateTime) || propInfo.PropertyType == typeof(DateTime?))
-            {
-                if (ascendente)
-                {
-                    novaLista = _dadosExibicaoAtual
-                        .OrderBy(d => propInfo.GetValue(d) == null ? 1 : 0)
-                        .ThenBy(d => (DateTime?)propInfo.GetValue(d) ?? DateTime.MinValue)
-                        .ToList();
-                }
-                else
-                {
-                    novaLista = _dadosExibicaoAtual
-                        .OrderBy(d => propInfo.GetValue(d) == null ? 1 : 0)
-                        .ThenByDescending(d => (DateTime?)propInfo.GetValue(d) ?? DateTime.MinValue)
-                        .ToList();
-                }
-            }
-            else if (propInfo.PropertyType == typeof(string))
-            {
-                if (ascendente)
-                {
-                    novaLista = _dadosExibicaoAtual
-                        .OrderBy(d => string.IsNullOrWhiteSpace((string?)propInfo.GetValue(d)) ? 1 : 0)
-                        .ThenBy(d => (string?)propInfo.GetValue(d) ?? "")
-                        .ToList();
-                }
-                else
-                {
-                    novaLista = _dadosExibicaoAtual
-                        .OrderBy(d => string.IsNullOrWhiteSpace((string?)propInfo.GetValue(d)) ? 1 : 0)
-                        .ThenByDescending(d => (string?)propInfo.GetValue(d) ?? "")
-                        .ToList();
-                }
-            }
-            else if (propInfo.PropertyType == typeof(bool) || propInfo.PropertyType == typeof(bool?))
-            {
-                if (ascendente)
-                {
-                    novaLista = _dadosExibicaoAtual.OrderBy(d => (bool?)propInfo.GetValue(d) ?? false).ToList();
-                }
-                else
-                {
-                    novaLista = _dadosExibicaoAtual.OrderByDescending(d => (bool?)propInfo.GetValue(d) ?? false).ToList();
-                }
-            }
-            else if (Nullable.GetUnderlyingType(propInfo.PropertyType) != null)
-            {
-                if (ascendente)
-                {
-                    novaLista = _dadosExibicaoAtual
-                        .OrderBy(d => propInfo.GetValue(d) == null ? 1 : 0)
-                        .ThenBy(d => Convert.ToDecimal(propInfo.GetValue(d) ?? 0))
-                        .ToList();
-                }
-                else
-                {
-                    novaLista = _dadosExibicaoAtual
-                        .OrderBy(d => propInfo.GetValue(d) == null ? 1 : 0)
-                        .ThenByDescending(d => Convert.ToDecimal(propInfo.GetValue(d) ?? 0))
-                        .ToList();
-                }
+                _ultimaDirecaoAscendente = !_ultimaDirecaoAscendente;
             }
             else
             {
-                if (ascendente)
+                _ultimaColunaOrdenada = propriedade;
+                _ultimaDirecaoAscendente = true; // Nova coluna começa Ascendente
+            }
+
+            // 2. Chama o método central que criamos no passo anterior
+            // Ele vai pegar a lista atual, ordenar baseada nas variáveis acima e retornar a lista pronta.
+            _processosExibidos = OrdenarLista(_processosExibidos);
+
+            // 3. Atualiza a Grade (Ligação Direta)
+            DGVSelecionado.DataSource = null; // Reset para garantir refresh visual
+            DGVSelecionado.DataSource = _processosExibidos;
+
+            // 4. Atualiza as Setinhas (Glyphs) no cabeçalho
+            foreach (DataGridViewColumn col in DGVSelecionado.Columns)
+            {
+                if (col.Name == coluna.Name)
                 {
-                    novaLista = _dadosExibicaoAtual.OrderBy(d => propInfo.GetValue(d) ?? 0).ToList();
+                    col.HeaderCell.SortGlyphDirection = _ultimaDirecaoAscendente
+                        ? SortOrder.Ascending
+                        : SortOrder.Descending;
                 }
                 else
                 {
-                    novaLista = _dadosExibicaoAtual.OrderByDescending(d => propInfo.GetValue(d) ?? 0).ToList();
+                    col.HeaderCell.SortGlyphDirection = SortOrder.None;
                 }
-            }
-
-            // Atualiza o grid
-            DGVSelecionado.DataSource = null;
-            DGVSelecionado.DataSource = novaLista;
-            _dadosExibicaoAtual = novaLista;
-
-            foreach (DataGridViewColumn col in DGVSelecionado.Columns)
-            {
-                col.HeaderCell.SortGlyphDirection = (col.Name == coluna.Name)
-                    ? (ascendente ? SortOrder.Ascending : SortOrder.Descending)
-                    : SortOrder.None;
             }
         }
         private (int ano, int numero) ExtrairAnoNumero(string refUsa)
@@ -502,44 +474,26 @@ namespace Trabalho
         private void BtnSolicitarNumerario_Click(object sender, EventArgs e)
         {
             _blocoExibidoAtual = BlocoExibido.SolicitarNumerario;
-            var processos = ObterProcessosSolicitarNumerario();
-            _processosExibidos = processos;
+            var processos = ObterProcessosDIDuimpParaDigitacao();
+
+            var processosOrdenados = processos
+                .OrderBy(p => (p.Ref_USA?.Trim().EndsWith("ITJ", StringComparison.OrdinalIgnoreCase) ?? false) ? 1 : 0)
+                .ThenBy(p => string.IsNullOrWhiteSpace(p.Ref_USA) ? 1 : 0)
+                .ThenBy(p => ExtrairAnoNumero(p.Ref_USA))
+                .ToList();
+
+            _processosExibidos = processosOrdenados;
 
             var blocoInfo = BlocoInfo[StatusBloco.SolicitarNumerario];
             LblTitulo.Text = $"{blocoInfo.Nome} ({processos.Count})";
             LblTitulo.ForeColor = blocoInfo.Cor == Color.Black ? Color.White : Color.Black;
             LblTitulo.BackColor = blocoInfo.Cor;
 
-            var dadosExibicao = processos
-                .OrderBy(p => (p.Ref_USA?.Trim().EndsWith("ITJ", StringComparison.OrdinalIgnoreCase) ?? false) ? 1 : 0) // ITJ no final
-                .ThenBy(p => string.IsNullOrWhiteSpace(p.Ref_USA) ? 1 : 0) // Ref_USA vazio mais abaixo
-                .ThenBy(p => ExtrairAnoNumero(p.Ref_USA)) // Ordena normalmente
-                .Select(p => new {
-                    p.Ref_USA,
-                    p.SR,
-                    p.Importador,
-                    p.Veiculo,
-                    p.DataDeAtracacao,
-                    p.Terminal,
-                    p.LocalDeDesembaraco,
-                    p.Container,
-                    p.Redestinacao,
-                    p.CE,
-                    p.FreeTime,
-                    p.VencimentoFreeTime,
-                    p.VencimentoFMA,
-                    p.CapaOK,
-                    p.Numerario,
-                    p.RascunhoDI,
-                    p.Pendencia,
-                    p.Status,
-                })
-                .ToList();
+            _dadosExibicaoAtual = processosOrdenados.Cast<dynamic>().ToList();
+            DGVSelecionado.DataSource = _processosExibidos;
 
-
-            DGVSelecionado.DataSource = dadosExibicao;
             ConfigurarColunasDataGridViewProcesso();
-            
+
             Blocos.Visible = false;
             MostrarItens.Visible = true;
         }
@@ -547,41 +501,23 @@ namespace Trabalho
         {
             _blocoExibidoAtual = BlocoExibido.DIDUIMPParaDigitacao;
             var processos = ObterProcessosDIDuimpParaDigitacao();
-            _processosExibidos = processos;
+
+            var processosOrdenados = processos
+                .OrderBy(p => (p.Ref_USA?.Trim().EndsWith("ITJ", StringComparison.OrdinalIgnoreCase) ?? false) ? 1 : 0)
+                .ThenBy(p => string.IsNullOrWhiteSpace(p.Ref_USA) ? 1 : 0)
+                .ThenBy(p => ExtrairAnoNumero(p.Ref_USA))
+                .ToList();
+
+            _processosExibidos = processosOrdenados;
 
             var blocoInfo = BlocoInfo[StatusBloco.DIDUIMPParaDigitacao];
             LblTitulo.Text = $"{blocoInfo.Nome} ({processos.Count})";
             LblTitulo.ForeColor = blocoInfo.Cor == Color.Black ? Color.White : Color.Black;
             LblTitulo.BackColor = blocoInfo.Cor;
 
-            var dadosExibicao = processos
-                .OrderBy(p => (p.Ref_USA?.Trim().EndsWith("ITJ", StringComparison.OrdinalIgnoreCase) ?? false) ? 1 : 0) // ITJ no final
-                .ThenBy(p => string.IsNullOrWhiteSpace(p.Ref_USA) ? 1 : 0) // Ref_USA vazio mais abaixo
-                .ThenBy(p => ExtrairAnoNumero(p.Ref_USA)) // Ordena normalmente
-                .Select(p => new {
-                    p.Ref_USA,
-                    p.SR,
-                    p.Importador,
-                    p.Veiculo,
-                    p.DataDeAtracacao,
-                    p.Terminal,
-                    p.LocalDeDesembaraco,
-                    p.Container,
-                    p.Redestinacao,
-                    p.CE,
-                    p.FreeTime,
-                    p.VencimentoFreeTime,
-                    p.VencimentoFMA,
-                    p.CapaOK,
-                    p.Numerario,
-                    p.RascunhoDI,
-                    p.Pendencia,
-                    p.Status,
-                })
-                .ToList();
+            _dadosExibicaoAtual = processosOrdenados.Cast<dynamic>().ToList();
+            DGVSelecionado.DataSource = _processosExibidos; 
 
-
-            DGVSelecionado.DataSource = dadosExibicao;
             ConfigurarColunasDataGridViewProcesso();
 
             Blocos.Visible = false;
@@ -593,12 +529,15 @@ namespace Trabalho
 
             var processoSelecionado = _processosExibidos[e.RowIndex];
 
+            // 1. Guarda o ID do processo que estamos editando
+            string idSelecionado = processoSelecionado.Id.ToString();
+
             using var frm = new FrmModificaProcesso { processo = processoSelecionado, Modo = "Editar" };
             frm.ShowDialog();
 
-            // Se quiser que a atualização já seja async:
             await CarregarProcessosAsync();
 
+            // Recarrega a lista (que agora vai respeitar a ordenação graças ao passo 1 e 2)
             switch (_blocoExibidoAtual)
             {
                 case BlocoExibido.SolicitarNumerario:
@@ -611,8 +550,30 @@ namespace Trabalho
                     if (_statusBlocoAtual.HasValue)
                         MostrarItensPorStatus(_statusBlocoAtual.Value);
                     break;
-                default:
-                    break;
+            }
+
+            // 2. Restaura a seleção e o scroll para o item que foi editado
+            RestaurarSelecao(idSelecionado);
+        }
+
+        private void RestaurarSelecao(string idProcesso)
+        {
+            if (string.IsNullOrEmpty(idProcesso)) return;
+
+            // Procura na lista atual onde está o processo com esse ID
+            var item = _processosExibidos.FirstOrDefault(p => p.Id.ToString() == idProcesso);
+
+            if (item != null)
+            {
+                int index = _processosExibidos.IndexOf(item);
+                if (index >= 0 && index < DGVSelecionado.Rows.Count)
+                {
+                    DGVSelecionado.ClearSelection();
+                    DGVSelecionado.Rows[index].Selected = true;
+
+                    // Rola a tela até o item
+                    DGVSelecionado.FirstDisplayedScrollingRowIndex = index;
+                }
             }
         }
         private void BtnVoltar_Click(object sender, EventArgs e)

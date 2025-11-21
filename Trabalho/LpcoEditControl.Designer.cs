@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            components = new System.ComponentModel.Container();
             CbParametrizacao = new ComboBox();
             CbMotivoExigencia = new ComboBox();
             lblDataDeferimento = new Label();
@@ -37,6 +38,9 @@
             lblParametrizacao = new Label();
             TxtLPCO = new TextBox();
             lblLPCO = new Label();
+            bindingSource1 = new BindingSource(components);
+            CbStatusLPCO = new ComboBox();
+            ((System.ComponentModel.ISupportInitialize)bindingSource1).BeginInit();
             SuspendLayout();
             // 
             // CbParametrizacao
@@ -56,11 +60,11 @@
             CbMotivoExigencia.FlatStyle = FlatStyle.Flat;
             CbMotivoExigencia.FormattingEnabled = true;
             CbMotivoExigencia.Items.AddRange(new object[] { "EXIGÊNCIA PENDENTE", "EXIGÊNCIA CUMPRIDA", "DEFERIDO", "CANCELADA" });
-            CbMotivoExigencia.Location = new Point(345, 69);
+            CbMotivoExigencia.Location = new Point(270, 69);
             CbMotivoExigencia.Name = "CbMotivoExigencia";
             CbMotivoExigencia.Size = new Size(135, 23);
             CbMotivoExigencia.TabIndex = 5;
-            CbMotivoExigencia.Text = "Status do LPCO...";
+            CbMotivoExigencia.Text = "Motivo LPCO...";
             // 
             // lblDataDeferimento
             // 
@@ -130,10 +134,23 @@
             lblLPCO.TabIndex = 429;
             lblLPCO.Text = "LPCO";
             // 
+            // CbStatusLPCO
+            // 
+            CbStatusLPCO.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            CbStatusLPCO.FlatStyle = FlatStyle.Flat;
+            CbStatusLPCO.FormattingEnabled = true;
+            CbStatusLPCO.Items.AddRange(new object[] { "Pronto para Entrada", "Pendência Documental", "Entrada Concluída" });
+            CbStatusLPCO.Location = new Point(419, 69);
+            CbStatusLPCO.Name = "CbStatusLPCO";
+            CbStatusLPCO.Size = new Size(135, 23);
+            CbStatusLPCO.TabIndex = 436;
+            CbStatusLPCO.Text = "Status LPCO...";
+            // 
             // LpcoEditControl
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
+            Controls.Add(CbStatusLPCO);
             Controls.Add(CbParametrizacao);
             Controls.Add(CbMotivoExigencia);
             Controls.Add(lblDataDeferimento);
@@ -145,6 +162,7 @@
             Controls.Add(lblLPCO);
             Name = "LpcoEditControl";
             Size = new Size(585, 109);
+            ((System.ComponentModel.ISupportInitialize)bindingSource1).EndInit();
             ResumeLayout(false);
             PerformLayout();
         }
@@ -160,5 +178,7 @@
         private Label lblParametrizacao;
         private TextBox TxtLPCO;
         private Label lblLPCO;
+        private BindingSource bindingSource1;
+        private ComboBox CbStatusLPCO;
     }
 }
