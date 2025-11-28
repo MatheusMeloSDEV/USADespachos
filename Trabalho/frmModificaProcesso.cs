@@ -1,4 +1,6 @@
 ﻿using CLUSA;
+using MongoDB.Bson;
+using MongoDB.Driver;
 using System.Data;
 using System.Diagnostics;
 
@@ -16,12 +18,14 @@ namespace Trabalho
         public bool Visualização { get; set; } = false;
         public OrigemProcesso Origem { get; set; }
         private readonly RepositorioProcesso _repositorio;
+        private readonly RepositorioNotificacao _notificacaoRepo;
         private bool _dadosForamAlterados = false;
 
         public FrmModificaProcesso()
         {
             InitializeComponent();
             _repositorio = new RepositorioProcesso();
+            _notificacaoRepo = new RepositorioNotificacao();
         }
 
         private void FrmModificaProcesso_Load(object? sender, EventArgs e)
@@ -272,6 +276,8 @@ namespace Trabalho
                 {
                     await _repositorio.UpdateAsync(processo);
                 }
+
+                await ExcluirNotificacoesAutomaticamente(processo);
 
                 btnCapa.Enabled = true;
                 btnRelatorio.Enabled = true;
@@ -613,6 +619,35 @@ namespace Trabalho
                     }
                 }
             }
+        }
+
+        #endregion
+
+        #region "Exclusão automática notificações
+
+        private async Task ExcluirNotificacoesAutomaticamente(Processo p)
+        {
+            if (string.IsNullOrWhiteSpace(p.Ref_USA)) return;
+            if (p.Redestinacao == true)
+            {
+                await ExcluirNotificacaoPorMensagemExataAsync(
+                    p.Ref_USA,
+                    $"Processo {p.Ref_USA}: Redestinar container ao terminal"
+                );
+            }
+            if (p.DataRegistroDI.HasValue)
+            {
+                await ExcluirNotificacoesPorTipoAsync(p.Ref_USA, "Vencimento FMA");
+                await ExcluirNotificacoesPorTipoAsync(p.Ref_USA, "Vencimento LI/LPCO");
+            }
+        }
+        private async Task ExcluirNotificacaoPorMensagemExataAsync(string refUsa, string mensagemExata)
+        {
+            await _notificacaoRepo.ExcluirPorMensagemExataAsync(refUsa, mensagemExata);
+        }
+        private async Task ExcluirNotificacoesPorTipoAsync(string refUsa, string tipoNotificacao)
+        {
+            await _notificacaoRepo.ExcluirPorTipoNaMensagemAsync(refUsa, tipoNotificacao);
         }
 
         #endregion

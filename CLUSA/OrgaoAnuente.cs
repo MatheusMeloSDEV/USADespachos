@@ -6,7 +6,7 @@ namespace CLUSA
     public enum TipoOrgaoAnuente { MAPA, ANVISA, DECEX, IBAMA, INMETRO }
 
     [BsonIgnoreExtraElements]
-    public class OrgaoAnuente
+    public class OrgaoAnuente : IEntidadeBase
     {
         [BsonId]
         [BsonRepresentation(BsonType.ObjectId)]

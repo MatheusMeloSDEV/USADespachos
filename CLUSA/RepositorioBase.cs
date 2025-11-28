@@ -1,8 +1,21 @@
 ﻿using MongoDB.Bson;
 using MongoDB.Driver;
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace CLUSA
 {
+    /// <summary>
+    /// Interface necessária para todos os modelos que usam RepositorioBase.
+    /// Define as propriedades que permitem a busca por ID e Ref_USA.
+    /// </summary>
+    public interface IEntidadeBase
+    {
+        ObjectId Id { get; set; }
+        string Ref_USA { get; set; }
+    }
+
     /// <summary>
     /// Repositório genérico com operações CRUD comuns para coleções do MongoDB.
     /// </summary>
@@ -14,7 +27,6 @@ namespace CLUSA
         protected RepositorioBase(string collectionName, IMongoDatabase? database = null)
         {
             var db = database ?? ConfigDatabase.GetDatabase();
-
             _colecao = db.GetCollection<T>(collectionName);
         }
 
@@ -80,7 +92,7 @@ namespace CLUSA
         public async Task DeletePorRefUsaAsync(string refUsa)
         {
             var filter = Builders<T>.Filter.Eq(doc => doc.Ref_USA, refUsa);
-            await _colecao.DeleteOneAsync(filter);
+            await _colecao.DeleteManyAsync(filter); // Usamos DeleteMany para segurança, caso haja duplicatas
         }
     }
 }

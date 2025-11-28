@@ -1,9 +1,16 @@
 ﻿using MongoDB.Bson;
 using MongoDB.Driver;
 using System.Text.RegularExpressions;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace CLUSA
 {
+    // Assumimos que as classes de modelo (Processo, LicencaImportacao, Capa, Fatura, Recibo, OrgaoAnuente, Vistoria, etc.)
+    // e suas respectivas dependências (RepositorioOrgaoAnuente, RepositorioFatura, etc.) estão definidas e acessíveis no namespace CLUSA.
+
     public class RepositorioProcesso
     {
         private readonly IMongoCollection<Processo> _colecao;
@@ -13,23 +20,74 @@ namespace CLUSA
         private readonly RepositorioNotificacao _repositorioNotificacao;
         private readonly RepositorioVistorias _repositorioVistorias;
 
+        #region Construtor
         public RepositorioProcesso(IMongoDatabase? database = null)
         {
-
             var db = database ?? ConfigDatabase.GetDatabase();
 
             _colecao = db.GetCollection<Processo>("PROCESSO");
 
+            // Instanciação de Repositórios Auxiliares (Assumindo construtores padrão)
             _repositorioOrgaoAnuente = new RepositorioOrgaoAnuente();
             _repositorioFatura = new RepositorioFatura();
             _repositorioRecibo = new RepositorioRecibo();
             _repositorioNotificacao = new RepositorioNotificacao();
             _repositorioVistorias = new RepositorioVistorias();
         }
-        // No RepositorioProcesso, crie este método se não existir
+        #endregion
+
+        #region Métodos CRUD Principais
+
+        public async Task<List<Processo>> ListarTodosAsync()
+        {
+            return await _colecao.Find(FilterDefinition<Processo>.Empty).ToListAsync();
+        }
+
+        public async Task CreateAsync(Processo processo)
+        {
+            await _colecao.InsertOneAsync(processo);
+            await SincronizarLicencas(processo);
+            await _repositorioFatura.CreateAsync(new Fatura(processo));
+            await _repositorioRecibo.CreateAsync(new Recibo(processo));
+        }
+
+        public async Task UpdateAsync(Processo processo)
+        {
+            await _colecao.ReplaceOneAsync(p => p.Id == processo.Id, processo);
+            await SincronizarLicencas(processo);
+            await SincronizarVistorias(processo);
+        }
+
+        public async Task DeleteAsync(string processoId)
+        {
+            var processo = await ObterPorIdAsync(processoId);
+            if (processo == null) return;
+
+            await _colecao.DeleteOneAsync(p => p.Id == ObjectId.Parse(processoId));
+
+            // Limpeza em repositórios auxiliares
+            await _repositorioOrgaoAnuente.DeleteAllByRefUsaAsync(processo.Ref_USA);
+            await _repositorioFatura.DeletePorRefUsaAsync(processo.Ref_USA);
+            await _repositorioRecibo.DeletePorRefUsaAsync(processo.Ref_USA);
+            await _repositorioNotificacao.ExcluirPorRefUsaAsync(processo.Ref_USA);
+        }
+
+        #endregion
+
+        #region Métodos de Leitura e Consulta
+
+        /// <summary>
+        /// Lista todos os Processos cujo Status não é "Finalizado".
+        /// Usado para o ciclo de sincronização de notificações e UI.
+        /// </summary>
+        public async Task<List<Processo>> ListarTodosAtivosAsync()
+        {
+            var filter = Builders<Processo>.Filter.Ne(p => p.Status, "Finalizado");
+            return await _colecao.Find(filter).ToListAsync();
+        }
+
         public async Task<List<string>> ListarRefUsaAtivosAsync()
         {
-            // Filtra onde Status é diferente de "Finalizado" e projeta apenas o Ref_USA
             var filter = Builders<Processo>.Filter.Ne(p => p.Status, "Finalizado");
 
             return await _colecao
@@ -37,17 +95,11 @@ namespace CLUSA
                 .Project(p => p.Ref_USA)
                 .ToListAsync();
         }
-        public async Task<List<Processo>> ListarTodosAsync()
-        {
-            return await _colecao.Find(FilterDefinition<Processo>.Empty).ToListAsync();
-        }
+
         public async Task<List<Processo>> ListarProcessosAtivosParaStatusAsync()
         {
-            // A. FILTRO no SERVIDOR: Não traga processos finalizados.
             var filter = Builders<Processo>.Filter.Ne(p => p.Status, "Finalizado");
 
-            // B. PROJEÇÃO: Defina quais campos são essenciais.
-            // Isso reduz o volume de dados transferidos!
             var projection = Builders<Processo>.Projection.Include(p => p.Id)
                 .Include(p => p.Ref_USA)
                 .Include(p => p.SR)
@@ -67,46 +119,48 @@ namespace CLUSA
                 .Include(p => p.RascunhoDI)
                 .Include(p => p.Pendencia)
                 .Include(p => p.Status)
-                .Include(p => p.CondicaoProcesso) // Se você usa este campo para filtering
-                .Include(p => p.Inspecao)
-                // Inclua qualquer outro campo usado no ProcessoHelper.AtualizarCondicaoProcesso
-                ;
+                .Include(p => p.CondicaoProcesso)
+                .Include(p => p.Inspecao);
+
             return await _colecao.Find(filter).ToListAsync();
         }
+
         public async Task<List<Processo>> ListarExcetoSufixoRefUsaAsync(string sufixoAExcluir)
         {
-            // Cria a expressão regular para encontrar o que queremos excluir
             var regex = new BsonRegularExpression(new Regex($"{sufixoAExcluir}$", RegexOptions.IgnoreCase));
             var filterParaExcluir = Builders<Processo>.Filter.Regex(p => p.Ref_USA, regex);
 
-            // Usa o operador .Not() para inverter a lógica, trazendo tudo MENOS o que corresponde ao filtro
             var filterFinal = Builders<Processo>.Filter.Not(filterParaExcluir);
 
             return await _colecao.Find(filterFinal).ToListAsync();
         }
+
         public async Task<List<Processo>> ListarPorSufixoRefUsaAsync(string sufixo)
         {
-            // Usamos uma expressão regular para encontrar documentos que terminam com o sufixo.
-            // O '$' significa "fim da string" e 'IgnoreCase' ignora maiúsculas/minúsculas.
             var regex = new BsonRegularExpression(new Regex($"{sufixo}$", RegexOptions.IgnoreCase));
-
             var filter = Builders<Processo>.Filter.Regex(p => p.Ref_USA, regex);
 
             return await _colecao.Find(filter).ToListAsync();
         }
+
         public async Task<bool> VerificarRefUsaExisteAsync(string refUsa)
         {
             var processoExistente = await _colecao
                 .Find(p => p.Ref_USA == refUsa)
                 .FirstOrDefaultAsync();
 
-            return processoExistente != null; // Retorna true se encontrou
+            return processoExistente != null;
         }
-
 
         public async Task<Processo?> ObterPorIdAsync(string id)
         {
             return await _colecao.Find(p => p.Id == ObjectId.Parse(id)).FirstOrDefaultAsync();
+        }
+
+        public async Task<Processo?> GetByRefUsaAsync(string refUsa)
+        {
+            var filter = Builders<Processo>.Filter.Eq(p => p.Ref_USA, refUsa);
+            return await _colecao.Find(filter).FirstOrDefaultAsync();
         }
 
         public async Task<List<string>> ObterValoresUnicosAsync(string campo)
@@ -121,46 +175,12 @@ namespace CLUSA
             return await _colecao.Find(filter).ToListAsync();
         }
 
-        public async Task CreateAsync(Processo processo)
-        {
-            await _colecao.InsertOneAsync(processo);
-            await SincronizarLicencas(processo);
-            await _repositorioFatura.CreateAsync(new Fatura(processo));
-            await _repositorioRecibo.CreateAsync(new Recibo(processo));
-        }
+        #endregion
 
-
-        public async Task UpdateAsync(Processo processo)
-        {
-            await _colecao.ReplaceOneAsync(p => p.Id == processo.Id, processo);
-            await SincronizarLicencas(processo);
-            await SincronizarVistorias(processo);
-        }
-
-        public async Task DeleteAsync(string processoId)
-        {
-            var processo = await ObterPorIdAsync(processoId);
-            if (processo == null) return;
-
-            await _colecao.DeleteOneAsync(p => p.Id == ObjectId.Parse(processoId));
-
-            // CORREÇÃO: Usando o novo nome do método.
-            await _repositorioOrgaoAnuente.DeleteAllByRefUsaAsync(processo.Ref_USA);
-            await _repositorioFatura.DeletePorRefUsaAsync(processo.Ref_USA);
-            await _repositorioRecibo.DeletePorRefUsaAsync(processo.Ref_USA);
-            await _repositorioNotificacao.ExcluirPorRefUsaAsync(processo.Ref_USA);
-        }
-
-        public async Task<Processo?> GetByRefUsaAsync(string refUsa)
-        {
-            var filter = Builders<Processo>.Filter.Eq(p => p.Ref_USA, refUsa);
-            return await _colecao.Find(filter).FirstOrDefaultAsync();
-        }
-        // Dentro da classe RepositorioProcesso.cs
+        #region Métodos de Sincronização (Lógica de Negócio)
 
         /// <summary>
         /// Mapeia os dados de um Processo e uma Licenca para um objeto OrgaoAnuente.
-        /// Esta é a "fonte da verdade" para os dados que são copiados.
         /// </summary>
         private OrgaoAnuente MapearParaOrgaoAnuente(Processo processo, LicencaImportacao li)
         {
@@ -202,8 +222,6 @@ namespace CLUSA
 
             foreach (var (liProcesso, liDatabase) in lisParaAtualizar)
             {
-                // Ponto de partida: o objeto que já está no banco (liDatabase).
-                // Ele contém os dados que queremos preservar (Id, Inspecao, Pendencia, Status).
                 var orgaoParaSalvar = liDatabase;
 
                 // Atualiza os dados que vêm do Processo principal
@@ -224,8 +242,6 @@ namespace CLUSA
                 orgaoParaSalvar.HistoricoDoProcesso = processo.HistoricoDoProcesso;
                 orgaoParaSalvar.Pendencia = processo.Pendencia;
 
-                // Agora, 'orgaoParaSalvar' é a fusão perfeita. Os dados únicos foram
-                // preservados e os dados compartilhados/editados foram atualizados.
                 await _repositorioOrgaoAnuente.UpdateAsync(orgaoParaSalvar);
             }
 
@@ -249,16 +265,14 @@ namespace CLUSA
                 await _repositorioOrgaoAnuente.DeleteByIdAsync(li.Id.ToString());
             }
         }
+
         /// <summary>
         /// Sincroniza a coleção de Vistorias associadas a um Processo.
-        /// Atualiza, insere e remove (opcional) com base no array de Vistorias do Processo.
         /// </summary>
         private async Task SincronizarVistorias(Processo processo)
         {
-            // Busca todas as vistorias no banco pelo Ref_USA do processo
             var vistoriasNoBanco = await _repositorioVistorias.GetByRefUsaAsync(processo.Ref_USA);
 
-            // Atualiza cada vistoria ligada ao Ref_USA do processo com os dados atualizados do processo
             foreach (var vistoria in vistoriasNoBanco)
             {
                 vistoria.Importador = processo.Importador;
@@ -272,5 +286,6 @@ namespace CLUSA
                 await _repositorioVistorias.UpsertAsync(vistoria);
             }
         }
+        #endregion
     }
 }

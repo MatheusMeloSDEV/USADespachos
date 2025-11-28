@@ -6,7 +6,7 @@ namespace CLUSA
     {
         // --- CONFIGURAÇÃO ---
         // Mude para 'false' quando quiser usar o banco de teste
-        private static bool IsProducao = false;
+        private static bool IsProducao = true;
 
         public static string MongoConnectionString => IsProducao
             ? "mongodb+srv://dev:dev@cluster0.cn10nzt.mongodb.net/" // Produção

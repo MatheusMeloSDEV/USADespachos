@@ -1,4 +1,5 @@
-﻿using MongoDB.Driver;
+﻿using MongoDB.Bson;
+using MongoDB.Driver;
 
 namespace CLUSA
 {
@@ -30,7 +31,35 @@ namespace CLUSA
                 .Limit(limite)
                 .ToListAsync();
         }
+        /// <summary>
+        /// Exclui todas as notificações de um processo que correspondem exatamente à mensagem fornecida.
+        /// Usado para exclusão por conclusão de tarefa (ex: Redestinar).
+        /// </summary>
+        public async Task ExcluirPorMensagemExataAsync(string refUsa, string mensagemExata)
+        {
+            var filtro = Builders<Notificacao>.Filter.And(
+                Builders<Notificacao>.Filter.Eq(n => n.RefUsa, refUsa),
+                Builders<Notificacao>.Filter.Eq(n => n.Mensagem, mensagemExata)
+            );
+            await _colecao.DeleteManyAsync(filtro);
+        }
 
+        /// <summary>
+        /// Exclui notificações onde o conteúdo da mensagem contém o padrão (tipo) fornecido.
+        /// Usado para exclusão por tipo de vencimento (ex: "Vencimento FMA"),
+        /// pois a mensagem completa ("Vencimento FMA em X dia(s)") muda com os dias.
+        /// </summary>
+        public async Task ExcluirPorTipoNaMensagemAsync(string refUsa, string tipoNotificacao)
+        {
+            // Constrói um filtro para encontrar a string do tipo em qualquer lugar da Mensagem, de forma case-insensitive ("i").
+            var regex = new BsonRegularExpression($".*{tipoNotificacao}.*", "i");
+
+            var filtro = Builders<Notificacao>.Filter.And(
+                Builders<Notificacao>.Filter.Eq(n => n.RefUsa, refUsa),
+                Builders<Notificacao>.Filter.Regex(n => n.Mensagem, regex)
+            );
+            await _colecao.DeleteManyAsync(filtro);
+        }
         public async Task ExcluirPorRefUsaAsync(string refUsa)
         {
             var filtro = Builders<Notificacao>.Filter.Eq(n => n.RefUsa, refUsa);
@@ -70,6 +99,29 @@ namespace CLUSA
             {
                 Console.WriteLine($"Nenhuma notificação foi atualizada para o processo {refUsa}.");
             }
+        }
+        /// <summary>
+        /// Verifica se uma notificação com a mesma RefUsa e Mensagem já existe.
+        /// Usado para evitar duplicatas ao re-gerar notificações.
+        /// </summary>
+        public async Task<bool> ExisteNotificacaoAsync(string refUsa, string mensagem)
+        {
+            var filtro = Builders<Notificacao>.Filter.And(
+                Builders<Notificacao>.Filter.Eq(n => n.RefUsa, refUsa),
+                Builders<Notificacao>.Filter.Eq(n => n.Mensagem, mensagem)
+            );
+            return await _colecao.Find(filtro).AnyAsync();
+        }
+
+        /// <summary>
+        /// Exclui permanentemente notificações cuja data de criação é anterior à data limite.
+        /// Usado para limpeza do banco (sustentabilidade).
+        /// </summary>
+        public async Task ExcluirNotificacoesAntigasAsync(DateTime dataLimite)
+        {
+            // Filtra por notificações cuja DataCriacao é menor que a dataLimite
+            var filtro = Builders<Notificacao>.Filter.Lt(n => n.DataCriacao, dataLimite);
+            await _colecao.DeleteManyAsync(filtro);
         }
     }
 }

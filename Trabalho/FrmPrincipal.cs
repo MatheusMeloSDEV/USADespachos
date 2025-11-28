@@ -17,50 +17,58 @@ namespace Trabalho
 {
     public partial class FrmPrincipal : Form
     {
+        #region Campos e Construtor
+
         private readonly RepositorioProcesso _repositorioProcesso;
         private readonly RepositorioNotificacao _notificacaoRepo;
         private readonly RepositorioNotifUrgente _repoNotificacoesUrgentes;
         private readonly RepositorioUsers _repositorioUsers;
+        private readonly GerenciadorNotificacao _gerenciadorNotificacao;
 
         private readonly Logado _logadoUsuario;
         private readonly Dictionary<Type, Form> _forms = new();
         private bool _logoutPeloMenu = false;
-
         private readonly HashSet<TabPage> _abasJaCarregadas = new HashSet<TabPage>();
 
         public FrmPrincipal(Logado logadoUsuario)
         {
             InitializeComponent();
-            _logadoUsuario = logadoUsuario ?? throw new ArgumentNullException(nameof(logadoUsuario));
+            var client = new MongoClient(ConfigDatabase.MongoConnectionString);
+            var database = client.GetDatabase(ConfigDatabase.MongoDatabaseName);
 
+            _logadoUsuario = logadoUsuario ?? throw new ArgumentNullException(nameof(logadoUsuario));
 
             MenuItemUsuario.Text = _logadoUsuario.Usuario;
             _repositorioProcesso = new RepositorioProcesso();
-            _repositorioUsers = new RepositorioUsers();
+            _repositorioUsers = new RepositorioUsers(database);
 
-            var client = new MongoClient(ConfigDatabase.MongoConnectionString);
-            var database = client.GetDatabase(ConfigDatabase.MongoDatabaseName);
+            // Injeção de Dependência dos Repositórios e Gerenciador
             _notificacaoRepo = new RepositorioNotificacao(database);
             _repoNotificacoesUrgentes = new RepositorioNotifUrgente(database);
+            _gerenciadorNotificacao = new GerenciadorNotificacao(database);
+
+            // Configuração do Timer de Sincronização
+            _notificacaoTimer = new System.Windows.Forms.Timer();
+            _notificacaoTimer.Interval = 30000; // 30 segundos
+            _notificacaoTimer.Tick += NotificacaoTimer_Tick;
 
             if (pictureBox1.Image != null)
             {
                 pictureBox1.Image = SetImageOpacity(pictureBox1.Image, 0.2f);
             }
             panel1.Visible = true; pictureBox1.Visible = true;
-            // Assinatura dos eventos
-            this.Shown += FrmPrincipal_Shown;
 
+            this.Shown += FrmPrincipal_Shown;
         }
 
+        #endregion
 
-        #region "Eventos Principais do Formulário"
+        #region Eventos Principais do Formulário e Timer
 
         private async void FrmPrincipal_Shown(object? sender, EventArgs e)
         {
             await CarregarDadosProcessos();
-
-
+            _notificacaoTimer.Start();
         }
 
         private async void FrmPrincipal_Load(object sender, EventArgs e)
@@ -71,31 +79,49 @@ namespace Trabalho
 
         private void FrmPrincipal_FormClosing(object sender, FormClosingEventArgs e)
         {
+            _notificacaoTimer.Stop();
+
             if (!_logoutPeloMenu && e.CloseReason == CloseReason.UserClosing)
             {
                 Application.Exit();
             }
         }
+
+        private async void NotificacaoTimer_Tick(object? sender, EventArgs e)
+        {
+            // 1. Sustentabilidade: Limpeza de notificações antigas (ex: mais de 90 dias)
+            await _gerenciadorNotificacao.ExcluirNotificacoesAntigasAsync(DateTime.Now.AddDays(-90));
+
+            // 2. Sincronização de Processos Ativos (Atualiza dias restantes)
+            // Assumindo ListarTodosAtivosAsync busca apenas o necessário para otimização
+            var processosMonitorados = await _repositorioProcesso.ListarTodosAtivosAsync();
+            await SincronizarTodasNotificacoes(processosMonitorados);
+
+            // 3. Atualiza a UI
+            await AtualizarContadorNotificacoesMenu();
+            if (contextMenuStripNotifications.Visible)
+            {
+                await PopularContextMenuNotifications();
+            }
+        }
+
         #endregion
 
-        #region "Carregamento de Dados e Abas (Lógica Otimizada)"
+        #region Lógica de Sincronização e Carregamento
 
         private async Task CarregarDadosProcessos()
         {
             Cursor = Cursors.WaitCursor;
             try
             {
-                var processos = await _repositorioProcesso.ListarTodosAsync();
+                // Busca os processos para a sincronização inicial
+                var processos = await _repositorioProcesso.ListarTodosAtivosAsync();
 
-                await GerarNotificacoes(processos);
+                await SincronizarTodasNotificacoes(processos);
 
                 await PopularContextMenuNotifications();
 
-                // <<< Atualiza o texto do menu de notificações >>>
-                int totalNaoVisualizadas = await _notificacaoRepo.ContarNaoVisualizadasAsync();
-                MenuItemNotifications.Text = totalNaoVisualizadas > 0
-                    ? $"Notificações ({totalNaoVisualizadas})"
-                    : "Notificações";
+                await AtualizarContadorNotificacoesMenu();
             }
             catch (Exception ex)
             {
@@ -107,83 +133,36 @@ namespace Trabalho
             }
         }
 
+        private async Task SincronizarTodasNotificacoes(List<Processo> processos)
+        {
+            foreach (var p in processos)
+            {
+                await _gerenciadorNotificacao.SincronizarNotificacoesDoProcessoAsync(p);
+            }
+        }
+
+        private async Task AtualizarContadorNotificacoesMenu()
+        {
+            int totalNaoVisualizadas = await _notificacaoRepo.ContarNaoVisualizadasAsync();
+            MenuItemNotifications.Text = totalNaoVisualizadas > 0
+               ? $"Notificações ({totalNaoVisualizadas})"
+               : "Notificações";
+        }
+
         #endregion
 
-        #region "Lógica de Notificações (Otimizada)"
+        #region UI de Notificações e ContextMenu
 
         private async void menuItemNotificacoes_Click(object sender, EventArgs e)
         {
-            // Antes de abrir o painel, atualize o contador
-            int totalNaoVisualizadas = await _notificacaoRepo.ContarNaoVisualizadasAsync();
+            await AtualizarContadorNotificacoesMenu();
 
-            if (totalNaoVisualizadas > 0)
-                MenuItemNotifications.Text = $"Notificações ({totalNaoVisualizadas})";
-            else
-                MenuItemNotifications.Text = $"Notificações";
-
-            // Popula e mostra o ContextMenuStrip
             await PopularContextMenuNotifications();
             var parent = Menu;
             var menuLocation = parent.PointToScreen(MenuItemNotifications.Bounds.Location);
             contextMenuStripNotifications.Show(menuLocation.X, menuLocation.Y + MenuItemNotifications.Height);
         }
 
-
-
-        public async Task GerarNotificacoes(List<Processo> processos)
-        {
-            var refsUsa = processos.Select(p => p.Ref_USA).Distinct().ToList();
-            var notificacoesExistentes = await _notificacaoRepo.ObterNaoVisualizadasPorProcessosAsync(refsUsa, 500);
-            var lookupExistentes = notificacoesExistentes.Select(n => $"{n.RefUsa}|{n.Mensagem}").ToHashSet();
-            var novasNotificacoes = new List<Notificacao>();
-
-            foreach (var p in processos)
-            {
-                if (p.DataDeAtracacao.HasValue)
-                {
-                    int dias = (p.DataDeAtracacao.Value - DateTime.Today).Days;
-                    if (dias is >= 0 and <= 15)
-                        TentarAdicionarNotificacao(novasNotificacoes, lookupExistentes, p.Ref_USA, $"Processo {p.Ref_USA}: Dar entrada no Mapa/Anvisa");
-                    if (dias is >= 0 and <= 5)
-                        TentarAdicionarNotificacao(novasNotificacoes, lookupExistentes, p.Ref_USA, $"Processo {p.Ref_USA}: Redestinar container ao terminal");
-                }
-                VerificarVencimento(p, p.VencimentoFreeTime, "Free Time", novasNotificacoes, lookupExistentes);
-                VerificarVencimento(p, p.VencimentoFMA, "FMA", novasNotificacoes, lookupExistentes);
-                VerificarVencimento(p, p.VencimentoLI_LPCO, "LI/LPCO", novasNotificacoes, lookupExistentes);
-            }
-
-            if (novasNotificacoes.Any())
-            {
-                await _notificacaoRepo.InsertManyAsync(novasNotificacoes);
-            }
-        }
-
-
-        private void VerificarVencimento(Processo doc, DateTime? vencimento, string nomeExibicao, List<Notificacao> lista, HashSet<string> lookup)
-        {
-            if (!vencimento.HasValue) return;
-            int dias = (vencimento.Value - DateTime.Today).Days;
-            if (dias is >= 0 and <= 5)
-            {
-                string msg = $"Processo {doc.Ref_USA}: {nomeExibicao} vence em {dias} dia(s)";
-                TentarAdicionarNotificacao(lista, lookup, doc.Ref_USA, msg);
-            }
-        }
-
-        private void TentarAdicionarNotificacao(List<Notificacao> listaNovas, HashSet<string> lookup, string refUsa, string mensagem)
-        {
-            var chave = $"{refUsa}|{mensagem}";
-            if (!lookup.Contains(chave))
-            {
-                listaNovas.Add(new Notificacao { RefUsa = refUsa, Mensagem = mensagem, DataCriacao = DateTime.Now, Visualizado = false });
-                lookup.Add(chave);
-            }
-        }
-
-
-        /// <summary>
-        /// Busca as notificações não visualizadas no banco e atualiza o menu de notificações na tela.
-        /// </summary>
         private int notificacoesLimite = 20;
         private int notificacoesSkip = 0;
 
@@ -194,7 +173,6 @@ namespace Trabalho
             var pendentes = await _notificacaoRepo.ObterNotificacoesNaoVisualizadasAsync(notificacoesLimite, notificacoesSkip);
             int totalNaoVisualizadas = await _notificacaoRepo.ContarNaoVisualizadasAsync();
 
-            // Paginação: Botão "Voltar" se não está na primeira página
             if (notificacoesSkip > 0)
             {
                 var btnVoltar = new ToolStripMenuItem("Voltar...");
@@ -206,7 +184,6 @@ namespace Trabalho
                 contextMenuStripNotifications.Items.Add(btnVoltar);
             }
 
-            // Adicione as notificações
             foreach (var notif in pendentes)
             {
                 var itemMenu = new ToolStripMenuItem
@@ -239,7 +216,6 @@ namespace Trabalho
                 contextMenuStripNotifications.Items.Add(itemMenu);
             }
 
-            // Botão "Ver mais..." se houver mais notificações
             if (totalNaoVisualizadas > notificacoesSkip + notificacoesLimite)
             {
                 var btnMais = new ToolStripMenuItem($"Ver mais... ({totalNaoVisualizadas - notificacoesSkip - notificacoesLimite} restantes)");
@@ -259,13 +235,10 @@ namespace Trabalho
 
         #endregion
 
-        #region "Métodos Auxiliares de UI"
+        #region Gerenciamento de Janelas e UI Auxiliar
 
         private TableLayoutPanel CriarTabela() => new TableLayoutPanel { Dock = DockStyle.Fill, AutoSize = true, ColumnCount = 1, AutoScroll = true };
         private Label CriarLabel(string texto) => new Label { AutoSize = true, Font = new Font("Segoe UI", 10F), Margin = new Padding(5), Text = texto };
-        #endregion
-
-        #region "Gerenciamento de Janelas MDI e Eventos de Menu"
 
         private void MenuItemHome_Click(object? sender, EventArgs e)
         {
@@ -323,10 +296,6 @@ namespace Trabalho
         private void MenuItemMaximize_Click(object? sender, EventArgs e) => this.WindowState = FormWindowState.Maximized;
         private void MenuItemMinimize_Click(object? sender, EventArgs e) => this.WindowState = FormWindowState.Minimized;
 
-        #endregion
-
-        #region "Notificações Urgentes"
-
         private async void BtnAddNotifUrg_Click(object sender, EventArgs e)
         {
             var usuariosDestino = (await _repositorioUsers.FindAllAsync())
@@ -350,7 +319,6 @@ namespace Trabalho
             }
         }
 
-
         private async Task PopularTableLayoutUrgentes()
         {
             TLNotifUrgentes.Controls.Clear();
@@ -365,7 +333,7 @@ namespace Trabalho
             var recebidas = await _repoNotificacoesUrgentes.GetByUsuarioDestinoAsync(_logadoUsuario.Id);
 
             var todas = minhas.Concat(recebidas)
-                .GroupBy(n => n.Id) // Use o campo único do modelo
+                .GroupBy(n => n.Id)
                 .Select(g => g.First())
                 .Where(n => !n.Done)
                 .OrderBy(n => n.DataEnvio)
@@ -408,9 +376,8 @@ namespace Trabalho
 
                 notifControl.EditClick += async (s, e) =>
                 {
-                    // Torna mensagem editável
                     notifControl.MensagemReadOnly = false;
-                    notifControl.FocusMensagem(); // Adicione método público no UserControl
+                    notifControl.FocusMensagem();
                 };
 
                 notifControl.MensagemEditada += async (s, novaMensagem) =>
@@ -427,10 +394,6 @@ namespace Trabalho
             }
         }
 
-
-
-
-        #endregion
         private void lblEmAndamento_Click(object sender, EventArgs e)
         {
 
@@ -442,7 +405,7 @@ namespace Trabalho
             using (Graphics g = Graphics.FromImage(bmp))
             {
                 ColorMatrix matrix = new ColorMatrix();
-                matrix.Matrix33 = opacity; // valor entre 0 (totalmente transparente) e 1 (totalmente opaco)
+                matrix.Matrix33 = opacity;
                 ImageAttributes attributes = new ImageAttributes();
                 attributes.SetColorMatrix(matrix, ColorMatrixFlag.Default, ColorAdjustType.Bitmap);
                 g.DrawImage(image, new Rectangle(0, 0, bmp.Width, bmp.Height), 0, 0, image.Width, image.Height, GraphicsUnit.Pixel, attributes);
@@ -468,5 +431,8 @@ namespace Trabalho
             frm.ShowDialog();
         }
 
+        // --- CÓDIGO OBSOLETO REMOVIDO: GerarNotificacoes, VerificarVencimento, TentarAdicionarNotificacao ---
+
     }
+    #endregion
 }

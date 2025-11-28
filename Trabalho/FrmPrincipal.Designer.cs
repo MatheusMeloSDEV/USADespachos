@@ -42,6 +42,7 @@
             itajaíToolStripMenuItem = new ToolStripMenuItem();
             MenuItemProcessosItajai = new ToolStripMenuItem();
             MenuItemOrgaoAnuente1 = new ToolStripMenuItem();
+            MenuItemFinalizados = new ToolStripMenuItem();
             MenuItemUsuario = new ToolStripMenuItem();
             MenuItemChangePassword = new ToolStripMenuItem();
             MenuItemExit = new ToolStripMenuItem();
@@ -58,7 +59,7 @@
             toolStripLabel1 = new ToolStripLabel();
             BtnAddNotifUrg = new ToolStripButton();
             contextMenuStripNotifications = new ContextMenuStrip(components);
-            MenuItemFinalizados = new ToolStripMenuItem();
+            _notificacaoTimer = new System.Windows.Forms.Timer(components);
             Menu.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)pictureBox1).BeginInit();
             panel1.SuspendLayout();
@@ -119,7 +120,7 @@
             // 
             santosToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { MenuItemProcessoSantos, MenuItemOrgaoAnuente });
             santosToolStripMenuItem.Name = "santosToolStripMenuItem";
-            santosToolStripMenuItem.Size = new Size(180, 22);
+            santosToolStripMenuItem.Size = new Size(132, 22);
             santosToolStripMenuItem.Text = "Santos";
             // 
             // MenuItemProcessoSantos
@@ -140,7 +141,7 @@
             // 
             itajaíToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { MenuItemProcessosItajai, MenuItemOrgaoAnuente1 });
             itajaíToolStripMenuItem.Name = "itajaíToolStripMenuItem";
-            itajaíToolStripMenuItem.Size = new Size(180, 22);
+            itajaíToolStripMenuItem.Size = new Size(132, 22);
             itajaíToolStripMenuItem.Text = "Itajaí";
             // 
             // MenuItemProcessosItajai
@@ -156,6 +157,13 @@
             MenuItemOrgaoAnuente1.Size = new Size(155, 22);
             MenuItemOrgaoAnuente1.Text = "Orgão Anuente";
             MenuItemOrgaoAnuente1.Click += MenuItemOrgaoAnuente_Click;
+            // 
+            // MenuItemFinalizados
+            // 
+            MenuItemFinalizados.Name = "MenuItemFinalizados";
+            MenuItemFinalizados.Size = new Size(132, 22);
+            MenuItemFinalizados.Text = "Finalizados";
+            MenuItemFinalizados.Click += MenuItemFinalizados_Click;
             // 
             // MenuItemUsuario
             // 
@@ -292,13 +300,6 @@
             contextMenuStripNotifications.ShowImageMargin = false;
             contextMenuStripNotifications.Size = new Size(36, 4);
             // 
-            // MenuItemFinalizados
-            // 
-            MenuItemFinalizados.Name = "MenuItemFinalizados";
-            MenuItemFinalizados.Size = new Size(180, 22);
-            MenuItemFinalizados.Text = "Finalizados";
-            MenuItemFinalizados.Click += MenuItemFinalizados_Click;
-            // 
             // FrmPrincipal
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
@@ -358,5 +359,6 @@
         private ToolStripMenuItem MenuItemExit;
         private ToolStripMenuItem MenuItemChangePassword;
         private ToolStripMenuItem MenuItemFinalizados;
+        private System.Windows.Forms.Timer _notificacaoTimer;
     }
 }

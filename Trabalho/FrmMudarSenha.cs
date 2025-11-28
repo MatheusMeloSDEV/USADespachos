@@ -31,29 +31,40 @@ namespace Trabalho
                 return;
             }
 
-            var repo = new RepositorioUsers();
-            // Busque o usuário pelo Id do usuário logado (que foi passado no construtor)
-            var user = repo.ListaUsers.FirstOrDefault(u => u.Id == _usuarioLogado.Id);
+            // CORREÇÃO 1: Passar o banco de dados para o construtor
+            var db = ConfigDatabase.GetDatabase();
+            var repo = new RepositorioUsers(db);
 
-            if (user == null)
+            try
             {
-                MessageBox.Show("Usuário não encontrado.", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return;
-            }
+                var user = await repo.GetByIdAsync(_usuarioLogado.Id);
 
-            // Valide senha antiga
-            if (user.Password != oldPass)
+                if (user == null)
+                {
+                    MessageBox.Show("Usuário não encontrado no banco de dados.", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return;
+                }
+
+                // Valide senha antiga
+                if (user.Password != oldPass)
+                {
+                    MessageBox.Show("Senha antiga incorreta.", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return;
+                }
+
+                // Atualize senha
+                user.Password = newPass;
+
+                // Salva a alteração
+                await repo.UpdateAsync(user);
+
+                MessageBox.Show("Senha alterada com sucesso!", "Sucesso", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                this.Close();
+            }
+            catch (Exception ex)
             {
-                MessageBox.Show("Senha antiga incorreta.", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return;
+                MessageBox.Show($"Erro ao alterar senha: {ex.Message}", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
-
-            // Atualize senha
-            user.Password = newPass;
-            await repo.UpdateAsync(user);
-
-            MessageBox.Show("Senha alterada com sucesso!", "Sucesso", MessageBoxButtons.OK, MessageBoxIcon.Information);
-            this.Close();
         }
     }
 }
