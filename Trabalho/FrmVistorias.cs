@@ -6,6 +6,21 @@ using System.Linq;
 using System.Windows.Forms;
 namespace Trabalho
 {
+    #region "Operações Pendentes - Sistema de Fila"
+    public enum TipoOperacaoGenerica
+    {
+        Insert,
+        Update,
+        Delete
+    }
+
+    public class OperacaoPendente<T>
+    {
+        public TipoOperacaoGenerica Tipo { get; set; }
+        public T? Entidade { get; set; }
+        public object? Chave { get; set; }
+    }
+    #endregion
     public partial class FrmVistorias : Form
     {
         private readonly VistoriaService _vistoriaService;
@@ -19,6 +34,8 @@ namespace Trabalho
         private readonly BindingSource _bsAguardandoChegada = new();
         private readonly BindingSource _bsAguardandoLaudo = new();
         private readonly BindingSource _bsProcessosDadoEntrada = new();
+
+        private readonly Queue<OperacaoPendente<Vistoria>> _filaVistoriasPendentes = new();
 
         public FrmVistorias()
         {
@@ -40,14 +57,9 @@ namespace Trabalho
             {
                 Cursor = Cursors.WaitCursor;
 
-                // 1. Sincroniza (garante que vistorias novas do banco sejam criadas)
-                // A regra da ANVISA deve estar DENTRO deste método no Service
                 await _vistoriaService.SincronizarVistoriasAsync();
-
-                // 2. Busca dados (I/O)
                 var todasAsVistorias = await _repositorioVistorias.GetAllAsync();
 
-                // 3. Processamento Pesado (CPU) - Movemos para Task.Run para não travar a tela
                 var listasProcessadas = await Task.Run(() =>
                 {
                     return new
@@ -61,7 +73,6 @@ namespace Trabalho
                     };
                 });
 
-                // 4. Atualização da UI (Thread Principal)
                 _bsAguardandoLaudo.DataSource = listasProcessadas.AguardandoLaudo;
                 _bsAguardandoDef.DataSource = listasProcessadas.AguardandoDef;
                 _bsVistoriaAgendada.DataSource = listasProcessadas.Agendada;
@@ -71,15 +82,28 @@ namespace Trabalho
 
                 AjustarTodosDataGridViews();
             }
+            catch (MongoDB.Driver.MongoConnectionException ex)
+            {
+                MessageBox.Show(
+                    $"Perda de conexão com o MongoDB. Verifique o servidor e a rede.\n\nDetalhes: {ex.Message}",
+                    "Erro de conexão",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error);
+            }
             catch (Exception ex)
             {
-                MessageBox.Show($"Erro ao carregar vistorias: {ex.Message}", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show(
+                    $"Erro ao carregar vistorias: {ex.Message}",
+                    "Erro",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error);
             }
             finally
             {
                 Cursor = Cursors.Default;
             }
         }
+
         private async void FrmVistorias_Shown(object? sender, EventArgs e)
         {
             ConfigurarGrids();
@@ -87,9 +111,107 @@ namespace Trabalho
 
             // Timer de atualização
             _timer.Interval = 60000;
-            _timer.Tick += async (s, ev) => await SincronizarPeriodicamente();
+            _timer.Tick += async (s, ev) =>
+            {
+                await ProcessarFilaVistoriasAsync();
+                await SincronizarPeriodicamente();
+            };
             _timer.Start();
         }
+
+
+        #region "Wrappers com Sistema de Fila"
+
+        private async Task UpsertVistoriaComFilaAsync(Vistoria vistoria)
+        {
+            try
+            {
+                await _repositorioVistorias.UpsertAsync(vistoria);
+            }
+            catch (MongoDB.Driver.MongoConnectionException ex)
+            {
+                _filaVistoriasPendentes.Enqueue(new OperacaoPendente<Vistoria>
+                {
+                    Tipo = TipoOperacaoGenerica.Update,
+                    Entidade = vistoria
+                });
+
+                MessageBox.Show(
+                    $"Sem conexão com o banco de dados. A alteração foi colocada em fila para reenvio.\n\nOperações pendentes: {_filaVistoriasPendentes.Count}",
+                    "Aviso - Modo Offline",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Warning);
+            }
+        }
+
+        private async Task DeleteVistoriaComFilaAsync(string lpco)
+        {
+            try
+            {
+                await _repositorioVistorias.DeleteByLpcoAsync(lpco);
+            }
+            catch (MongoDB.Driver.MongoConnectionException ex)
+            {
+                _filaVistoriasPendentes.Enqueue(new OperacaoPendente<Vistoria>
+                {
+                    Tipo = TipoOperacaoGenerica.Delete,
+                    Chave = lpco
+                });
+
+                MessageBox.Show(
+                    $"Sem conexão com o banco de dados. A exclusão foi colocada em fila para reenvio.\n\nOperações pendentes: {_filaVistoriasPendentes.Count}",
+                    "Aviso - Modo Offline",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Warning);
+            }
+        }
+
+        private async Task ProcessarFilaVistoriasAsync()
+        {
+            int processadas = 0;
+
+            while (_filaVistoriasPendentes.Count > 0)
+            {
+                var op = _filaVistoriasPendentes.Peek();
+
+                try
+                {
+                    switch (op.Tipo)
+                    {
+                        case TipoOperacaoGenerica.Insert:
+                        case TipoOperacaoGenerica.Update:
+                            if (op.Entidade != null)
+                                await _repositorioVistorias.UpsertAsync(op.Entidade);
+                            break;
+
+                        case TipoOperacaoGenerica.Delete:
+                            if (op.Chave is string lpco)
+                                await _repositorioVistorias.DeleteByLpcoAsync(lpco);
+                            break;
+                    }
+
+                    _filaVistoriasPendentes.Dequeue();
+                    processadas++;
+                }
+                catch (MongoDB.Driver.MongoConnectionException)
+                {
+                    // Ainda sem conexão, para o processamento
+                    break;
+                }
+            }
+
+            if (processadas > 0)
+            {
+                MessageBox.Show(
+                    $"{processadas} operação(ões) pendente(s) processada(s) com sucesso!",
+                    "Sincronização",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Information);
+            }
+        }
+
+        #endregion
+
         private void AjustarAlturaDataGridView(DataGridView dgv)
         {
             // Se não tiver linhas, altura = 0
@@ -206,29 +328,15 @@ namespace Trabalho
         /// </summary>
         private async void DGV_CellValueChanged(object? sender, DataGridViewCellEventArgs e)
         {
-            // Garante que o evento foi disparado por uma grade e em uma linha válida
             if (sender is not DataGridView dgv || e.RowIndex < 0) return;
 
-            // Pega o nome da coluna que foi editada
             string nomeColunaEditada = dgv.Columns[e.ColumnIndex].DataPropertyName;
 
-            // Se a coluna editada não for "Notas", não faz nada.
             if (nomeColunaEditada != "Notas") return;
 
-            // Pega o objeto Vistoria da linha que foi alterada
             if (dgv.Rows[e.RowIndex].DataBoundItem is Vistoria vistoriaEditada)
             {
-                try
-                {
-                    // Salva o objeto inteiro (com a nota atualizada) no banco de dados.
-                    await _repositorioVistorias.UpsertAsync(vistoriaEditada);
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show($"Erro ao salvar a nota: {ex.Message}", "Erro de Salvamento", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    // Opcional: recarregar os dados para reverter a alteração visual
-                    await CarregarDadosAsync();
-                }
+                await UpsertVistoriaComFilaAsync(vistoriaEditada);
             }
         }
 
@@ -283,26 +391,16 @@ namespace Trabalho
                 return;
             }
 
-            try
-            {
-                vistoriaSelecionada.Status = novoStatus;
-                await _repositorioVistorias.UpsertAsync(vistoriaSelecionada);
+            vistoriaSelecionada.Status = novoStatus;
+            await UpsertVistoriaComFilaAsync(vistoriaSelecionada);
 
-                bsOrigem.Remove(vistoriaSelecionada);
-                bsDestino.Add(vistoriaSelecionada);
+            bsOrigem.Remove(vistoriaSelecionada);
+            bsDestino.Add(vistoriaSelecionada);
 
-                // Ajustar apenas os DataGridViews origem e destino
-                AjustarAlturaDataGridView(dgvOrigem);
-                AjustarAlturaDataGridView(dgvDestino);
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Erro ao atualizar o status da vistoria: {ex.Message}", "Erro");
-                await CarregarDadosAsync();
-
-                AjustarTodosDataGridViews();
-            }
+            AjustarAlturaDataGridView(dgvOrigem);
+            AjustarAlturaDataGridView(dgvDestino);
         }
+
         private void AjustarTodosDataGridViews()
         {
             AjustarAlturaDataGridView(DGVAguardandoChegAgendVistoria);
@@ -368,7 +466,6 @@ namespace Trabalho
 
             try
             {
-                // 1. Busca o Processo principal no banco de dados.
                 var processo = await _repositorioProcesso.GetByRefUsaAsync(vistoriaSelecionada.Ref_USA);
                 if (processo == null)
                 {
@@ -376,28 +473,25 @@ namespace Trabalho
                     return;
                 }
 
-                // 2. Encontra o LPCO específico dentro da lista de LIs do processo.
                 var lpcoParaAtualizar = processo.LI
                     .SelectMany(li => li.LPCO)
                     .FirstOrDefault(lpco => lpco.LPCO == vistoriaSelecionada.LPCO);
 
                 if (lpcoParaAtualizar != null)
                 {
-                    // 3. Atualiza o status do LPCO para "DEFERIDO".
                     lpcoParaAtualizar.MotivoExigencia = "DEFERIDO";
-
-                    // 4. Salva o Processo inteiro. A lógica de SincronizarLicencas
-                    //    irá propagar essa alteração para o OrgaoAnuente correspondente.
                     await _repositorioProcesso.UpdateAsync(processo);
                 }
 
-                // 5. Deleta o registro da vistoria, já que ela foi concluída.
-                await _repositorioVistorias.DeleteByLpcoAsync(vistoriaSelecionada.LPCO);
+                await DeleteVistoriaComFilaAsync(vistoriaSelecionada.LPCO);
 
-                // 6. Remove o item da grade na tela.
                 _bsAguardandoDef.Remove(vistoriaSelecionada);
 
                 MessageBox.Show("Vistoria finalizada e status do LPCO atualizado com sucesso!", "Sucesso", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+            catch (MongoDB.Driver.MongoConnectionException ex)
+            {
+                MessageBox.Show($"Erro de conexão ao finalizar vistoria: {ex.Message}", "Erro de conexão", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
             catch (Exception ex)
             {
@@ -405,8 +499,8 @@ namespace Trabalho
             }
         }
 
-        #endregion
 
+        #endregion
         private async void BtnDeferido_Click_1(object sender, EventArgs e)
         {
             if (DGVLaudo.CurrentRow == null || DGVLaudo.CurrentRow.DataBoundItem is not Vistoria vistoriaSelecionada)
@@ -421,7 +515,6 @@ namespace Trabalho
 
             try
             {
-                // 1. Busca o Processo principal no banco de dados.
                 var processo = await _repositorioProcesso.GetByRefUsaAsync(vistoriaSelecionada.Ref_USA);
                 if (processo == null)
                 {
@@ -429,38 +522,33 @@ namespace Trabalho
                     return;
                 }
 
-                // 2. Encontra o LPCO específico dentro da lista de LIs do processo.
                 var lpcoParaAtualizar = processo.LI
                     .SelectMany(li => li.LPCO)
                     .FirstOrDefault(lpco => lpco.LPCO == vistoriaSelecionada.LPCO);
 
                 if (lpcoParaAtualizar != null)
                 {
-                    // 3. Atualiza o status do LPCO para "DEFERIDO".
                     lpcoParaAtualizar.MotivoExigencia = "DEFERIDO";
-
-                    // 4. Salva o Processo inteiro. A lógica de SincronizarLicencas
-                    //    irá propagar essa alteração para o OrgaoAnuente correspondente.
                     await _repositorioProcesso.UpdateAsync(processo);
                 }
 
-                // 5. Deleta o registro da vistoria, já que ela foi concluída.
-                await _repositorioVistorias.DeleteByLpcoAsync(vistoriaSelecionada.LPCO);
+                await DeleteVistoriaComFilaAsync(vistoriaSelecionada.LPCO);
 
-                // 6. Remove o item da grade na tela.
                 _bsAguardandoLaudo.Remove(vistoriaSelecionada);
 
                 MessageBox.Show("Vistoria finalizada e status do LPCO atualizado com sucesso!", "Sucesso", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+            catch (MongoDB.Driver.MongoConnectionException ex)
+            {
+                MessageBox.Show($"Erro de conexão ao finalizar vistoria: {ex.Message}", "Erro de conexão", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
             catch (Exception ex)
             {
                 MessageBox.Show($"Erro ao finalizar a vistoria: {ex.Message}", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
-
         private async void BtnCancelada_Click(object sender, EventArgs e)
         {
-            // 1. Só age na grid DGVProcessosDadoEntrada
             if (DGVProcessosDadoEntrada.CurrentRow == null || DGVProcessosDadoEntrada.CurrentRow.DataBoundItem is not Vistoria vistoriaSelecionada)
             {
                 MessageBox.Show("Por favor, selecione um item para cancelar.", "Aviso", MessageBoxButtons.OK, MessageBoxIcon.Warning);
@@ -475,7 +563,6 @@ namespace Trabalho
 
             try
             {
-                // 2. Busca o Processo principal no banco de dados.
                 var processo = await _repositorioProcesso.GetByRefUsaAsync(vistoriaSelecionada.Ref_USA);
                 if (processo == null)
                 {
@@ -483,31 +570,32 @@ namespace Trabalho
                     return;
                 }
 
-                // 3. Encontra o LPCO específico dentro da lista de LIs do processo.
                 var lpcoParaAtualizar = processo.LI
                     .SelectMany(li => li.LPCO)
                     .FirstOrDefault(lpco => lpco.LPCO == vistoriaSelecionada.LPCO);
 
                 if (lpcoParaAtualizar != null)
                 {
-                    // Atualiza o status do LPCO para "CANCELADA".
                     lpcoParaAtualizar.MotivoExigencia = "CANCELADA";
                     await _repositorioProcesso.UpdateAsync(processo);
                 }
 
-                // 4. Deleta o registro da vistoria.
-                await _repositorioVistorias.DeleteByLpcoAsync(vistoriaSelecionada.LPCO);
+                await DeleteVistoriaComFilaAsync(vistoriaSelecionada.LPCO);
 
-                // 5. Remove da grid.
                 _bsProcessosDadoEntrada.Remove(vistoriaSelecionada);
 
                 MessageBox.Show("Vistoria cancelada e LPCO atualizado como CANCELADA!", "Sucesso", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+            catch (MongoDB.Driver.MongoConnectionException ex)
+            {
+                MessageBox.Show($"Erro de conexão ao cancelar vistoria: {ex.Message}", "Erro de conexão", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
             catch (Exception ex)
             {
                 MessageBox.Show($"Erro ao cancelar a vistoria: {ex.Message}", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
+
 
     }
 }

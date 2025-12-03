@@ -1,11 +1,8 @@
-﻿using MongoDB.Bson;
-using MongoDB.Bson.Serialization.Attributes;
-using MongoDB.Driver;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
+using MongoDB.Bson;
+using MongoDB.Bson.Serialization.Attributes;
 
 namespace CLUSA
 {
@@ -96,8 +93,7 @@ namespace CLUSA
         public string Pendencia { get; set; } = string.Empty;
         public string Status { get; set; } = "Aguardando embarque";
         public string CondicaoProcesso { get; set; } = "AguardandoCE";
-    }
-    
+    }    
     public class LicencaImportacao
     {
         public string Numero { get; set; } = string.Empty;
@@ -106,7 +102,6 @@ namespace CLUSA
         public bool Amostra { get; set; } = false;
         public List<LpcoInfo> LPCO { get; set; } = new();
     }
-
     public class LpcoInfo
     {
         public string NomeOrgao { get; set; } = string.Empty;
@@ -164,5 +159,6 @@ namespace CLUSA
 
         public string Observacoes { get; set; } = string.Empty;
     }
+
     
 }

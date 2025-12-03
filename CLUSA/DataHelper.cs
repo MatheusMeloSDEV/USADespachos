@@ -1,4 +1,5 @@
-﻿public class DataHelper
+﻿using System;
+public class DataHelper
 {
     public static DateTime? CalcularVencimento(DateTime? dataBase, int dias)
     {

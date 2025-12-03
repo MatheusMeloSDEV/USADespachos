@@ -1,36 +1,11 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<TargetFramework>net8.0</TargetFramework>
-		<ImplicitUsings>enable</ImplicitUsings>
+		<TargetFramework>net8.0-windows</TargetFramework>
+		<OutputType>Library</OutputType>
+		<UseWindowsForms>true</UseWindowsForms>
 		<Nullable>enable</Nullable>
-		<Platforms>AnyCPU;x86</Platforms>
 	</PropertyGroup>
-
-	<ItemGroup>
-		<Compile Remove="Agencia.cs" />
-		<Compile Remove="Agencias.cs" />
-		<Compile Remove="Capa.cs" />
-		<Compile Remove="FinanceiroModels.cs" />
-		<Compile Remove="IEntidadeBase.cs" />
-		<Compile Remove="LicencaImportacao.cs" />
-		<Compile Remove="Logado.cs" />
-		<Compile Remove="LpcoInfo.cs" />
-		<Compile Remove="LpcoViewModel.cs" />
-		<Compile Remove="NotificacaoService.cs" />
-		<Compile Remove="NotifUrgente.cs" />
-		<Compile Remove="OrgaoAnuente.cs" />
-		<Compile Remove="Recibo.cs" />
-		<Compile Remove="RepositorioFatura.cs" />
-		<Compile Remove="RepositorioNotificacao.cs" />
-		<Compile Remove="RepositorioOrgaoAnuente.cs" />
-		<Compile Remove="RepositorioRecibo.cs" />
-		<Compile Remove="RepositorioUsers.cs" />
-		<Compile Remove="RepositorioVistorias.cs" />
-		<Compile Remove="Users.cs" />
-		<Compile Remove="Vistoria.cs" />
-		<Compile Remove="VistoriaService.cs" />
-	</ItemGroup>
 
 	<ItemGroup>
 		<PackageReference Include="Aspose.Cells" Version="24.11.0" />

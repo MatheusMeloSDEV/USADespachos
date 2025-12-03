@@ -9,6 +9,110 @@ using System.Threading.Tasks;
 
 namespace CLUSA
 {
+    #region "Interface e Base"
+
+    /// <summary>
+    /// Interface base para todas as entidades do MongoDB
+    /// </summary>
+    public interface IEntidadeBase
+    {
+        ObjectId Id { get; set; }
+    }
+
+    /// <summary>
+    /// Repositório base genérico para operações CRUD no MongoDB
+    /// </summary>
+    public abstract class RepositorioBase<T> where T : IEntidadeBase
+    {
+        protected readonly IMongoCollection<T> _colecao;
+
+        protected RepositorioBase(string nomeColecao, IMongoDatabase? database = null)
+        {
+            var db = database ?? ConfigDatabase.GetDatabase();
+            _colecao = db.GetCollection<T>(nomeColecao);
+        }
+
+        // CREATE
+        public virtual async Task InsertAsync(T entidade)
+        {
+            if (entidade.Id == ObjectId.Empty)
+            {
+                entidade.Id = ObjectId.GenerateNewId();
+            }
+            await _colecao.InsertOneAsync(entidade);
+        }
+
+        public virtual async Task InsertManyAsync(List<T> entidades)
+        {
+            foreach (var entidade in entidades)
+            {
+                if (entidade.Id == ObjectId.Empty)
+                {
+                    entidade.Id = ObjectId.GenerateNewId();
+                }
+            }
+            await _colecao.InsertManyAsync(entidades);
+        }
+
+        // READ
+        public virtual async Task<List<T>> ListarTodosAsync()
+        {
+            return await _colecao.Find(FilterDefinition<T>.Empty).ToListAsync();
+        }
+
+        public virtual async Task<T?> ObterPorIdAsync(ObjectId id)
+        {
+            var filter = Builders<T>.Filter.Eq(x => x.Id, id);
+            return await _colecao.Find(filter).FirstOrDefaultAsync();
+        }
+
+        // UPDATE
+        public virtual async Task UpdateAsync(T entidade)
+        {
+            var filter = Builders<T>.Filter.Eq(x => x.Id, entidade.Id);
+            await _colecao.ReplaceOneAsync(filter, entidade);
+        }
+
+        // DELETE
+        public virtual async Task DeleteAsync(ObjectId id)
+        {
+            var filter = Builders<T>.Filter.Eq(x => x.Id, id);
+            await _colecao.DeleteOneAsync(filter);
+        }
+
+        public virtual async Task DeleteManyAsync(FilterDefinition<T> filter)
+        {
+            await _colecao.DeleteManyAsync(filter);
+        }
+
+        // MÉTODOS AUXILIARES ESPECÍFICOS PARA PROCESSOS
+        public virtual async Task DeletePorRefUsaAsync(string refUsa)
+        {
+            var filter = Builders<T>.Filter.Eq("Ref_USA", refUsa);
+            await _colecao.DeleteManyAsync(filter);
+        }
+
+        // CONTAGEM
+        public virtual async Task<long> ContarAsync(FilterDefinition<T>? filter = null)
+        {
+            filter ??= FilterDefinition<T>.Empty;
+            return await _colecao.CountDocumentsAsync(filter);
+        }
+
+        // BUSCA CUSTOMIZADA
+        public virtual async Task<List<T>> BuscarAsync(FilterDefinition<T> filter)
+        {
+            return await _colecao.Find(filter).ToListAsync();
+        }
+
+        public virtual async Task<T?> BuscarUmAsync(FilterDefinition<T> filter)
+        {
+            return await _colecao.Find(filter).FirstOrDefaultAsync();
+        }
+    }
+
+    #endregion
+
     #region "Fatura Model"
     public class Fatura : IEntidadeBase
     {
@@ -88,7 +192,7 @@ namespace CLUSA
         public string TipoFinalizacao { get; set; } = string.Empty;
     }
     #endregion
-    #region "Repositorio Fatura"
+   #region "Repositorio Fatura"
     public class RepositorioFatura : RepositorioBase<Fatura>
     {
         public RepositorioFatura(IMongoDatabase? database = null)
@@ -102,10 +206,19 @@ namespace CLUSA
             );
             return await _colecao.Find(filter).ToListAsync();
         }
+        public async Task<Fatura?> ObterPorRefUSAAsync(string refUsa)
+        {
+            if (string.IsNullOrWhiteSpace(refUsa))
+                return null;
+
+            var filter = Builders<Fatura>.Filter.Eq(f => f.Ref_USA, refUsa);
+            return await _colecao.Find(filter).FirstOrDefaultAsync();
+        }
     }
+
     #endregion
 
-    #region "Recibo Model"
+   #region "Recibo Model"
     public class Recibo : IEntidadeBase
     {
         public Recibo() { }
@@ -135,7 +248,7 @@ namespace CLUSA
         public string Datahoje { get; set; } = DateTime.Now.ToString("dd 'de' MMMM yyyy", new System.Globalization.CultureInfo("pt-BR"));
     }
     #endregion
-    #region "Repositorio Recibo"
+   #region "Repositorio Recibo"
     public class RepositorioRecibo : RepositorioBase<Recibo>
     {
         public RepositorioRecibo(IMongoDatabase? database = null)
@@ -149,10 +262,18 @@ namespace CLUSA
             );
             return await _colecao.Find(filter).ToListAsync();
         }
+        public async Task<Recibo?> ObterPorRefUSAAsync(string refUsa)
+        {
+            if (string.IsNullOrWhiteSpace(refUsa))
+                return null;
+
+            var filter = Builders<Recibo>.Filter.Eq(f => f.Ref_USA, refUsa);
+            return await _colecao.Find(filter).FirstOrDefaultAsync();
+        }
     }
     #endregion
 
-    #region "Orgão Anuente Model"
+   #region "Orgão Anuente Model"
     public enum TipoOrgaoAnuente { MAPA, ANVISA, DECEX, IBAMA, INMETRO }
 
     [BsonIgnoreExtraElements]
@@ -223,7 +344,7 @@ namespace CLUSA
         public string ParametrizacaoLPCO { get; set; }
     }
     #endregion
-    #region "Repositorio Orgão Anuente"
+   #region "Repositorio Orgão Anuente"
     public class RepositorioOrgaoAnuente : RepositorioBase<OrgaoAnuente>
     {
         public RepositorioOrgaoAnuente(IMongoDatabase? database = null)
@@ -269,7 +390,7 @@ namespace CLUSA
     }
     #endregion
 
-    #region "Vistoria Models"
+   #region "Vistoria Models"
     public enum StatusVistoria
     {
         AguardandoChegadaParaAgendar,
@@ -307,7 +428,7 @@ namespace CLUSA
         public StatusVistoria Status { get; set; } = StatusVistoria.AguardandoChegadaParaAgendar;
     }
     #endregion
-    #region "Vistoria Service"
+   #region "Vistoria Service"
     public class VistoriaService
     {
         private readonly RepositorioOrgaoAnuente _repoOrgaoAnuente;
@@ -475,7 +596,7 @@ namespace CLUSA
         }
     }
     #endregion
-    #region "Repositorio Vistorias"
+   #region "Repositorio Vistorias"
     public class RepositorioVistorias
     {
         private readonly IMongoCollection<Vistoria> _colecao;
@@ -543,7 +664,7 @@ namespace CLUSA
     }
     #endregion
 
-    #region "User Models"
+   #region "User Models"
     public class Users
     {
         [BsonId]
@@ -552,6 +673,8 @@ namespace CLUSA
         public string Username { get; set; } = string.Empty;
         public string Password { get; set; } = string.Empty;
         public bool Admin { get; set; } = false;
+
+        public Dictionary<string, List<string>> PreferenciasGrids { get; set; } = new();
     }
     public class Logado
     {
@@ -561,7 +684,7 @@ namespace CLUSA
         public string Usuario = string.Empty;
     }
     #endregion
-    #region "Repositorio Users"
+   #region "Repositorio Users"
     public class RepositorioUsers
     {
         // A variável privada se chama _Users
@@ -629,7 +752,7 @@ namespace CLUSA
     }
     #endregion
 
-    #region "Notificacao Models"
+   #region "Notificacao Models"
     public class Notificacao
     {
         [BsonId]
@@ -656,7 +779,7 @@ namespace CLUSA
         public string NomeUsuario { get; set; } = "";
     }
     #endregion
-    #region "Repositorio Notificação"
+   #region "Repositorio Notificação"
     public class RepositorioNotificacao
     {
         private readonly IMongoCollection<Notificacao> _colecao;
@@ -819,7 +942,7 @@ namespace CLUSA
         }
     }
     #endregion
-    #region "Repositorio NotifUrgente"
+   #region "Repositorio NotifUrgente"
     public class RepositorioNotifUrgente
     {
         private readonly IMongoCollection<NotifUrgente> _colecao;
@@ -872,7 +995,7 @@ namespace CLUSA
     }
     #endregion
 
-    #region "Models Auxiliares"
+   #region "Models Auxiliares"
     public class Agencia
     {
         public string Numero { get; set; } = string.Empty;

@@ -74,6 +74,7 @@ namespace Trabalho
         private async void FrmPrincipal_Load(object sender, EventArgs e)
         {
             this.Icon = Icon.ExtractAssociatedIcon(Application.ExecutablePath);
+            GridColumnManager.RegistrarCatalogosPadrao();
             await PopularTableLayoutUrgentes();
         }
 
@@ -295,6 +296,42 @@ namespace Trabalho
         private void MenuItemFinalizados_Click(object? sender, EventArgs e) => ShowSingleFormOfType<frmFinalizados>();
         private void MenuItemMaximize_Click(object? sender, EventArgs e) => this.WindowState = FormWindowState.Maximized;
         private void MenuItemMinimize_Click(object? sender, EventArgs e) => this.WindowState = FormWindowState.Minimized;
+        private async void MenuItemConfiguracoes_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                // Obter usuário logado - CORRIGIDO
+                var usuario = await _repositorioUsers.GetByIdAsync(_logadoUsuario.Id);
+
+                if (usuario == null)
+                {
+                    MessageBox.Show("Erro ao carregar dados do usuário.", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return;
+                }
+
+                using var frmConfig = new frmConfiguracoes(usuario.Id, usuario.PreferenciasGrids);
+
+                if (frmConfig.ShowDialog(this) == DialogResult.OK)
+                {
+                    // Salvar preferências atualizadas
+                    usuario.PreferenciasGrids = frmConfig.ObterPreferencias();
+                    await _repositorioUsers.UpdateAsync(usuario);
+
+                    MessageBox.Show(
+                        "Configurações salvas com sucesso!\n\nAs alterações serão aplicadas ao reabrir os grids.",
+                        "Sucesso",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Information);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Erro ao abrir configurações:\n{ex.Message}", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+
+
 
         private async void BtnAddNotifUrg_Click(object sender, EventArgs e)
         {
@@ -430,8 +467,6 @@ namespace Trabalho
             var frm = new FrmMudarSenha(_logadoUsuario);
             frm.ShowDialog();
         }
-
-        // --- CÓDIGO OBSOLETO REMOVIDO: GerarNotificacoes, VerificarVencimento, TentarAdicionarNotificacao ---
 
     }
     #endregion

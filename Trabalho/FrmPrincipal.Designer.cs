@@ -44,6 +44,7 @@
             MenuItemOrgaoAnuente1 = new ToolStripMenuItem();
             MenuItemFinalizados = new ToolStripMenuItem();
             MenuItemUsuario = new ToolStripMenuItem();
+            MenuItemConfiguracoes = new ToolStripMenuItem();
             MenuItemChangePassword = new ToolStripMenuItem();
             MenuItemExit = new ToolStripMenuItem();
             MenuItemAdmin = new ToolStripMenuItem();
@@ -168,23 +169,30 @@
             // MenuItemUsuario
             // 
             MenuItemUsuario.Alignment = ToolStripItemAlignment.Right;
-            MenuItemUsuario.DropDownItems.AddRange(new ToolStripItem[] { MenuItemChangePassword, MenuItemExit });
+            MenuItemUsuario.DropDownItems.AddRange(new ToolStripItem[] { MenuItemConfiguracoes, MenuItemChangePassword, MenuItemExit });
             MenuItemUsuario.Image = (Image)resources.GetObject("MenuItemUsuario.Image");
             MenuItemUsuario.Name = "MenuItemUsuario";
             MenuItemUsuario.Size = new Size(58, 30);
             MenuItemUsuario.Text = "User";
             // 
+            // MenuItemConfiguracoes
+            // 
+            MenuItemConfiguracoes.Name = "MenuItemConfiguracoes";
+            MenuItemConfiguracoes.Size = new Size(180, 22);
+            MenuItemConfiguracoes.Text = "Configurações";
+            MenuItemConfiguracoes.Click += MenuItemConfiguracoes_Click;
+            // 
             // MenuItemChangePassword
             // 
             MenuItemChangePassword.Name = "MenuItemChangePassword";
-            MenuItemChangePassword.Size = new Size(143, 22);
+            MenuItemChangePassword.Size = new Size(180, 22);
             MenuItemChangePassword.Text = "Mudar senha";
             MenuItemChangePassword.Click += MenuItemChangePassword_Click;
             // 
             // MenuItemExit
             // 
             MenuItemExit.Name = "MenuItemExit";
-            MenuItemExit.Size = new Size(143, 22);
+            MenuItemExit.Size = new Size(180, 22);
             MenuItemExit.Text = "Sair";
             MenuItemExit.Click += MenuItemExit_Click;
             // 
@@ -360,5 +368,6 @@
         private ToolStripMenuItem MenuItemChangePassword;
         private ToolStripMenuItem MenuItemFinalizados;
         private System.Windows.Forms.Timer _notificacaoTimer;
+        private ToolStripMenuItem MenuItemConfiguracoes;
     }
 }

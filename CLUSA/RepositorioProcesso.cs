@@ -47,8 +47,8 @@ namespace CLUSA
         {
             await _colecao.InsertOneAsync(processo);
             await SincronizarLicencas(processo);
-            await _repositorioFatura.CreateAsync(new Fatura(processo));
-            await _repositorioRecibo.CreateAsync(new Recibo(processo));
+            await _repositorioFatura.InsertAsync(new Fatura(processo));
+            await _repositorioRecibo.InsertAsync(new Recibo(processo));
         }
 
         public async Task UpdateAsync(Processo processo)
@@ -253,7 +253,7 @@ namespace CLUSA
             foreach (var li in lisParaAdicionar)
             {
                 var novoOrgaoAnuente = MapearParaOrgaoAnuente(processo, li);
-                await _repositorioOrgaoAnuente.CreateAsync(novoOrgaoAnuente);
+                await _repositorioOrgaoAnuente.InsertAsync(novoOrgaoAnuente);
             }
 
             // --- DELETA LIs que foram removidas ---
