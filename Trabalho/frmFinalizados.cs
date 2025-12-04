@@ -18,16 +18,36 @@ namespace Trabalho
         private DataGridViewColumn? _colunaOrdenada;
         private ListSortDirection _direcaoOrdenacao;
         private List<Processo> _listaOriginal = new();
-        public frmFinalizados()
+
+        private readonly Logado _logado;
+        private readonly RepositorioUsers _repositorioUsers;
+        private Users? _usuarioLogado;
+
+        public frmFinalizados(Logado logado)
         {
             _repositorio = new RepositorioProcesso();
             InitializeComponent();
+            _repositorioUsers = new RepositorioUsers();
+            _logado = logado;
         }
         private async void FrmFinalizados_Shown(object? sender, EventArgs e)
         {
             try
             {
-                ConfigurarColunasDataGridViewProcesso();
+                _usuarioLogado = await _repositorioUsers.GetByIdAsync(_logado.Id);
+                if (_usuarioLogado == null)
+                {
+                    MessageBox.Show("Não foi possível carregar o usuário logado.", "Erro",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return;
+                }
+                GridColumnManager.RegistrarCatalogosPadrao();
+
+                _usuarioLogado.PreferenciasGrids ??= new Dictionary<string, List<string>>();
+                _usuarioLogado.PreferenciasGrids.TryGetValue("DGVFinalizados", out var colunasVisiveis);
+
+                GridColumnManager.ConfigurarGrid(DGVFinalizados, "DGVFinalizados", colunasVisiveis);
+
                 await CarregarDadosAsync();
 
                 this.Icon = Icon.ExtractAssociatedIcon(Application.ExecutablePath);
@@ -48,7 +68,7 @@ namespace Trabalho
         {
             try
             {
-                var registros = await _repositorio.ListarTodosAsync();
+                var registros = await _repositorio.ListarPrincipalOtimizadoAsync();
                 var registrosFinalizados = registros
                     .Where(p => p.Status == "Finalizado")
                     .OrderBy(p => p.DataDeAtracacao == null ? 1 : 0)
@@ -62,162 +82,6 @@ namespace Trabalho
             catch (Exception ex)
             {
                 MessageBox.Show($"Erro ao carregar os dados: {ex.Message}", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-        }
-        private void ConfigurarColunasDataGridViewProcesso()
-        {
-            DGVFinalizados.Columns.Clear();
-
-            // --- Configuração Geral da Grade ---
-            DGVFinalizados.AutoGenerateColumns = false;
-            DGVFinalizados.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill; // Mantém o preenchimento
-            DGVFinalizados.RowHeadersVisible = false;
-            DGVFinalizados.AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.None;
-            DGVFinalizados.DefaultCellStyle.WrapMode = DataGridViewTriState.False;
-            DGVFinalizados.ShowCellToolTips = true;
-            var dateCellStyle = new DataGridViewCellStyle { Format = "dd/MM/yyyy" };
-
-            // --- Adicionando as Colunas com Largura Mínima ---
-
-            DGVFinalizados.Columns.Add(new DataGridViewTextBoxColumn
-            {
-                DataPropertyName = "Ref_USA",
-                HeaderText = "Ref. USA",
-                AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells,
-                MinimumWidth = 90
-            });
-            DGVFinalizados.Columns.Add(new DataGridViewTextBoxColumn
-            {
-                DataPropertyName = "SR",
-                HeaderText = "S. Ref",
-                MinimumWidth = 60
-            });
-            DGVFinalizados.Columns.Add(new DataGridViewTextBoxColumn
-            {
-                DataPropertyName = "Importador",
-                HeaderText = "Importador",
-                AutoSizeMode = DataGridViewAutoSizeColumnMode.ColumnHeader,
-                MinimumWidth = 80 // <-- MUDANÇA
-            });
-            DGVFinalizados.Columns.Add(new DataGridViewTextBoxColumn
-            {
-                DataPropertyName = "Veiculo",
-                HeaderText = "Veículo",
-                FillWeight = 140,
-                MinimumWidth = 80 // <-- MUDANÇA
-            });
-            DGVFinalizados.Columns.Add(new DataGridViewTextBoxColumn
-            {
-                DataPropertyName = "DataDeAtracacao",
-                HeaderText = "Data de Atracação",
-                AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells,
-                MinimumWidth = 70 // <-- MUDANÇA
-            });
-            DGVFinalizados.Columns.Add(new DataGridViewTextBoxColumn
-            {
-                DataPropertyName = "Terminal",
-                HeaderText = "Terminal",
-                FillWeight = 140,
-                MinimumWidth = 140
-            });
-            DGVFinalizados.Columns.Add(new DataGridViewTextBoxColumn
-            {
-                DataPropertyName = "LocalDeDesembaraco",
-                HeaderText = "Local",
-                AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells,
-                MinimumWidth = 120 // <-- MUDANÇA
-            });
-            DGVFinalizados.Columns.Add(new DataGridViewTextBoxColumn
-            {
-                DataPropertyName = "Container",
-                HeaderText = "Container",
-                AutoSizeMode = DataGridViewAutoSizeColumnMode.ColumnHeader,
-                MinimumWidth = 120
-            });
-            DGVFinalizados.Columns.Add(new DataGridViewCheckBoxColumn
-            {
-                DataPropertyName = "Redestinacao",
-                HeaderText = "Redes.",
-                AutoSizeMode = DataGridViewAutoSizeColumnMode.ColumnHeader,
-                MinimumWidth = 50
-            });
-            DGVFinalizados.Columns.Add(new DataGridViewTextBoxColumn
-            {
-                DataPropertyName = "CE",
-                HeaderText = "CE",
-                FillWeight = 90,
-                MinimumWidth = 100 // <-- MUDANÇA
-            });
-            DGVFinalizados.Columns.Add(new DataGridViewTextBoxColumn
-            {
-                DataPropertyName = "FreeTime",
-                HeaderText = "F.T",
-                AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells,
-                MinimumWidth = 40 // <-- MUDANÇA
-            });
-            DGVFinalizados.Columns.Add(new DataGridViewTextBoxColumn
-            {
-                DataPropertyName = "VencimentoFreeTime",
-                HeaderText = "Venc. F. Time",
-                DefaultCellStyle = dateCellStyle,
-                AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells,
-                MinimumWidth = 100 // <-- MUDANÇA
-            });
-            DGVFinalizados.Columns.Add(new DataGridViewTextBoxColumn
-            {
-                DataPropertyName = "VencimentoFMA",
-                HeaderText = "Venc. FMA",
-                DefaultCellStyle = dateCellStyle,
-                AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells,
-                MinimumWidth = 100 // <-- MUDANÇA
-            });
-            DGVFinalizados.Columns.Add(new DataGridViewCheckBoxColumn
-            {
-                DataPropertyName = "CapaOK",
-                HeaderText = "Capa",
-                AutoSizeMode = DataGridViewAutoSizeColumnMode.ColumnHeader,
-                MinimumWidth = 40
-            });
-            DGVFinalizados.Columns.Add(new DataGridViewCheckBoxColumn
-            {
-                DataPropertyName = "Numerario",
-                HeaderText = "Num.",
-                AutoSizeMode = DataGridViewAutoSizeColumnMode.ColumnHeader,
-                MinimumWidth = 40
-            });
-            DGVFinalizados.Columns.Add(new DataGridViewTextBoxColumn
-            {
-                DataPropertyName = "RascunhoDI",
-                HeaderText = "Rascunho DI",
-                AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells,
-                MinimumWidth = 120
-            });
-            DGVFinalizados.Columns.Add(new DataGridViewTextBoxColumn
-            {
-                DataPropertyName = "Pendencia",
-                HeaderText = "Pendência",
-                FillWeight = 160,
-                MinimumWidth = 160 // <-- MUDANÇA
-            });
-            DGVFinalizados.Columns.Add(new DataGridViewTextBoxColumn
-            {
-                DataPropertyName = "Status",
-                HeaderText = "Status",
-                FillWeight = 180,
-                MinimumWidth = 120 // <-- MUDANÇA
-            });
-
-            foreach (DataGridViewColumn coluna in DGVFinalizados.Columns)
-            {
-                coluna.DefaultCellStyle.Font = new Font("Segoe UI", 10);
-                coluna.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleLeft;
-                coluna.SortMode = DataGridViewColumnSortMode.Programmatic;
-
-                // Centralizar checkbox
-                if (coluna is DataGridViewCheckBoxColumn || coluna.HeaderText == "F.T")
-                {
-                    coluna.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
-                }
             }
         }
         private async void BtnExcluir_Click(object sender, EventArgs e)

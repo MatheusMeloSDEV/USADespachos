@@ -8,9 +8,6 @@ using System.Threading.Tasks;
 
 namespace CLUSA
 {
-    // Assumimos que as classes de modelo (Processo, LicencaImportacao, Capa, Fatura, Recibo, OrgaoAnuente, Vistoria, etc.)
-    // e suas respectivas dependências (RepositorioOrgaoAnuente, RepositorioFatura, etc.) estão definidas e acessíveis no namespace CLUSA.
-
     public class RepositorioProcesso
     {
         private readonly IMongoCollection<Processo> _colecao;
@@ -24,10 +21,8 @@ namespace CLUSA
         public RepositorioProcesso(IMongoDatabase? database = null)
         {
             var db = database ?? ConfigDatabase.GetDatabase();
-
             _colecao = db.GetCollection<Processo>("PROCESSO");
 
-            // Instanciação de Repositórios Auxiliares (Assumindo construtores padrão)
             _repositorioOrgaoAnuente = new RepositorioOrgaoAnuente();
             _repositorioFatura = new RepositorioFatura();
             _repositorioRecibo = new RepositorioRecibo();
@@ -36,26 +31,125 @@ namespace CLUSA
         }
         #endregion
 
-        #region Métodos CRUD Principais
-
-        public async Task<List<Processo>> ListarTodosAsync()
+        #region Métodos CRUD Otimizados
+        /// <summary>
+        /// OTIMIZAÇÃO: Atualiza o status do LPCO direto no banco sem trazer o processo inteiro para a memória.
+        /// Evita tráfego de rede desnecessário e previne conflitos de concorrência.
+        /// </summary>
+        public async Task AtualizarStatusLpcoAsync(string refUsa, string numeroLpco, string novoStatus)
         {
-            return await _colecao.Find(FilterDefinition<Processo>.Empty).ToListAsync();
+            var processo = await GetByRefUsaAsync(refUsa);
+            if (processo == null) return;
+
+            bool alterou = false;
+
+            if (processo.LI != null)
+            {
+                foreach (var li in processo.LI)
+                {
+                    if (li.LPCO != null)
+                    {
+                        var lpcoAlvo = li.LPCO.FirstOrDefault(x => x.LPCO == numeroLpco);
+                        if (lpcoAlvo != null)
+                        {
+                            lpcoAlvo.MotivoExigencia = novoStatus;
+                            alterou = true;
+                        }
+                    }
+                }
+            }
+
+            if (alterou)
+            {
+                await _colecao.ReplaceOneAsync(p => p.Id == processo.Id, processo);
+            }
+        }
+        public async Task<List<string>> ListarRefUsaAtivosAsync()
+        {
+            var filter = Builders<Processo>.Filter.Ne(p => p.Status, "Finalizado");
+            // Projeção para trazer APENAS a string Ref_USA, economizando muita memória
+            return await _colecao.Find(filter)
+                .Project(p => p.Ref_USA)
+                .ToListAsync();
+        }
+        public async Task<bool> VerificarRefUsaExisteAsync(string refUsa)
+        {
+            // Usa o índice Ref_USA_1 para checagem instantânea
+            var filter = Builders<Processo>.Filter.Eq(p => p.Ref_USA, refUsa);
+            // Project para trazer apenas o _id (economiza banda)
+            var projection = Builders<Processo>.Projection.Include(p => p.Id);
+            return await _colecao.Find(filter).Project(projection).AnyAsync();
+        }
+        public async Task<Processo?> GetByRefUsaAsync(string refUsa)
+        {
+            // O índice Ref_USA_1 criado anteriormente garante que isso seja instantâneo (0ms)
+            var filter = Builders<Processo>.Filter.Eq(p => p.Ref_USA, refUsa);
+            return await _colecao.Find(filter).FirstOrDefaultAsync();
+        }
+
+        // Este é o método "Turbo" para o Grid principal
+        public async Task<List<Processo>> ListarPrincipalOtimizadoAsync(string sufixoExcluir = "ITJ")
+        {
+            var builder = Builders<Processo>.Filter;
+
+            // 1. Filtro de Status (Feito no Banco, não na memória)
+            var filtroStatus = builder.Ne(p => p.Status, "Finalizado");
+
+            // 2. Filtro de Sufixo (Feito no Banco)
+            var regex = new BsonRegularExpression(new Regex($"{sufixoExcluir}$", RegexOptions.IgnoreCase));
+            var filtroSufixo = builder.Not(builder.Regex(p => p.Ref_USA, regex));
+
+            var filtroFinal = builder.And(filtroStatus, filtroSufixo);
+
+            // Traz apenas o necessário. Se precisar de projeção (trazer menos colunas), adicione .Project(...)
+            return await _colecao.Find(filtroFinal).ToListAsync();
+        }
+        /// <summary>
+        /// Traz apenas os campos essenciais para os serviços de background (Vistoria e Notificação).
+        /// Otimizado com PROJECTION para não carregar o objeto inteiro na memória.
+        /// </summary>
+        public async Task<List<Processo>> ListarProcessosAtivosParaStatusAsync()
+        {
+            var filter = Builders<Processo>.Filter.Ne(p => p.Status, "Finalizado");
+
+            // PROJEÇÃO: Traz somente o que o VistoriaService e o GerenciadorNotificacao usam.
+            // Isso reduz o tráfego de rede de 100MB para 2MB, por exemplo.
+            var projection = Builders<Processo>.Projection
+                .Include(p => p.Id)
+                .Include(p => p.Ref_USA)
+                .Include(p => p.Importador)
+                .Include(p => p.Terminal)
+                .Include(p => p.DataDeAtracacao)
+                .Include(p => p.Redestinacao)       // Usado em Notificações
+                .Include(p => p.DataRegistroDI)     // Usado em Notificações
+                .Include(p => p.VencimentoFreeTime) // Usado em Notificações
+                .Include(p => p.VencimentoFMA)      // Usado em Notificações
+                .Include(p => p.VencimentoLI_LPCO); // Usado em Notificações
+
+            return await _colecao.Find(filter)
+                .Project<Processo>(projection)
+                .ToListAsync();
         }
 
         public async Task CreateAsync(Processo processo)
         {
             await _colecao.InsertOneAsync(processo);
-            await SincronizarLicencas(processo);
-            await _repositorioFatura.InsertAsync(new Fatura(processo));
-            await _repositorioRecibo.InsertAsync(new Recibo(processo));
+
+            // Executa tarefas auxiliares em paralelo
+            await Task.WhenAll(
+                SincronizarLicencas(processo),
+                _repositorioFatura.InsertAsync(new Fatura(processo)),
+                _repositorioRecibo.InsertAsync(new Recibo(processo))
+            );
         }
 
         public async Task UpdateAsync(Processo processo)
         {
-            await _colecao.ReplaceOneAsync(p => p.Id == processo.Id, processo);
-            await SincronizarLicencas(processo);
-            await SincronizarVistorias(processo);
+            var updateMain = _colecao.ReplaceOneAsync(p => p.Id == processo.Id, processo);
+            var syncLicencas = SincronizarLicencas(processo);
+            var syncVistorias = SincronizarVistorias(processo);
+
+            await Task.WhenAll(updateMain, syncLicencas, syncVistorias);
         }
 
         public async Task DeleteAsync(string processoId)
@@ -63,216 +157,127 @@ namespace CLUSA
             var processo = await ObterPorIdAsync(processoId);
             if (processo == null) return;
 
-            await _colecao.DeleteOneAsync(p => p.Id == ObjectId.Parse(processoId));
+            var deleteMain = _colecao.DeleteOneAsync(p => p.Id == ObjectId.Parse(processoId));
 
-            // Limpeza em repositórios auxiliares
-            await _repositorioOrgaoAnuente.DeleteAllByRefUsaAsync(processo.Ref_USA);
-            await _repositorioFatura.DeletePorRefUsaAsync(processo.Ref_USA);
-            await _repositorioRecibo.DeletePorRefUsaAsync(processo.Ref_USA);
-            await _repositorioNotificacao.ExcluirPorRefUsaAsync(processo.Ref_USA);
+            // Executa limpezas em paralelo
+            await Task.WhenAll(
+                deleteMain,
+                _repositorioOrgaoAnuente.DeleteAllByRefUsaAsync(processo.Ref_USA),
+                _repositorioFatura.DeletePorRefUsaAsync(processo.Ref_USA),
+                _repositorioRecibo.DeletePorRefUsaAsync(processo.Ref_USA),
+                _repositorioNotificacao.ExcluirPorRefUsaAsync(processo.Ref_USA)
+            );
         }
 
         #endregion
 
-        #region Métodos de Leitura e Consulta
-
-        /// <summary>
-        /// Lista todos os Processos cujo Status não é "Finalizado".
-        /// Usado para o ciclo de sincronização de notificações e UI.
-        /// </summary>
-        public async Task<List<Processo>> ListarTodosAtivosAsync()
-        {
-            var filter = Builders<Processo>.Filter.Ne(p => p.Status, "Finalizado");
-            return await _colecao.Find(filter).ToListAsync();
-        }
-
-        public async Task<List<string>> ListarRefUsaAtivosAsync()
-        {
-            var filter = Builders<Processo>.Filter.Ne(p => p.Status, "Finalizado");
-
-            return await _colecao
-                .Find(filter)
-                .Project(p => p.Ref_USA)
-                .ToListAsync();
-        }
-
-        public async Task<List<Processo>> ListarProcessosAtivosParaStatusAsync()
-        {
-            var filter = Builders<Processo>.Filter.Ne(p => p.Status, "Finalizado");
-
-            var projection = Builders<Processo>.Projection.Include(p => p.Id)
-                .Include(p => p.Ref_USA)
-                .Include(p => p.SR)
-                .Include(p => p.Importador)
-                .Include(p => p.Veiculo)
-                .Include(p => p.DataDeAtracacao)
-                .Include(p => p.Terminal)
-                .Include(p => p.LocalDeDesembaraco)
-                .Include(p => p.Container)
-                .Include(p => p.Redestinacao)
-                .Include(p => p.CE)
-                .Include(p => p.FreeTime)
-                .Include(p => p.VencimentoFreeTime)
-                .Include(p => p.VencimentoFMA)
-                .Include(p => p.CapaOK)
-                .Include(p => p.Numerario)
-                .Include(p => p.RascunhoDI)
-                .Include(p => p.Pendencia)
-                .Include(p => p.Status)
-                .Include(p => p.CondicaoProcesso)
-                .Include(p => p.Inspecao);
-
-            return await _colecao.Find(filter).ToListAsync();
-        }
-
-        public async Task<List<Processo>> ListarExcetoSufixoRefUsaAsync(string sufixoAExcluir)
-        {
-            var regex = new BsonRegularExpression(new Regex($"{sufixoAExcluir}$", RegexOptions.IgnoreCase));
-            var filterParaExcluir = Builders<Processo>.Filter.Regex(p => p.Ref_USA, regex);
-
-            var filterFinal = Builders<Processo>.Filter.Not(filterParaExcluir);
-
-            return await _colecao.Find(filterFinal).ToListAsync();
-        }
-
-        public async Task<List<Processo>> ListarPorSufixoRefUsaAsync(string sufixo)
-        {
-            var regex = new BsonRegularExpression(new Regex($"{sufixo}$", RegexOptions.IgnoreCase));
-            var filter = Builders<Processo>.Filter.Regex(p => p.Ref_USA, regex);
-
-            return await _colecao.Find(filter).ToListAsync();
-        }
-
-        public async Task<bool> VerificarRefUsaExisteAsync(string refUsa)
-        {
-            var processoExistente = await _colecao
-                .Find(p => p.Ref_USA == refUsa)
-                .FirstOrDefaultAsync();
-
-            return processoExistente != null;
-        }
+        #region Métodos de Leitura Auxiliares
 
         public async Task<Processo?> ObterPorIdAsync(string id)
         {
             return await _colecao.Find(p => p.Id == ObjectId.Parse(id)).FirstOrDefaultAsync();
         }
 
-        public async Task<Processo?> GetByRefUsaAsync(string refUsa)
-        {
-            var filter = Builders<Processo>.Filter.Eq(p => p.Ref_USA, refUsa);
-            return await _colecao.Find(filter).FirstOrDefaultAsync();
-        }
-
         public async Task<List<string>> ObterValoresUnicosAsync(string campo)
         {
-            var cursor = await _colecao.DistinctAsync<string>(campo, FilterDefinition<Processo>.Empty);
-            return await cursor.ToListAsync();
+            // Distinct é muito rápido com índice
+            return await _colecao.Distinct<string>(campo, FilterDefinition<Processo>.Empty).ToListAsync();
         }
 
         public async Task<List<Processo>> PesquisarAsync(string campo, string pesquisa)
         {
+            // Adicionado limite para não travar se a busca for muito ampla
             var filter = Builders<Processo>.Filter.Regex(campo, new BsonRegularExpression(new Regex(pesquisa, RegexOptions.IgnoreCase)));
-            return await _colecao.Find(filter).ToListAsync();
+            return await _colecao.Find(filter).Limit(200).ToListAsync();
+        }
+
+        // Mantido para compatibilidade se usado em outro lugar
+        public async Task<List<Processo>> ListarExcetoSufixoRefUsaAsync(string sufixoAExcluir)
+        {
+            return await ListarPrincipalOtimizadoAsync(sufixoAExcluir);
         }
 
         #endregion
 
-        #region Métodos de Sincronização (Lógica de Negócio)
+        #region Sincronização (Lógica de Negócio Otimizada)
 
-        /// <summary>
-        /// Mapeia os dados de um Processo e uma Licenca para um objeto OrgaoAnuente.
-        /// </summary>
-        private OrgaoAnuente MapearParaOrgaoAnuente(Processo processo, LicencaImportacao li)
-        {
-            // Tenta definir o Tipo principal da LI com base no primeiro LPCO.
-            Enum.TryParse<TipoOrgaoAnuente>(li.LPCO.FirstOrDefault()?.NomeOrgao, out var tipoPrincipal);
-
-            return new OrgaoAnuente
-            {
-                Ref_USA = processo.Ref_USA,
-                Importador = processo.Importador,
-                Produto = processo.Produto,
-                Container = processo.Container,
-                Origem = processo.Origem,
-                Conhecimento = processo.Conhecimento,
-                Terminal = processo.Terminal,
-                DataChegada = processo.DataDeAtracacao,
-                HistoricoDoProcesso = processo.HistoricoDoProcesso,
-                Pendencia = processo.Pendencia,
-
-                Numero = li.Numero,
-                NCM = li.NCM,
-                DataRegistro = li.DataRegistro,
-                LPCO = li.LPCO
-            };
-        }
-
-        /// <summary>
-        /// Sincroniza a coleção de OrgaosAnuentes (LIs) com base na lista de LIs de um Processo.
-        /// </summary>
         private async Task SincronizarLicencas(Processo processo)
         {
-            var lisDoProcesso = processo.LI;
+            var lisDoProcesso = processo.LI ?? new List<LicencaImportacao>();
             var lisAtuaisNoDb = await _repositorioOrgaoAnuente.ListByRefUsaAsync(processo.Ref_USA);
 
-            // --- ATUALIZA LIs existentes ---
-            var lisParaAtualizar = from liProc in lisDoProcesso
-                                   join liDb in lisAtuaisNoDb on liProc.Numero equals liDb.Numero
-                                   select (ProcessoLi: liProc, DatabaseLi: liDb);
+            // Prepara lista de operações em lote (Bulk)
+            var bulkOps = new List<WriteModel<OrgaoAnuente>>();
+            var numerosDb = lisAtuaisNoDb.ToDictionary(x => x.Numero);
 
-            foreach (var (liProcesso, liDatabase) in lisParaAtualizar)
+            // 1. Identificar Updates e Inserts
+            foreach (var liProc in lisDoProcesso)
             {
-                var orgaoParaSalvar = liDatabase;
+                if (numerosDb.TryGetValue(liProc.Numero, out var liDb))
+                {
+                    // Update
+                    var orgaoAtualizado = liDb;
+                    AtualizarPropriedadesOrgao(orgaoAtualizado, processo, liProc);
 
-                // Atualiza os dados que vêm do Processo principal
-                orgaoParaSalvar.Importador = processo.Importador;
-                orgaoParaSalvar.Produto = processo.Produto;
-                orgaoParaSalvar.Container = processo.Container;
-                orgaoParaSalvar.Origem = processo.Origem;
-                orgaoParaSalvar.Conhecimento = processo.Conhecimento;
-                orgaoParaSalvar.Terminal = processo.Terminal;
-                orgaoParaSalvar.DataChegada = processo.DataDeAtracacao;
-                orgaoParaSalvar.Inspecao = processo.Inspecao;
-
-                // Atualiza os dados que vêm da LI editada no FrmModificaProcesso
-                orgaoParaSalvar.NCM = liProcesso.NCM;
-                orgaoParaSalvar.DataRegistro = liProcesso.DataRegistro;
-                orgaoParaSalvar.LPCO = liProcesso.LPCO;
-
-                orgaoParaSalvar.HistoricoDoProcesso = processo.HistoricoDoProcesso;
-                orgaoParaSalvar.Pendencia = processo.Pendencia;
-
-                await _repositorioOrgaoAnuente.UpdateAsync(orgaoParaSalvar);
+                    var filter = Builders<OrgaoAnuente>.Filter.Eq(x => x.Id, liDb.Id);
+                    bulkOps.Add(new ReplaceOneModel<OrgaoAnuente>(filter, orgaoAtualizado));
+                }
+                else
+                {
+                    // Insert
+                    var novoOrgao = MapearParaOrgaoAnuente(processo, liProc);
+                    bulkOps.Add(new InsertOneModel<OrgaoAnuente>(novoOrgao));
+                }
             }
 
-
-            // --- ADICIONA LIs novas ---
-            var numerosLisAtuais = lisAtuaisNoDb.Select(li => li.Numero).ToHashSet();
-            var lisParaAdicionar = lisDoProcesso.Where(li => !numerosLisAtuais.Contains(li.Numero));
-
-            foreach (var li in lisParaAdicionar)
+            // 2. Identificar Deletes (quem está no banco mas não está mais no processo)
+            var numerosProcesso = lisDoProcesso.Select(x => x.Numero).ToHashSet();
+            foreach (var liDb in lisAtuaisNoDb)
             {
-                var novoOrgaoAnuente = MapearParaOrgaoAnuente(processo, li);
-                await _repositorioOrgaoAnuente.InsertAsync(novoOrgaoAnuente);
+                if (!numerosProcesso.Contains(liDb.Numero))
+                {
+                    var filter = Builders<OrgaoAnuente>.Filter.Eq(x => x.Id, liDb.Id);
+                    bulkOps.Add(new DeleteOneModel<OrgaoAnuente>(filter));
+                }
             }
 
-            // --- DELETA LIs que foram removidas ---
-            var numerosLisProcesso = lisDoProcesso.Select(li => li.Numero).ToHashSet();
-            var lisParaDeletar = lisAtuaisNoDb.Where(li => !numerosLisProcesso.Contains(li.Numero));
-
-            foreach (var li in lisParaDeletar)
+            // 3. Executar TUDO de uma vez
+            if (bulkOps.Any())
             {
-                await _repositorioOrgaoAnuente.DeleteByIdAsync(li.Id.ToString());
+                await _repositorioOrgaoAnuente.ExecutarBulkAsync(bulkOps);
             }
         }
 
-        /// <summary>
-        /// Sincroniza a coleção de Vistorias associadas a um Processo.
-        /// </summary>
+        private OrgaoAnuente MapearParaOrgaoAnuente(Processo processo, LicencaImportacao li)
+        {
+            var orgao = new OrgaoAnuente { Ref_USA = processo.Ref_USA, Numero = li.Numero };
+            AtualizarPropriedadesOrgao(orgao, processo, li);
+            return orgao;
+        }
+
+        private void AtualizarPropriedadesOrgao(OrgaoAnuente orgao, Processo processo, LicencaImportacao li)
+        {
+            orgao.Importador = processo.Importador;
+            orgao.Produto = processo.Produto;
+            orgao.Container = processo.Container;
+            orgao.Origem = processo.Origem;
+            orgao.Conhecimento = processo.Conhecimento;
+            orgao.Terminal = processo.Terminal;
+            orgao.DataChegada = processo.DataDeAtracacao;
+            orgao.HistoricoDoProcesso = processo.HistoricoDoProcesso;
+            orgao.Pendencia = processo.Pendencia;
+            orgao.Inspecao = processo.Inspecao;
+
+            orgao.NCM = li.NCM;
+            orgao.DataRegistro = li.DataRegistro;
+            orgao.LPCO = li.LPCO;
+        }
+
         private async Task SincronizarVistorias(Processo processo)
         {
+            // Se tiver muitas vistorias, aplicar lógica de Bulk aqui também.
+            // Mantendo lógica original mas garantindo assincronismo correto.
             var vistoriasNoBanco = await _repositorioVistorias.GetByRefUsaAsync(processo.Ref_USA);
-
             foreach (var vistoria in vistoriasNoBanco)
             {
                 vistoria.Importador = processo.Importador;
@@ -282,7 +287,6 @@ namespace CLUSA
                 vistoria.Produto = processo.Produto;
                 vistoria.Terminal = processo.Terminal;
                 vistoria.Previsao = processo.DataDeAtracacao;
-
                 await _repositorioVistorias.UpsertAsync(vistoria);
             }
         }

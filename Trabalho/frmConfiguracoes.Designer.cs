@@ -33,22 +33,24 @@
             cmbGrids = new ToolStripComboBox();
             btnMoveDireita = new ToolStripButton();
             btnMoveEsquerda = new ToolStripButton();
+            lblContador = new ToolStripLabel();
             dgvColunas = new DataGridView();
-            btnCancelar = new Button();
-            btnSalvar = new Button();
-            btnReset = new Button();
-            lblContador = new Label();
             colOrdem = new DataGridViewTextBoxColumn();
             colVisivel = new DataGridViewCheckBoxColumn();
             colTitulo = new DataGridViewTextBoxColumn();
             colNomePropriedade = new DataGridViewTextBoxColumn();
+            btnCancelar = new Button();
+            btnSalvar = new Button();
+            btnReset = new Button();
+            BtnRetSelectAll = new Button();
+            BtnSelectAll = new Button();
             toolStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)dgvColunas).BeginInit();
             SuspendLayout();
             // 
             // toolStrip1
             // 
-            toolStrip1.Items.AddRange(new ToolStripItem[] { cmbGrids, btnMoveDireita, btnMoveEsquerda });
+            toolStrip1.Items.AddRange(new ToolStripItem[] { cmbGrids, btnMoveDireita, btnMoveEsquerda, lblContador });
             toolStrip1.Location = new Point(0, 0);
             toolStrip1.Name = "toolStrip1";
             toolStrip1.Size = new Size(800, 25);
@@ -85,6 +87,12 @@
             btnMoveEsquerda.Text = "Mover Esquerda";
             btnMoveEsquerda.Click += BtnSubir_Click;
             // 
+            // lblContador
+            // 
+            lblContador.Name = "lblContador";
+            lblContador.Size = new Size(10, 22);
+            lblContador.Text = ".";
+            // 
             // dgvColunas
             // 
             dgvColunas.AllowUserToAddRows = false;
@@ -96,6 +104,29 @@
             dgvColunas.Name = "dgvColunas";
             dgvColunas.Size = new Size(800, 381);
             dgvColunas.TabIndex = 1;
+            dgvColunas.CellValueChanged += DgvColunas_CellValueChanged;
+            // 
+            // colOrdem
+            // 
+            colOrdem.HeaderText = "#";
+            colOrdem.Name = "colOrdem";
+            // 
+            // colVisivel
+            // 
+            colVisivel.HeaderText = "Visível";
+            colVisivel.Name = "colVisivel";
+            // 
+            // colTitulo
+            // 
+            colTitulo.AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
+            colTitulo.HeaderText = "Título";
+            colTitulo.Name = "colTitulo";
+            // 
+            // colNomePropriedade
+            // 
+            colNomePropriedade.HeaderText = "Propriedade";
+            colNomePropriedade.Name = "colNomePropriedade";
+            colNomePropriedade.Visible = false;
             // 
             // btnCancelar
             // 
@@ -128,7 +159,7 @@
             btnReset.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
             btnReset.BackColor = Color.FromArgb(255, 128, 128);
             btnReset.FlatStyle = FlatStyle.Flat;
-            btnReset.Location = new Point(12, 419);
+            btnReset.Location = new Point(306, 419);
             btnReset.Name = "btnReset";
             btnReset.Size = new Size(75, 23);
             btnReset.TabIndex = 4;
@@ -136,44 +167,39 @@
             btnReset.UseVisualStyleBackColor = false;
             btnReset.Click += BtnReset_Click;
             // 
-            // lblContador
+            // BtnRetSelectAll
             // 
-            lblContador.Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
-            lblContador.AutoSize = true;
-            lblContador.Location = new Point(381, 423);
-            lblContador.Name = "lblContador";
-            lblContador.Size = new Size(38, 15);
-            lblContador.TabIndex = 5;
-            lblContador.Text = "label1";
+            BtnRetSelectAll.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
+            BtnRetSelectAll.BackColor = Color.FromArgb(128, 128, 255);
+            BtnRetSelectAll.FlatStyle = FlatStyle.Flat;
+            BtnRetSelectAll.Location = new Point(12, 419);
+            BtnRetSelectAll.Name = "BtnRetSelectAll";
+            BtnRetSelectAll.Size = new Size(134, 23);
+            BtnRetSelectAll.TabIndex = 6;
+            BtnRetSelectAll.Text = "Retirar todos visíveis";
+            BtnRetSelectAll.UseVisualStyleBackColor = false;
+            BtnRetSelectAll.Click += BtnRetSelectAll_Click;
             // 
-            // colOrdem
+            // BtnSelectAll
             // 
-            colOrdem.HeaderText = "#";
-            colOrdem.Name = "colOrdem";
-            // 
-            // colVisivel
-            // 
-            colVisivel.HeaderText = "Visível";
-            colVisivel.Name = "colVisivel";
-            // 
-            // colTitulo
-            // 
-            colTitulo.AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
-            colTitulo.HeaderText = "Título";
-            colTitulo.Name = "colTitulo";
-            // 
-            // colNomePropriedade
-            // 
-            colNomePropriedade.HeaderText = "Propriedade";
-            colNomePropriedade.Name = "colNomePropriedade";
-            colNomePropriedade.Visible = false;
+            BtnSelectAll.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
+            BtnSelectAll.BackColor = Color.FromArgb(255, 255, 192);
+            BtnSelectAll.FlatStyle = FlatStyle.Flat;
+            BtnSelectAll.Location = new Point(152, 419);
+            BtnSelectAll.Name = "BtnSelectAll";
+            BtnSelectAll.Size = new Size(148, 23);
+            BtnSelectAll.TabIndex = 7;
+            BtnSelectAll.Text = "Selecionar Todas visíveis";
+            BtnSelectAll.UseVisualStyleBackColor = false;
+            BtnSelectAll.Click += BtnSelectAll_Click;
             // 
             // frmConfiguracoes
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(800, 450);
-            Controls.Add(lblContador);
+            Controls.Add(BtnSelectAll);
+            Controls.Add(BtnRetSelectAll);
             Controls.Add(btnReset);
             Controls.Add(btnSalvar);
             Controls.Add(btnCancelar);
@@ -181,6 +207,7 @@
             Controls.Add(toolStrip1);
             Name = "frmConfiguracoes";
             Text = "Configurações";
+            FormClosing += frmConfiguracoes_FormClosing;
             toolStrip1.ResumeLayout(false);
             toolStrip1.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)dgvColunas).EndInit();
@@ -198,10 +225,12 @@
         private Button btnReset;
         private ToolStripButton btnMoveDireita;
         private ToolStripButton btnMoveEsquerda;
-        private Label lblContador;
         private DataGridViewTextBoxColumn colOrdem;
         private DataGridViewCheckBoxColumn colVisivel;
         private DataGridViewTextBoxColumn colTitulo;
         private DataGridViewTextBoxColumn colNomePropriedade;
+        private Button BtnRetSelectAll;
+        private Button BtnSelectAll;
+        private ToolStripLabel lblContador;
     }
 }

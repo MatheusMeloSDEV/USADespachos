@@ -35,7 +35,7 @@ namespace CLUSA
 
         public async Task<List<Processo>> ListarTodosProcessosAtivosAsync()
         {
-            return await _processoRepo.ListarTodosAtivosAsync();
+            return await _processoRepo.ListarPrincipalOtimizadoAsync();
         }
 
         public async Task UpdateProcessoAsync(Processo processo)

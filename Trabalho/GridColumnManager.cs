@@ -295,7 +295,7 @@ namespace Trabalho
             new("ParametrizacaoLPCO", "Parametrização LPCO")
         };
 
-            RegistrarCatalogo("DGVOrgaoAnuente", colunasOrgaoAnuente);
+            RegistrarCatalogo("DgvOrgaoAnuente", colunasOrgaoAnuente);
         }
 
         private static void RegistrarCatalogoVistorias()

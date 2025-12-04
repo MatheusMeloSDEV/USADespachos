@@ -2,6 +2,7 @@
 using MongoDB.Driver;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Reflection;
 
 namespace Trabalho
 {
@@ -13,27 +14,47 @@ namespace Trabalho
         private ListSortDirection _direcaoOrdenacao;
         private List<Processo> _listaOriginal = new();
 
-        public frmSantos()
+        private readonly RepositorioUsers _repositorioUsers;
+        private Users? _usuarioLogado;
+        private readonly Logado _logado;
+
+        public frmSantos(Logado logado)
         {
             InitializeComponent();
+
+            // --- OTIMIZAÇÃO VISUAL (Double Buffering) ---
+            // Isso evita que o Grid pisque ou fique lento ao rolar
+            typeof(DataGridView).InvokeMember("DoubleBuffered",
+                BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.SetProperty,
+                null, DGVSantos, new object[] { true });
+
             _repositorio = new RepositorioProcesso();
+            _repositorioUsers = new RepositorioUsers();
+            _logado = logado;
             this.Shown += FrmSantos_Shown;
         }
+
         private async void FrmSantos_Shown(object? sender, EventArgs e)
         {
             try
             {
-                ConfigurarColunasDataGridViewProcesso();
+                GridColumnManager.RegistrarCatalogosPadrao();
+                _usuarioLogado = await _repositorioUsers.GetByIdAsync(_logado.Id);
+
+                List<string>? colunasVisiveis = null;
+                if (_usuarioLogado?.PreferenciasGrids != null)
+                {
+                    _usuarioLogado.PreferenciasGrids.TryGetValue("DGVSantos", out colunasVisiveis);
+                }
+
+                GridColumnManager.ConfigurarGrid(DGVSantos, "DGVSantos", colunasVisiveis);
+
                 await CarregarDadosAsync();
 
                 this.Icon = Icon.ExtractAssociatedIcon(Application.ExecutablePath);
-
                 PopularComboBoxDePesquisa();
 
-                if (CmbPesquisar.Items.Count > 0)
-                {
-                    CmbPesquisar.SelectedIndex = 0;
-                }
+                if (CmbPesquisar.Items.Count > 0) CmbPesquisar.SelectedIndex = 0;
             }
             catch (Exception ex)
             {
@@ -44,13 +65,18 @@ namespace Trabalho
         {
             try
             {
-                var registros = await _repositorio.ListarExcetoSufixoRefUsaAsync("ITJ");
-                var registrosFiltrados = registros.Where(p => p.Status != "Finalizado");
+                DGVSantos.SuspendLayout(); // Pausa o desenho do Grid para ganhar velocidade
 
-                var registrosOrdenados = registrosFiltrados
-                    .OrderBy(p => p.DataDeAtracacao == null || p.DataDeAtracacao == DateTime.MinValue ? 1 : 0) // primeiro os com data
+                // --- BUSCA OTIMIZADA ---
+                // O filtro "Status != Finalizado" agora é feito no banco, economizando rede e memória.
+                var registros = await _repositorio.ListarPrincipalOtimizadoAsync("ITJ");
+
+                // Ordenação Inicial na Memória (Ref_USA vazios para o fim, depois data)
+                var registrosOrdenados = registros
+                    .OrderBy(p => p.DataDeAtracacao == null || p.DataDeAtracacao == DateTime.MinValue ? 1 : 0)
                     .ThenBy(p => p.DataDeAtracacao ?? DateTime.MaxValue)
                     .ToList();
+
                 _listaOriginal = registrosOrdenados;
 
                 BsProcesso.DataSource = registrosOrdenados;
@@ -61,172 +87,15 @@ namespace Trabalho
             {
                 MessageBox.Show($"Erro ao carregar os dados: {ex.Message}", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
-        }
-        private void ConfigurarColunasDataGridViewProcesso()
-        {
-            DGVSantos.Columns.Clear();
-
-            // --- Configuração Geral da Grade ---
-            DGVSantos.AutoGenerateColumns = false;
-            DGVSantos.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill; // Mantém o preenchimento
-            DGVSantos.RowHeadersVisible = false;
-            DGVSantos.AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.None;
-            DGVSantos.DefaultCellStyle.WrapMode = DataGridViewTriState.False;
-            DGVSantos.ShowCellToolTips = true;
-            var dateCellStyle = new DataGridViewCellStyle { Format = "dd/MM/yyyy" };
-
-            // --- Adicionando as Colunas com Largura Mínima ---
-
-            DGVSantos.Columns.Add(new DataGridViewTextBoxColumn
+            finally
             {
-                DataPropertyName = "Ref_USA",
-                HeaderText = "Ref. USA",
-                AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells,
-                MinimumWidth = 90
-            });
-            DGVSantos.Columns.Add(new DataGridViewTextBoxColumn
-            {
-                DataPropertyName = "SR",
-                HeaderText = "S. Ref",
-                MinimumWidth = 60
-            });
-            DGVSantos.Columns.Add(new DataGridViewTextBoxColumn
-            {
-                DataPropertyName = "Importador",
-                HeaderText = "Importador",
-                AutoSizeMode = DataGridViewAutoSizeColumnMode.ColumnHeader,
-                MinimumWidth = 80 // <-- MUDANÇA
-            });
-            DGVSantos.Columns.Add(new DataGridViewTextBoxColumn
-            {
-                DataPropertyName = "Veiculo",
-                HeaderText = "Veículo",
-                FillWeight = 140,
-                MinimumWidth = 80 // <-- MUDANÇA
-            });
-            DGVSantos.Columns.Add(new DataGridViewTextBoxColumn
-            {
-                DataPropertyName = "DataDeAtracacao",
-                HeaderText = "Data de Atracação",
-                AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells,
-                MinimumWidth = 70 // <-- MUDANÇA
-            });
-            DGVSantos.Columns.Add(new DataGridViewTextBoxColumn
-            {
-                DataPropertyName = "Terminal",
-                HeaderText = "Terminal",
-                FillWeight = 140,
-                MinimumWidth = 140
-            });
-            DGVSantos.Columns.Add(new DataGridViewTextBoxColumn
-            {
-                DataPropertyName = "LocalDeDesembaraco",
-                HeaderText = "Local",
-                AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells,
-                MinimumWidth = 120 // <-- MUDANÇA
-            });
-            DGVSantos.Columns.Add(new DataGridViewTextBoxColumn
-            {
-                DataPropertyName = "Container",
-                HeaderText = "Container",
-                AutoSizeMode = DataGridViewAutoSizeColumnMode.ColumnHeader,
-                MinimumWidth = 120
-            });
-            DGVSantos.Columns.Add(new DataGridViewCheckBoxColumn
-            {
-                DataPropertyName = "Redestinacao",
-                HeaderText = "Redes.",
-                AutoSizeMode = DataGridViewAutoSizeColumnMode.ColumnHeader,
-                MinimumWidth = 50
-            });
-            DGVSantos.Columns.Add(new DataGridViewTextBoxColumn
-            {
-                DataPropertyName = "CE",
-                HeaderText = "CE",
-                FillWeight = 90,
-                MinimumWidth = 100 // <-- MUDANÇA
-            });
-            DGVSantos.Columns.Add(new DataGridViewTextBoxColumn
-            {
-                DataPropertyName = "FreeTime",
-                HeaderText = "F.T",
-                AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells,
-                MinimumWidth = 40 // <-- MUDANÇA
-            });
-            DGVSantos.Columns.Add(new DataGridViewTextBoxColumn
-            {
-                DataPropertyName = "VencimentoFreeTime",
-                HeaderText = "Venc. F. Time",
-                DefaultCellStyle = dateCellStyle,
-                AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells,
-                MinimumWidth = 100 // <-- MUDANÇA
-            });
-            DGVSantos.Columns.Add(new DataGridViewTextBoxColumn
-            {
-                DataPropertyName = "VencimentoFMA",
-                HeaderText = "Venc. FMA",
-                DefaultCellStyle = dateCellStyle,
-                AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells,
-                MinimumWidth = 100 // <-- MUDANÇA
-            });
-            DGVSantos.Columns.Add(new DataGridViewCheckBoxColumn
-            {
-                DataPropertyName = "CapaOK",
-                HeaderText = "Capa",
-                AutoSizeMode = DataGridViewAutoSizeColumnMode.ColumnHeader,
-                MinimumWidth = 40
-            });
-            DGVSantos.Columns.Add(new DataGridViewCheckBoxColumn
-            {
-                DataPropertyName = "Numerario",
-                HeaderText = "Num.",
-                AutoSizeMode = DataGridViewAutoSizeColumnMode.ColumnHeader,
-                MinimumWidth = 40
-            });
-            DGVSantos.Columns.Add(new DataGridViewTextBoxColumn
-            {
-                DataPropertyName = "RascunhoDI",
-                HeaderText = "Rascunho DI",
-                AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells,
-                MinimumWidth = 120
-            });
-            DGVSantos.Columns.Add(new DataGridViewTextBoxColumn
-            {
-                DataPropertyName = "Pendencia",
-                HeaderText = "Pendência",
-                FillWeight = 160,
-                MinimumWidth = 160 // <-- MUDANÇA
-            });
-            DGVSantos.Columns.Add(new DataGridViewTextBoxColumn
-            {
-                DataPropertyName = "Status",
-                HeaderText = "Status",
-                FillWeight = 180,
-                MinimumWidth = 120 // <-- MUDANÇA
-            });
-
-            foreach (DataGridViewColumn coluna in DGVSantos.Columns)
-            {
-                coluna.DefaultCellStyle.Font = new Font("Segoe UI", 10);
-                coluna.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleLeft;
-                coluna.SortMode = DataGridViewColumnSortMode.Programmatic;
-
-                // Centralizar checkbox
-                if (coluna is DataGridViewCheckBoxColumn || coluna.HeaderText == "F.T")
-                {
-                    coluna.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
-                }
+                DGVSantos.ResumeLayout(); // Libera o desenho do Grid
             }
         }
 
         private void PopularComboBoxDePesquisa()
         {
-            var camposIgnorados = new HashSet<string>
-            {
-                "Id", "OrgaosAnuentesEnvolvidos",
-                "PossuiEmbarque", "VencimentoFreeTime", "VencimentoFMA"
-            };
-
+            var camposIgnorados = new HashSet<string> { "Id", "OrgaosAnuentesEnvolvidos", "PossuiEmbarque", "VencimentoFreeTime", "VencimentoFMA" };
             CmbPesquisar.Items.Clear();
 
             foreach (DataGridViewColumn coluna in DGVSantos.Columns)
@@ -238,25 +107,41 @@ namespace Trabalho
             }
         }
 
+        private Dictionary<string, string[]> _cacheAutoComplete = new();
+
         private async Task ConfigurarAutoCompletarParaPesquisaAsync()
         {
             if (CmbPesquisar.SelectedItem is not DisplayItem campoSelecionado) return;
+            string campo = campoSelecionado.DataPropertyName;
 
             try
             {
-                // MUDANÇA: Chamada assíncrona ao repositório.
-                var valores = await _repositorio.ObterValoresUnicosAsync(campoSelecionado.DataPropertyName);
-                var collection = new AutoCompleteStringCollection();
-                collection.AddRange(valores.ToArray());
+                // Uso de CACHE para evitar ir ao banco a cada letra digitada
+                if (!_cacheAutoComplete.ContainsKey(campo))
+                {
+                    var valores = await _repositorio.ObterValoresUnicosAsync(campo);
+                    _cacheAutoComplete[campo] = valores.ToArray();
+                }
 
-                TxtPesquisar.AutoCompleteMode = AutoCompleteMode.SuggestAppend;
-                TxtPesquisar.AutoCompleteSource = AutoCompleteSource.CustomSource;
-                TxtPesquisar.AutoCompleteCustomSource = collection;
+                var collection = new AutoCompleteStringCollection();
+                collection.AddRange(_cacheAutoComplete[campo]);
+
+                if (TxtPesquisar.AutoCompleteCustomSource != collection)
+                {
+                    TxtPesquisar.AutoCompleteMode = AutoCompleteMode.SuggestAppend;
+                    TxtPesquisar.AutoCompleteSource = AutoCompleteSource.CustomSource;
+                    TxtPesquisar.AutoCompleteCustomSource = collection;
+                }
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Erro ao configurar o autocompletar: {ex.Message}", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                // Falha silenciosa ou log simples para não atrapalhar o usuário
+                Debug.WriteLine($"Erro autocomplete: {ex.Message}");
             }
+        }
+        private void LimparCacheAutoComplete()
+        {
+            _cacheAutoComplete.Clear();
         }
         private async void BtnAdicionar_Click(object sender, EventArgs e)
         {
@@ -268,52 +153,42 @@ namespace Trabalho
             {
                 try
                 {
-                    // A nova versão do repositório cuida de TUDO (salvar em PROCESSO, MAPA, ANVISA, etc.)
                     await _repositorio.CreateAsync(processo);
+                    _cacheAutoComplete.Clear(); // Limpa cache pois entrou dado novo
                     await CarregarDadosAsync();
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show($"Erro ao adicionar o processo: {ex.Message}", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    MessageBox.Show($"Erro ao adicionar: {ex.Message}", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
             }
-            await CarregarDadosAsync();
         }
         private async void BtnExcluir_Click(object sender, EventArgs e)
         {
-            if (BsProcesso.Current is not Processo processoSelecionado)
-            {
-                MessageBox.Show("Nenhum processo selecionado para exclusão.", "Aviso", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                return;
-            }
+            if (BsProcesso.Current is not Processo processoSelecionado) return;
 
-            var confirmResult = MessageBox.Show($"Tem certeza que deseja excluir o processo '{processoSelecionado.Ref_USA}'?", "Confirmação", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
-
-            if (confirmResult == DialogResult.Yes)
+            if (MessageBox.Show($"Excluir '{processoSelecionado.Ref_USA}'?", "Confirmação", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
             {
                 try
                 {
-                    // O repositório exclui o processo principal e TODOS os relacionados.
                     await _repositorio.DeleteAsync(processoSelecionado.Id.ToString());
                     BsProcesso.Remove(processoSelecionado);
+                    _cacheAutoComplete.Clear(); // Limpa cache
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show($"Erro ao excluir o processo: {ex.Message}", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    MessageBox.Show($"Erro ao excluir: {ex.Message}", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
             }
         }
         private async void BtnEditar_Click(object? sender, EventArgs e)
         {
-            if (BsProcesso.Current is not Processo processoSelecionado)
-            {
-                MessageBox.Show("Nenhum processo selecionado para edição.", "Aviso");
-                return;
-            }
+            if (BsProcesso.Current is not Processo processoSelecionado) return;
 
             using var frm = new FrmModificaProcesso { processo = processoSelecionado, Modo = "Editar" };
             frm.ShowDialog();
 
+            _cacheAutoComplete.Clear(); // Limpa cache
             await CarregarDadosAsync();
         }
 
@@ -321,14 +196,13 @@ namespace Trabalho
         {
             if (CmbPesquisar.SelectedItem is not DisplayItem campoSelecionado)
             {
-                MessageBox.Show("Selecione um campo para pesquisar.", "Aviso", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show("Selecione um campo.", "Aviso");
                 return;
             }
 
             var pesquisa = TxtPesquisar.Text;
             if (string.IsNullOrWhiteSpace(pesquisa))
             {
-                // Se a pesquisa estiver vazia, recarrega todos os dados originais.
                 BsProcesso.DataSource = _listaOriginal;
                 BsProcesso.ResetBindings(false);
                 return;
@@ -336,19 +210,15 @@ namespace Trabalho
 
             try
             {
-                // MUDANÇA: Chamada assíncrona.
                 var resultados = await _repositorio.PesquisarAsync(campoSelecionado.DataPropertyName, pesquisa);
                 BsProcesso.DataSource = resultados;
                 BsProcesso.ResetBindings(false);
 
-                if (!resultados.Any())
-                {
-                    MessageBox.Show("Nenhum resultado encontrado.", "Informação", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                }
+                if (!resultados.Any()) MessageBox.Show("Nenhum resultado.", "Info");
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Erro ao pesquisar: {ex.Message}", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show($"Erro ao pesquisar: {ex.Message}", "Erro");
             }
         }
         private async void DGVSantos_CellDoubleClick(object sender, DataGridViewCellEventArgs e)
@@ -357,7 +227,6 @@ namespace Trabalho
 
             using var frm = new FrmModificaProcesso { processo = processoSelecionado, Visualização = true, Modo = "Visualizar" };
             frm.ShowDialog();
-
             await CarregarDadosAsync();
         }
 
@@ -432,6 +301,7 @@ namespace Trabalho
         {
             await ConfigurarAutoCompletarParaPesquisaAsync();
         }
+
         private async void BtnCancelar_Click(object sender, EventArgs e)
         {
             await CarregarDadosAsync();
@@ -453,13 +323,11 @@ namespace Trabalho
         {
             public string DataPropertyName { get; }
             public string HeaderText { get; }
-
             public DisplayItem(string dataPropertyName, string headerText)
             {
                 DataPropertyName = dataPropertyName;
                 HeaderText = headerText;
             }
-
             public override string ToString() => HeaderText;
         }
         private bool IsValueEmpty(object? value)

@@ -95,7 +95,7 @@ namespace Trabalho
 
             // 2. Sincronização de Processos Ativos (Atualiza dias restantes)
             // Assumindo ListarTodosAtivosAsync busca apenas o necessário para otimização
-            var processosMonitorados = await _repositorioProcesso.ListarTodosAtivosAsync();
+            var processosMonitorados = await _repositorioProcesso.ListarProcessosAtivosParaStatusAsync();
             await SincronizarTodasNotificacoes(processosMonitorados);
 
             // 3. Atualiza a UI
@@ -115,13 +115,12 @@ namespace Trabalho
             Cursor = Cursors.WaitCursor;
             try
             {
-                // Busca os processos para a sincronização inicial
-                var processos = await _repositorioProcesso.ListarTodosAtivosAsync();
+                // CORREÇÃO: Usa o método otimizado com projeção, pois aqui só precisamos dos dados
+                // para gerar notificações, não precisamos do objeto inteiro pesado.
+                var processos = await _repositorioProcesso.ListarProcessosAtivosParaStatusAsync();
 
                 await SincronizarTodasNotificacoes(processos);
-
                 await PopularContextMenuNotifications();
-
                 await AtualizarContadorNotificacoesMenu();
             }
             catch (Exception ex)
@@ -246,14 +245,15 @@ namespace Trabalho
 
         }
 
-        private T? ShowSingleFormOfType<T>(bool maximizar = true) where T : Form, new()
+        private T? ShowSingleFormOfType<T>(Func<T> factory, bool maximizar = true) where T : Form
         {
             panel1.Visible = false;
-            if (_forms.TryGetValue(typeof(T), out var form) && !form.IsDisposed)
+
+            if (_forms.TryGetValue(typeof(T), out var formExistente) && !formExistente.IsDisposed)
             {
-                form.WindowState = FormWindowState.Normal;
-                form.Activate();
-                return (T)form;
+                formExistente.WindowState = FormWindowState.Normal;
+                formExistente.Activate();
+                return (T)formExistente;
             }
 
             foreach (var f in MdiChildren) f.Close();
@@ -261,12 +261,11 @@ namespace Trabalho
 
             try
             {
-                var novoForm = new T
-                {
-                    MdiParent = this,
-                    WindowState = maximizar ? FormWindowState.Maximized : FormWindowState.Normal,
-                    AutoScroll = true
-                };
+                var novoForm = factory(); // cria via factory, podendo passar parâmetros
+                novoForm.MdiParent = this;
+                novoForm.WindowState = maximizar ? FormWindowState.Maximized : FormWindowState.Normal;
+                novoForm.AutoScroll = true;
+
                 novoForm.FormClosed += (s, args) => _forms.Remove(typeof(T));
                 novoForm.Show();
                 _forms[typeof(T)] = novoForm;
@@ -274,7 +273,8 @@ namespace Trabalho
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Erro ao abrir o formulário {typeof(T).Name}:\n{ex.Message}", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show($"Erro ao abrir o formulário {typeof(T).Name}:\n{ex.Message}",
+                    "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return null;
             }
         }
@@ -286,47 +286,52 @@ namespace Trabalho
             this.Close();
         }
 
-        private void MenuItemProcessoSantos_Click(object? sender, EventArgs e) => ShowSingleFormOfType<frmSantos>();
-        private void MenuItemProcessosItajai_Click(object? sender, EventArgs e) => ShowSingleFormOfType<FrmItajaí>();
-        private void MenuItemOrgaoAnuente_Click(object? sender, EventArgs e) => ShowSingleFormOfType<FrmOrgaoAnuente>();
-        private void MenuItemVistoria_Click(object sender, EventArgs e) => ShowSingleFormOfType<FrmVistorias>();
-        private void MenuItemFinanceiro_Click(object? sender, EventArgs e) => ShowSingleFormOfType<FrmFinanceiro>();
-        private void MenuItemAdmin_Click(object? sender, EventArgs e) => ShowSingleFormOfType<FrmAdmin>();
-        private void MenuItemEmAndamento_Click(object? sender, EventArgs e) => ShowSingleFormOfType<FrmStatusProcessos>();
-        private void MenuItemFinalizados_Click(object? sender, EventArgs e) => ShowSingleFormOfType<frmFinalizados>();
+        private void MenuItemProcessoSantos_Click(object? sender, EventArgs e)
+        => ShowSingleFormOfType(() => new frmSantos(_logadoUsuario));
+        private void MenuItemProcessosItajai_Click(object? sender, EventArgs e)
+        => ShowSingleFormOfType(() => new FrmItajaí(_logadoUsuario));
+        private void MenuItemOrgaoAnuente_Click(object? sender, EventArgs e)
+        => ShowSingleFormOfType(() => new FrmOrgaoAnuente(_logadoUsuario));
+        private void MenuItemVistoria_Click(object sender, EventArgs e)
+        => ShowSingleFormOfType(() => new FrmVistorias(_logadoUsuario));
+        private void MenuItemEmAndamento_Click(object? sender, EventArgs e)
+        => ShowSingleFormOfType(() => new FrmStatusProcessos(_logadoUsuario));
+        private void MenuItemFinalizados_Click(object? sender, EventArgs e)
+        => ShowSingleFormOfType(() => new frmFinalizados(_logadoUsuario));
+        private void MenuItemFinanceiro_Click(object? sender, EventArgs e)
+        => ShowSingleFormOfType(() => new FrmFinanceiro());
+        private void MenuItemAdmin_Click(object? sender, EventArgs e)
+        => ShowSingleFormOfType(() => new FrmAdmin());
         private void MenuItemMaximize_Click(object? sender, EventArgs e) => this.WindowState = FormWindowState.Maximized;
         private void MenuItemMinimize_Click(object? sender, EventArgs e) => this.WindowState = FormWindowState.Minimized;
         private async void MenuItemConfiguracoes_Click(object sender, EventArgs e)
         {
             try
             {
-                // Obter usuário logado - CORRIGIDO
                 var usuario = await _repositorioUsers.GetByIdAsync(_logadoUsuario.Id);
-
                 if (usuario == null)
                 {
-                    MessageBox.Show("Erro ao carregar dados do usuário.", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    MessageBox.Show("Erro ao carregar dados do usuário.", "Erro",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
                     return;
                 }
-
                 using var frmConfig = new frmConfiguracoes(usuario.Id, usuario.PreferenciasGrids);
+                frmConfig.ShowDialog(this);
 
-                if (frmConfig.ShowDialog(this) == DialogResult.OK)
-                {
-                    // Salvar preferências atualizadas
-                    usuario.PreferenciasGrids = frmConfig.ObterPreferencias();
-                    await _repositorioUsers.UpdateAsync(usuario);
+                // Sempre recarrega preferências depois de fechar
+                usuario.PreferenciasGrids = frmConfig.ObterPreferencias();
+                await _repositorioUsers.UpdateAsync(usuario);
 
-                    MessageBox.Show(
-                        "Configurações salvas com sucesso!\n\nAs alterações serão aplicadas ao reabrir os grids.",
-                        "Sucesso",
-                        MessageBoxButtons.OK,
-                        MessageBoxIcon.Information);
-                }
+                MessageBox.Show(
+                    "Configurações salvas com sucesso!\n\nAs alterações serão aplicadas ao reabrir os grids.",
+                    "Sucesso",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Information);
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Erro ao abrir configurações:\n{ex.Message}", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show($"Erro ao abrir configurações:\n{ex.Message}", "Erro",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 

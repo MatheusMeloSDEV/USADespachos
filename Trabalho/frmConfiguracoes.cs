@@ -230,29 +230,6 @@ namespace Trabalho
 
             AtualizarNumeracao();
         }
-
-        private void BtnSelecionarTodas_Click(object sender, EventArgs e)
-        {
-            foreach (DataGridViewRow row in dgvColunas.Rows)
-            {
-                row.Cells["colVisivel"].Value = true;
-                row.DefaultCellStyle.BackColor = Color.White;
-                row.DefaultCellStyle.ForeColor = Color.Black;
-            }
-            AtualizarContador();
-        }
-
-        private void BtnLimpar_Click(object sender, EventArgs e)
-        {
-            foreach (DataGridViewRow row in dgvColunas.Rows)
-            {
-                row.Cells["colVisivel"].Value = false;
-                row.DefaultCellStyle.BackColor = Color.FromArgb(245, 245, 245);
-                row.DefaultCellStyle.ForeColor = Color.Gray;
-            }
-            AtualizarContador();
-        }
-
         private void BtnReset_Click(object sender, EventArgs e)
         {
             if (string.IsNullOrEmpty(_gridAtual)) return;
@@ -271,10 +248,20 @@ namespace Trabalho
                 MessageBox.Show("Grid resetado com sucesso!", "Sucesso", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
         }
+        private void frmConfiguracoes_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            if (!string.IsNullOrEmpty(_gridAtual))
+                SalvarColunasGridAtual();
+        }
 
         private void BtnSalvar_Click(object sender, EventArgs e)
         {
             SalvarColunasGridAtual();
+            MessageBox.Show(
+                        "Configurações salvas com sucesso!\n\nAs alterações serão aplicadas ao reabrir os grids.",
+                        "Sucesso",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Information);
         }
 
         private void DgvColunas_CellValueChanged(object sender, DataGridViewCellEventArgs e)
@@ -299,6 +286,43 @@ namespace Trabalho
 
                 AtualizarContador();
             }
+        }
+        // Botão: Selecionar Todas (Marca o CheckBox de TODAS as linhas)
+        private void BtnSelectAll_Click(object sender, EventArgs e)
+        {
+            dgvColunas.SuspendLayout(); // Otimização de pintura
+
+            foreach (DataGridViewRow row in dgvColunas.Rows)
+            {
+                // Define o CheckBox como TRUE (Marcado)
+                row.Cells["colVisivel"].Value = true;
+
+                // Atualiza a cor para Branco (Ativado)
+                row.DefaultCellStyle.BackColor = Color.White;
+                row.DefaultCellStyle.ForeColor = Color.Black;
+            }
+
+            dgvColunas.ResumeLayout();
+            AtualizarContador();
+        }
+
+        // Botão: Retirar Todas (Desmarca o CheckBox de TODAS as linhas)
+        private void BtnRetSelectAll_Click(object sender, EventArgs e)
+        {
+            dgvColunas.SuspendLayout(); // Otimização de pintura
+
+            foreach (DataGridViewRow row in dgvColunas.Rows)
+            {
+                // Define o CheckBox como FALSE (Desmarcado)
+                row.Cells["colVisivel"].Value = false;
+
+                // Atualiza a cor para Cinza (Desativado)
+                row.DefaultCellStyle.BackColor = Color.FromArgb(245, 245, 245);
+                row.DefaultCellStyle.ForeColor = Color.Gray;
+            }
+
+            dgvColunas.ResumeLayout();
+            AtualizarContador();
         }
 
         private void AtualizarContador()

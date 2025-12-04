@@ -14,211 +14,117 @@ namespace Trabalho
         private DataGridViewColumn? _colunaOrdenada;
         private ListSortDirection _direcaoOrdenacao;
 
-        public FrmOrgaoAnuente()
+        private readonly Logado _logado;
+        private readonly RepositorioUsers _repositorioUsers;
+        private Users? _usuarioLogado;
+
+        public FrmOrgaoAnuente(Logado logado)
         {
             InitializeComponent();
             _repositorioOrgaoAnuente = new RepositorioOrgaoAnuente();
             _repositorioProcesso = new RepositorioProcesso();
             _bsLpcoViewModel = new BindingSource();
+            DgvOrgaoAnuente.DataSource = _bsLpcoViewModel;
+
+            _repositorioUsers = new RepositorioUsers();
+            _logado = logado;
         }
 
         private async void FrmOrgaoAnuente_Shown(object? sender, EventArgs e)
         {
             try
             {
-                ConfigurarDataGridView();
+                // 1) Carregar usuário e preferências
+                _usuarioLogado = await _repositorioUsers.GetByIdAsync(_logado.Id);
+                if (_usuarioLogado == null)
+                {
+                    MessageBox.Show("Não foi possível carregar o usuário logado.", "Erro",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return;
+                }
+                GridColumnManager.RegistrarCatalogosPadrao();
+
+                _usuarioLogado.PreferenciasGrids ??= new Dictionary<string, List<string>>();
+                _usuarioLogado.PreferenciasGrids.TryGetValue("DgvOrgaoAnuente", out var colunasVisiveis); 
+
+                GridColumnManager.ConfigurarGrid(DgvOrgaoAnuente, "DgvOrgaoAnuente", colunasVisiveis);
+
                 await CarregarDadosAsync();
+
+                this.Icon = Icon.ExtractAssociatedIcon(Application.ExecutablePath);
                 PopularComboBoxPesquisa();
+                if (CbPesquisa.Items.Count > 0)
+                    CbPesquisa.SelectedIndex = 0;
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Erro ao carregar o formulário: {ex.Message}", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show($"Erro ao carregar o formulário: {ex.Message}", "Erro",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
-        }
-
-        private void ConfigurarDataGridView()
-        {
-            DgvOrgaoAnuente.DataSource = _bsLpcoViewModel;
-            DgvOrgaoAnuente.AutoGenerateColumns = false;
-            DgvOrgaoAnuente.RowHeadersVisible = false;
-            DgvOrgaoAnuente.SelectionMode = DataGridViewSelectionMode.RowHeaderSelect;
-            DgvOrgaoAnuente.AllowUserToAddRows = false;
-            DgvOrgaoAnuente.ReadOnly = true;
-            DgvOrgaoAnuente.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
-            DgvOrgaoAnuente.Columns.Clear();
-
-            // --- Colunas Principais de Identificação ---
-            DgvOrgaoAnuente.Columns.Add(new DataGridViewTextBoxColumn
-            {
-                DataPropertyName = "Ref_USA",
-                HeaderText = "Ref. USA",
-                AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells,
-                MinimumWidth = 90
-            });
-            DgvOrgaoAnuente.Columns.Add(new DataGridViewTextBoxColumn
-            {
-                DataPropertyName = "Importador",
-                HeaderText = "Importador",
-                FillWeight = 150 // Mais espaço para nomes longos
-            });
-            DgvOrgaoAnuente.Columns.Add(new DataGridViewTextBoxColumn
-            {
-                DataPropertyName = "NumeroLI",
-                HeaderText = "Nº da LI",
-                AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells,
-                MinimumWidth = 90
-            });
-            DgvOrgaoAnuente.Columns.Add(new DataGridViewTextBoxColumn
-            {
-                DataPropertyName = "LPCO",
-                HeaderText = "Nº do LPCO",
-                AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells,
-                MinimumWidth = 100
-            });
-            DgvOrgaoAnuente.Columns.Add(new DataGridViewTextBoxColumn
-            {
-                DataPropertyName = "NomeOrgao",
-                HeaderText = "Órgão",
-                AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells
-            });
-
-            // --- Colunas de Dados da Carga ---
-            DgvOrgaoAnuente.Columns.Add(new DataGridViewTextBoxColumn
-            {
-                DataPropertyName = "Produto",
-                HeaderText = "Produto",
-                FillWeight = 150 // Mais espaço para nomes longos
-            });
-            DgvOrgaoAnuente.Columns.Add(new DataGridViewTextBoxColumn
-            {
-                DataPropertyName = "Container",
-                HeaderText = "Container",
-                AutoSizeMode = DataGridViewAutoSizeColumnMode.ColumnHeader,
-                MinimumWidth = 110
-            });
-            DgvOrgaoAnuente.Columns.Add(new DataGridViewTextBoxColumn
-            {
-                DataPropertyName = "Terminal",
-                HeaderText = "Terminal",
-                AutoSizeMode = DataGridViewAutoSizeColumnMode.ColumnHeader,
-                MinimumWidth = 110
-            });
-            DgvOrgaoAnuente.Columns.Add(new DataGridViewTextBoxColumn
-            {
-                DataPropertyName = "Conhecimento",
-                HeaderText = "Conhecimento",
-                AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells,
-                MinimumWidth = 110
-            });
-            DgvOrgaoAnuente.Columns.Add(new DataGridViewTextBoxColumn
-            {
-                DataPropertyName = "Origem",
-                HeaderText = "Origem",
-                AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells,
-                MinimumWidth = 80
-            });
-
-            // --- Colunas do LPCO ---
-
-            // --- Colunas de Datas ---
-            DgvOrgaoAnuente.Columns.Add(new DataGridViewTextBoxColumn
-            {
-                DataPropertyName = "DataChegada",
-                HeaderText = "Chegada",
-                DefaultCellStyle = new DataGridViewCellStyle { Format = "dd/MM/yyyy" },
-                AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells
-            });
-            DgvOrgaoAnuente.Columns.Add(new DataGridViewTextBoxColumn
-            {
-                DataPropertyName = "Inspecao",
-                HeaderText = "Inspeção",
-                DefaultCellStyle = new DataGridViewCellStyle { Format = "dd/MM/yyyy" },
-                AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells
-            });
-
-            // --- Colunas de Status ---
-            DgvOrgaoAnuente.Columns.Add(new DataGridViewTextBoxColumn
-            {
-                DataPropertyName = "StatusLPCO",
-                HeaderText = "Status",
-                AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells
-            });
-            DgvOrgaoAnuente.Columns.Add(new DataGridViewTextBoxColumn 
-            { 
-                DataPropertyName = "MotivoExigencia", 
-                HeaderText = "Motivo Exigência", 
-                FillWeight = 90 
-            });
-            DgvOrgaoAnuente.Columns.Add(new DataGridViewTextBoxColumn
-            {
-                DataPropertyName = "HistoricoDoProcesso",
-                HeaderText = "Histórico Do Processo",
-                FillWeight = 120
-            });
-            DgvOrgaoAnuente.Columns.Add(new DataGridViewTextBoxColumn
-            {
-                DataPropertyName = "Pendencia",
-                HeaderText = "Pendência",
-                FillWeight = 180
-            });
         }
 
         private async Task CarregarDadosAsync()
         {
-            // 1. Busca apenas os Ref_USA dos processos ATIVOS
-            var refsAtivos = await _repositorioProcesso.ListarRefUsaAtivosAsync();
+            Cursor = Cursors.WaitCursor;
+            try
+            {
+                // 1. Busca apenas os Ref_USA dos processos ATIVOS (rápido, traz só string)
+                var refsAtivos = await _repositorioProcesso.ListarRefUsaAtivosAsync();
 
-            // Cria um HashSet para busca super rápida (O(1))
-            var refsAtivosSet = new HashSet<string>(refsAtivos);
+                // 2. BUSCA OTIMIZADA: Traz do MongoDB apenas as LIs que pertencem a esses processos
+                // Em vez de trazer TUDO e filtrar na memória.
+                var lisAtivas = await _repositorioOrgaoAnuente.GetByListaRefUsaAsync(refsAtivos);
 
-            // 2. Busca todas as LIs
-            var todasAsLIs = await _repositorioOrgaoAnuente.GetAllAsync();
-
-            var listaMapeada = todasAsLIs
-                // FILTRO NOVO: Só processa se o Ref_USA estiver na lista de ativos
-                .Where(li => refsAtivosSet.Contains(li.Ref_USA))
-                .SelectMany(li =>
-                    (li.LPCO.Any() ? li.LPCO : new List<LpcoInfo> { new LpcoInfo() })
-                    .Select(lpco => new LpcoViewModel
-                    {
-                        // IDs para referência futura
-                        OrgaoAnuenteId = li.Id,
-
-                        // Dados herdados da LI (OrgaoAnuente)
-                        Ref_USA = li.Ref_USA,
-                        Importador = li.Importador,
-                        NumeroLI = li.Numero,
-                        Produto = li.Produto,
-                        Container = li.Container,
-                        Origem = li.Origem,
-                        Conhecimento = li.Conhecimento,
-                        Terminal = li.Terminal,
-                        DataChegada = li.DataChegada,
-                        Inspecao = li.Inspecao,
-                        HistoricoDoProcesso = li.HistoricoDoProcesso,
-                        Pendencia = li.Pendencia,
-                        StatusLPCO = lpco.StatusLPCO,
-
-                        // Dados específicos do LPCO
-                        NomeOrgao = lpco.NomeOrgao,
-                        LPCO = lpco.LPCO,
-                        DataRegistroLPCO = lpco.DataRegistroLPCO,
-                        ParametrizacaoLPCO = lpco.ParametrizacaoLPCO,
-                        MotivoExigencia = lpco.MotivoExigencia?.ToUpper() == "EXIGÊNCIA PENDENTE"
-                                ? $"{lpco.NomeOrgao} {lpco.MotivoExigencia.ToUpper()}" // Ex: "MAPA PENDENTE"
-                                : lpco.MotivoExigencia, // Ex: "CUMPRIDA" ou ""
-                    }))
-                .ToList();
-
-            _listaOriginalViewModel = listaMapeada
-                    .OrderBy(vm => GetStatusPriority(vm))        // 1. Prioridade por Status/Exigência
-                    .ThenByDescending(vm => ExtrairAnoNumero(vm.Ref_USA).ano) // 2. Ano
-                    .ThenBy(vm => ExtrairAnoNumero(vm.Ref_USA).numero)    // 3. Número do processo
+                // 3. Mapeamento em Memória (Rápido pois a lista já veio filtrada do banco)
+                var listaMapeada = await Task.Run(() =>
+                {
+                    return lisAtivas.SelectMany(li =>
+                        (li.LPCO != null && li.LPCO.Any() ? li.LPCO : new List<LpcoInfo> { new LpcoInfo() })
+                        .Select(lpco => new LpcoViewModel
+                        {
+                            OrgaoAnuenteId = li.Id,
+                            Ref_USA = li.Ref_USA,
+                            Importador = li.Importador,
+                            NumeroLI = li.Numero,
+                            Produto = li.Produto,
+                            Container = li.Container,
+                            Origem = li.Origem,
+                            Conhecimento = li.Conhecimento,
+                            Terminal = li.Terminal,
+                            DataChegada = li.DataChegada,
+                            Inspecao = li.Inspecao,
+                            HistoricoDoProcesso = li.HistoricoDoProcesso,
+                            Pendencia = li.Pendencia,
+                            StatusLPCO = lpco.StatusLPCO,
+                            NomeOrgao = lpco.NomeOrgao,
+                            LPCO = lpco.LPCO,
+                            DataRegistroLPCO = lpco.DataRegistroLPCO,
+                            ParametrizacaoLPCO = lpco.ParametrizacaoLPCO,
+                            MotivoExigencia = lpco.MotivoExigencia?.ToUpper() == "EXIGÊNCIA PENDENTE"
+                                ? $"{lpco.NomeOrgao} {lpco.MotivoExigencia.ToUpper()}"
+                                : lpco.MotivoExigencia,
+                        }))
                     .ToList();
+                });
 
-            // Exibe a lista original e ordenada na grade.
-            _bsLpcoViewModel.DataSource = _listaOriginalViewModel;
-            _bsLpcoViewModel.ResetBindings(false);
+                // 4. Ordenação
+                _listaOriginalViewModel = listaMapeada
+                        .OrderBy(vm => GetStatusPriority(vm))
+                        .ThenByDescending(vm => ExtrairAnoNumero(vm.Ref_USA).ano)
+                        .ThenBy(vm => ExtrairAnoNumero(vm.Ref_USA).numero)
+                        .ToList();
+
+                _bsLpcoViewModel.DataSource = _listaOriginalViewModel;
+                _bsLpcoViewModel.ResetBindings(false);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Erro ao carregar dados: {ex.Message}");
+            }
+            finally
+            {
+                Cursor = Cursors.Default;
+            }
         }
 
         // Função auxiliar para extrair ano e número do formato 0000/00
@@ -504,85 +410,6 @@ namespace Trabalho
                 return string.IsNullOrWhiteSpace(str);
             }
             return false;
-        }
-
-
-
-        // Substitua seu método de clique no cabeçalho por este
-        private void DGV_ColumnHeaderMouseClick(object? sender, DataGridViewCellMouseEventArgs e)
-        {
-            if (sender is not DataGridView dgv) return;
-            var novaColuna = dgv.Columns[e.ColumnIndex];
-            if (novaColuna.SortMode == DataGridViewColumnSortMode.NotSortable) return;
-            if (_bsLpcoViewModel.DataSource is not List<Processo> listaParaOrdenar) return;
-
-            // 1. Determina a Direção da Ordenação (mesma lógica de antes)
-            ListSortDirection direcao;
-            if (_colunaOrdenada == null || _colunaOrdenada.Name != novaColuna.Name)
-            {
-                direcao = ListSortDirection.Ascending;
-            }
-            else
-            {
-                direcao = (_direcaoOrdenacao == ListSortDirection.Ascending)
-                    ? ListSortDirection.Descending
-                    : ListSortDirection.Ascending;
-            }
-
-            _colunaOrdenada = novaColuna;
-            _direcaoOrdenacao = direcao;
-
-            IEnumerable<Processo> listaOrdenada;
-
-            // 2. Aplica a Lógica de Ordenação em Dois Níveis
-            if (novaColuna.DataPropertyName == "Ref_USA")
-            {
-                // --- LÓGICA ESPECIAL PARA REF_USA ---
-                var orderedByEmptiness = listaParaOrdenar
-                    // NÍVEL 1: Jogar Ref_USA vazias para o final
-                    .OrderBy(p => IsValueEmpty(p.Ref_USA) ? 1 : 0);
-
-                listaOrdenada = direcao == ListSortDirection.Ascending
-                    // NÍVEL 2: Ordenar as restantes pelo critério especial
-                    ? orderedByEmptiness.ThenBy(p => ExtrairAnoNumero(p.Ref_USA))
-                    : orderedByEmptiness.ThenByDescending(p => ExtrairAnoNumero(p.Ref_USA));
-            }
-            else
-            {
-                // --- LÓGICA GENÉRICA PARA OUTRAS COLUNAS ---
-                var propInfo = typeof(Processo).GetProperty(novaColuna.DataPropertyName);
-                if (propInfo == null) return;
-
-                var orderedByEmptiness = listaParaOrdenar
-                    // NÍVEL 1: Jogar valores vazios da coluna genérica para o final
-                    .OrderBy(p => IsValueEmpty(propInfo.GetValue(p)) ? 1 : 0);
-
-                // NÍVEL 2: Ordenar os valores restantes, com tratamento para datas
-                if (propInfo.PropertyType == typeof(DateTime) || propInfo.PropertyType == typeof(DateTime?))
-                {
-                    listaOrdenada = direcao == ListSortDirection.Ascending
-                        ? orderedByEmptiness.ThenBy(p => (DateTime?)propInfo.GetValue(p) ?? DateTime.MinValue)
-                        : orderedByEmptiness.ThenByDescending(p => (DateTime?)propInfo.GetValue(p) ?? DateTime.MinValue);
-                }
-                else
-                {
-                    listaOrdenada = direcao == ListSortDirection.Ascending
-                        ? orderedByEmptiness.ThenBy(p => propInfo.GetValue(p))
-                        : orderedByEmptiness.ThenByDescending(p => propInfo.GetValue(p));
-                }
-            }
-
-            // 3. Atualiza o DataGridView (mesma lógica de antes)
-            _bsLpcoViewModel.DataSource = listaOrdenada.ToList();
-            _bsLpcoViewModel.ResetBindings(false);
-
-            // 4. Atualiza a Seta Visual (Glyph) no Cabeçalho (mesma lógica de antes)
-            foreach (DataGridViewColumn column in dgv.Columns)
-            {
-                column.HeaderCell.SortGlyphDirection = (column.Name == novaColuna.Name)
-                    ? (direcao == ListSortDirection.Ascending ? SortOrder.Ascending : SortOrder.Descending)
-                    : SortOrder.None;
-            }
         }
 
         private void BtnAjuda_Click(object sender, EventArgs e)

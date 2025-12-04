@@ -1,9 +1,10 @@
 ﻿using CLUSA; // Models e ProcessoHelper aqui
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Data;
+using System.Drawing; // Necessário para Color
 using System.Linq;
+using System.Reflection; // Para o DoubleBuffer
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
@@ -11,6 +12,23 @@ namespace Trabalho
 {
     public partial class FrmStatusProcessos : Form
     {
+        private string ObterNomeGridStatus(StatusBloco status)
+        {
+            return status switch
+            {
+                StatusBloco.AguardandoCE => "DGVAguardandoCE",
+                StatusBloco.ParaRedestinar => "DGVParaRedestinar",
+                StatusBloco.Redestinados => "DGVRedestinados",
+                StatusBloco.AtracadosSemPresencaCarga => "DGVAtracadosSemPresencaCarga",
+                StatusBloco.SituacaoSIGVIG => "DGVSituacaoSIGVIG",
+                StatusBloco.AtracadosComPresencaCarga => "DGVAtracadosComPresencaCarga",
+                StatusBloco.Deferidos => "DGVDeferidos",
+                StatusBloco.SolicitarNumerario => "DGVSolicitarNumerario",
+                StatusBloco.DIDUIMPParaDigitacao => "DGVDIDUIMPParaDigitacao",
+                _ => "DGVAguardandoCE"
+            };
+        }
+
         private enum BlocoExibido
         {
             Nenhum,
@@ -33,8 +51,95 @@ namespace Trabalho
             SolicitarNumerario,
             DIDUIMPParaDigitacao
         }
+        private void MostrarLoading(string mensagem = "Carregando...")
+        {
+            if (_overlay != null) return;
 
-        // Otimizado: apenas info visual dos blocos
+            _overlay = new FrmLoadingOverlay();
+            _overlay.Opacity = 0.60;
+            _overlay.lblLoading.Text = mensagem;
+
+            // Faz o overlay cobrir TODO o cliente do formulário
+            var rect = this.RectangleToScreen(this.ClientRectangle);
+            _overlay.StartPosition = FormStartPosition.Manual;
+            _overlay.Location = rect.Location;
+            _overlay.Size = rect.Size;
+
+            _overlay.Show(this);
+            _overlay.BringToFront();
+        }
+
+
+        private void EsconderLoading()
+        {
+            if (_overlay == null) return;
+            _overlay.Close();
+            _overlay.Dispose();
+            _overlay = null;
+        }
+        // Dicionário estático para ordenação rápida (evita Reflection lento)
+        private static readonly Dictionary<string, Func<Processo, object>> _propSelectors = new()
+        {
+            // Identificadores Principais
+            { "Ref_USA", p => p.Ref_USA },
+            { "Importador", p => p.Importador },
+            { "SR", p => p.SR },
+            { "Produto", p => p.Produto },
+            { "Marca", p => p.Marca },
+            { "Veiculo", p => p.Veiculo },
+            { "Conhecimento", p => p.Conhecimento },
+            { "Armador", p => p.Armador },
+            { "CE", p => p.CE },
+            { "Container", p => p.Container },
+            { "Origem", p => p.Origem },
+        
+            // Logística e Prazos
+            { "PortoDestino", p => p.PortoDestino },
+            { "Terminal", p => p.Terminal },
+            { "LocalDeDesembaraco", p => p.LocalDeDesembaraco },
+            { "FLO", p => p.FLO },
+            { "FreeTime", p => p.FreeTime },
+            { "VencimentoFreeTime", p => p.VencimentoFreeTime },
+            { "VencimentoFMA", p => p.VencimentoFMA },
+            { "VencimentoLI_LPCO", p => p.VencimentoLI_LPCO },
+        
+            // Datas Importantes
+            { "DataDeAtracacao", p => p.DataDeAtracacao },
+            { "DataEmbarque", p => p.DataEmbarque },
+            { "Inspecao", p => p.Inspecao },
+            { "DataRecebOriginais", p => p.DataRecebOriginais },
+            { "FormaRecOriginais", p => p.FormaRecOriginais },
+        
+            // DI / Desembaraço
+            { "DI", p => p.DI },
+            { "RascunhoDI", p => p.RascunhoDI },
+            { "ParametrizacaoDI", p => p.ParametrizacaoDI },
+            { "DataRegistroDI", p => p.DataRegistroDI },
+            { "DataDesembaracoDI", p => p.DataDesembaracoDI },
+            { "DataCarregamentoDI", p => p.DataCarregamentoDI },
+            { "DataMinutaDI", p => p.DataMinutaDI },
+        
+            // Status e Controles (CheckBoxes / Booleans)
+            { "PresencaDeCarga", p => p.PresencaDeCarga },
+            { "CapaOK", p => p.CapaOK },
+            { "SIGVIGLiberado", p => p.SIGVIGLiberado },
+            { "SIGVIGSelecionado", p => p.SIGVIGSelecionado },
+            { "ResultadoLab", p => p.ResultadoLab },
+            { "Amostra", p => p.Amostra },
+            { "Desovado", p => p.Desovado },
+            { "Redestinacao", p => p.Redestinacao },
+            { "Numerario", p => p.Numerario },
+            { "SigVig", p => p.SigVig }, // Verifique se na model é SigVig ou SIGVIG
+            { "PossuiEmbarque", p => p.PossuiEmbarque },
+        
+            // Campos Descritivos / Status Geral
+            { "HistoricoDoProcesso", p => p.HistoricoDoProcesso },
+            { "Pendencia", p => p.Pendencia },
+            { "Status", p => p.Status },
+            { "CondicaoProcesso", p => p.CondicaoProcesso },
+            { "OrgaosAnuentesString", p => p.OrgaosAnuentesString }
+        };
+
         private static readonly Dictionary<StatusBloco, (string Nome, Color Cor)> BlocoInfo =
             new()
             {
@@ -53,15 +158,31 @@ namespace Trabalho
         private string? _ultimaColunaOrdenada = null;
         private bool _ultimaDirecaoAscendente = true;
         private List<Processo> _todosProcessos = new();
-        public FrmStatusProcessos()
+        private FrmLoadingOverlay? _overlay;
+
+        private readonly RepositorioUsers _repositorioUsers = new();
+        private Users? _usuarioLogado;
+        private Logado _logado;
+        public FrmStatusProcessos(Logado logado)
         {
             InitializeComponent();
             MostrarItens.Visible = false;
+
+            _logado = logado;
+            _bindingSource = new BindingSource();
+            DGVSelecionado.DoubleBuffered(true);
         }
         private async void FrmStatusProcessos_Load(object? sender, EventArgs e)
         {
-            _bindingSource = new BindingSource();
-            DGVSelecionado.DataSource = _bindingSource;
+            _usuarioLogado = await _repositorioUsers.GetByIdAsync(_logado.Id);
+            if (_usuarioLogado == null)
+            {
+                MessageBox.Show("Não foi possível carregar o usuário logado.", "Erro",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+
+            GridColumnManager.RegistrarCatalogosPadrao();
             await CarregarProcessosAsync();
         }
         // Só filtra pelo status calculado
@@ -72,275 +193,138 @@ namespace Trabalho
                 .Where(p => p.CondicaoProcesso == statusStr)
                 .ToList();
         }
-
-        // Chame sempre que abrir/trocar/cadastrar/editar processos
         private async Task CarregarProcessosAsync()
         {
-            Cursor.Current = Cursors.WaitCursor;
-
-            var processoService = new RepositorioProcesso();
-            var todos = await processoService.ListarProcessosAtivosParaStatusAsync();
-            var processosNaoFinalizados = todos
-                .Where(p => !string.Equals(p.Status, "Finalizado", StringComparison.OrdinalIgnoreCase))
-                .ToList();
-
-            _todosProcessos = await Task.Run(() =>
+            try
             {
-                processosNaoFinalizados.AsParallel().ForAll(p => ProcessoHelper.AtualizarCondicaoProcesso(p));
-                return processosNaoFinalizados;
-            }); 
+                MostrarLoading("Carregando processos...");
 
-            _bindingSource.DataSource = _todosProcessos;
-            _bindingSource.DataMember = null;
+                var processoService = new RepositorioProcesso();
+                var todos = await processoService.ListarProcessosAtivosParaStatusAsync();
+                var processosNaoFinalizados = todos
+                    .Where(p => !string.Equals(p.Status, "Finalizado", StringComparison.OrdinalIgnoreCase))
+                    .ToList();
 
-            AtualizarContadores();
-            Cursor.Current = Cursors.Default;
+                _todosProcessos = await Task.Run(() =>
+                {
+                    processosNaoFinalizados.AsParallel()
+                        .ForAll(p => ProcessoHelper.AtualizarCondicaoProcesso(p));
+                    return processosNaoFinalizados;
+                });
+
+                _bindingSource.DataSource = _todosProcessos;
+                _bindingSource.ResetBindings(false);
+
+                AtualizarContadores();
+            }
+            finally
+            {
+                EsconderLoading();
+            }
         }
-
 
         private void MostrarItensPorStatus(StatusBloco status)
         {
-            _blocoExibidoAtual = BlocoExibido.StatusPadrao;
-            _statusBlocoAtual = status;
+            DGVSelecionado.SuspendLayout(); // Pára de desenhar
+            try
+            {
+                _blocoExibidoAtual = BlocoExibido.StatusPadrao;
+                _statusBlocoAtual = status;
 
-            var processos = ObterProcessosPorStatus(status);
+                var processos = ObterProcessosPorStatus(status);
+                _processosExibidos = OrdenarLista(processos);
 
-            var processosOrdenados = OrdenarLista(processos);
+                var nomeGrid = ObterNomeGridStatus(status);
 
-            _processosExibidos = processosOrdenados;
-            _dadosExibicaoAtual = processosOrdenados.Cast<dynamic>().ToList();
+                // Configuração de colunas
+                if (_usuarioLogado.PreferenciasGrids == null)
+                    _usuarioLogado.PreferenciasGrids = new Dictionary<string, List<string>>();
 
-            var blocoInfo = BlocoInfo[status];
-            LblTitulo.Text = $"{blocoInfo.Nome} ({processos.Count})";
-            LblTitulo.ForeColor = blocoInfo.Cor == Color.Black ? Color.White : Color.Black;
-            LblTitulo.BackColor = blocoInfo.Cor;
-            DGVSelecionado.DataSource = _processosExibidos; 
+                _usuarioLogado.PreferenciasGrids.TryGetValue(nomeGrid, out var colunasVisiveis);
+                GridColumnManager.ConfigurarGrid(DGVSelecionado, nomeGrid, colunasVisiveis);
 
-            ConfigurarColunasDataGridViewProcesso();
+                _bindingSource.DataSource = _processosExibidos;
+                _bindingSource.ResetBindings(false);
 
-            Blocos.Visible = false;
-            MostrarItens.Visible = true;
-        }
+                // UI Updates
+                var info = BlocoInfo[status];
+                LblTitulo.Text = $"{info.Nome} ({processos.Count})";
+                LblTitulo.ForeColor = info.Cor == Color.Black ? Color.White : Color.Black;
+                LblTitulo.BackColor = info.Cor;
 
-        // UI helpers
-        private void ConfigurarColunasDataGridViewProcesso()
-        {
-            DGVSelecionado.Columns.Clear();
-
-            // --- Configuração Geral da Grade ---
-            DGVSelecionado.AutoGenerateColumns = false;
-            DGVSelecionado.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill; // Mantém o preenchimento
-            DGVSelecionado.RowHeadersVisible = false;
-            DGVSelecionado.AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.None;
-            DGVSelecionado.DefaultCellStyle.WrapMode = DataGridViewTriState.False;
-            DGVSelecionado.ShowCellToolTips = true;
-            var dateCellStyle = new DataGridViewCellStyle { Format = "dd/MM/yyyy" };
-
-            // --- Adicionando as Colunas com Largura Mínima ---
-
-            DGVSelecionado.Columns.Add(new DataGridViewTextBoxColumn
+                Blocos.Visible = false;
+                MostrarItens.Visible = true;
+            }
+            finally
             {
-                DataPropertyName = "Ref_USA",
-                HeaderText = "Ref. USA",
-                AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells,
-                MinimumWidth = 90
-            });
-            DGVSelecionado.Columns.Add(new DataGridViewTextBoxColumn
-            {
-                DataPropertyName = "SR",
-                HeaderText = "S. Ref",
-                MinimumWidth = 60
-            });
-            DGVSelecionado.Columns.Add(new DataGridViewTextBoxColumn
-            {
-                DataPropertyName = "Importador",
-                HeaderText = "Importador",
-                AutoSizeMode = DataGridViewAutoSizeColumnMode.ColumnHeader,
-                MinimumWidth = 80 // <-- MUDANÇA
-            });
-            DGVSelecionado.Columns.Add(new DataGridViewTextBoxColumn
-            {
-                DataPropertyName = "Veiculo",
-                HeaderText = "Veículo",
-                FillWeight = 140,
-                MinimumWidth = 80 // <-- MUDANÇA
-            });
-            DGVSelecionado.Columns.Add(new DataGridViewTextBoxColumn
-            {
-                DataPropertyName = "DataDeAtracacao",
-                HeaderText = "Data de Atracação",
-                AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells,
-                MinimumWidth = 70 // <-- MUDANÇA
-            });
-            DGVSelecionado.Columns.Add(new DataGridViewTextBoxColumn
-            {
-                DataPropertyName = "Terminal",
-                HeaderText = "Terminal",
-                FillWeight = 140,
-                MinimumWidth = 140
-            });
-            DGVSelecionado.Columns.Add(new DataGridViewTextBoxColumn
-            {
-                DataPropertyName = "LocalDeDesembaraco",
-                HeaderText = "Local",
-                AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells,
-                MinimumWidth = 120 // <-- MUDANÇA
-            });
-            DGVSelecionado.Columns.Add(new DataGridViewTextBoxColumn
-            {
-                DataPropertyName = "Container",
-                HeaderText = "Container",
-                AutoSizeMode = DataGridViewAutoSizeColumnMode.ColumnHeader,
-                MinimumWidth = 120
-            });
-            DGVSelecionado.Columns.Add(new DataGridViewCheckBoxColumn
-            {
-                DataPropertyName = "Redestinacao",
-                HeaderText = "Redes.",
-                AutoSizeMode = DataGridViewAutoSizeColumnMode.ColumnHeader,
-                MinimumWidth = 50
-            });
-            DGVSelecionado.Columns.Add(new DataGridViewTextBoxColumn
-            {
-                DataPropertyName = "CE",
-                HeaderText = "CE",
-                FillWeight = 90,
-                MinimumWidth = 100 // <-- MUDANÇA
-            });
-            DGVSelecionado.Columns.Add(new DataGridViewTextBoxColumn
-            {
-                DataPropertyName = "FreeTime",
-                HeaderText = "F.T",
-                AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells,
-                MinimumWidth = 40 // <-- MUDANÇA
-            });
-            DGVSelecionado.Columns.Add(new DataGridViewTextBoxColumn
-            {
-                DataPropertyName = "VencimentoFreeTime",
-                HeaderText = "Venc. F. Time",
-                DefaultCellStyle = dateCellStyle,
-                AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells,
-                MinimumWidth = 100 // <-- MUDANÇA
-            });
-            DGVSelecionado.Columns.Add(new DataGridViewTextBoxColumn
-            {
-                DataPropertyName = "VencimentoFMA",
-                HeaderText = "Venc. FMA",
-                DefaultCellStyle = dateCellStyle,
-                AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells,
-                MinimumWidth = 100 // <-- MUDANÇA
-            });
-            DGVSelecionado.Columns.Add(new DataGridViewCheckBoxColumn
-            {
-                DataPropertyName = "CapaOK",
-                HeaderText = "Capa",
-                AutoSizeMode = DataGridViewAutoSizeColumnMode.ColumnHeader,
-                MinimumWidth = 40
-            });
-            DGVSelecionado.Columns.Add(new DataGridViewCheckBoxColumn
-            {
-                DataPropertyName = "Numerario",
-                HeaderText = "Num.",
-                AutoSizeMode = DataGridViewAutoSizeColumnMode.ColumnHeader,
-                MinimumWidth = 40
-            });
-            DGVSelecionado.Columns.Add(new DataGridViewTextBoxColumn
-            {
-                DataPropertyName = "RascunhoDI",
-                HeaderText = "Rascunho DI",
-                AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells,
-                MinimumWidth = 120
-            });
-            DGVSelecionado.Columns.Add(new DataGridViewTextBoxColumn
-            {
-                DataPropertyName = "Pendencia",
-                HeaderText = "Pendência",
-                FillWeight = 160,
-                MinimumWidth = 160 // <-- MUDANÇA
-            });
-            DGVSelecionado.Columns.Add(new DataGridViewTextBoxColumn
-            {
-                DataPropertyName = "Status",
-                HeaderText = "Status",
-                FillWeight = 180,
-                MinimumWidth = 120 // <-- MUDANÇA
-            });
-
-            foreach (DataGridViewColumn coluna in DGVSelecionado.Columns)
-            {
-                coluna.DefaultCellStyle.Font = new Font("Segoe UI", 10);
-                coluna.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleLeft;
-
-                // Deixe todas como ordenáveis manualmente
-                coluna.SortMode = DataGridViewColumnSortMode.Programmatic;
-
-                // Centralizar checkbox e "F.T"
-                if (coluna is DataGridViewCheckBoxColumn || coluna.HeaderText == "F.T")
-                {
-                    coluna.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
-                }
+                DGVSelecionado.ResumeLayout(); // Volta a desenhar
             }
         }
+
+
+        // OTIMIZAÇÃO DE ORDENAÇÃO
         private List<Processo> OrdenarLista(List<Processo> lista)
         {
-            // 1. Se o usuário NÃO clicou em nenhuma coluna ainda, usa a ordenação PADRÃO (Ref_USA)
+            // Se a lista for pequena, não faz diferença, mas para listas grandes, previne alocações
+            if (lista == null || lista.Count == 0) return lista;
+
+            // 1. Lógica Padrão (Sem clique ou reset)
             if (string.IsNullOrEmpty(_ultimaColunaOrdenada))
             {
                 return lista
-                    .OrderBy(p => (p.Ref_USA?.Trim().EndsWith("ITJ", StringComparison.OrdinalIgnoreCase) ?? false) ? 1 : 0)
+                    .OrderBy(p => IsITJ(p.Ref_USA) ? 1 : 0) // ITJ no fundo
                     .ThenBy(p => string.IsNullOrWhiteSpace(p.Ref_USA) ? 1 : 0)
-                    .ThenBy(p => ExtrairAnoNumero(p.Ref_USA))
+                    .ThenBy(p => ExtrairAnoNumeroSortKey(p.Ref_USA)) // Usa chave numérica direta
                     .ToList();
             }
 
-            var propInfo = typeof(Processo).GetProperty(_ultimaColunaOrdenada);
-            if (propInfo == null) return lista;
+            // Recupera o seletor rápido do dicionário (Sem Reflection)
+            if (!_propSelectors.TryGetValue(_ultimaColunaOrdenada, out var selector))
+            {
+                // Fallback caso a coluna não esteja mapeada (segurança)
+                selector = p => p.GetType().GetProperty(_ultimaColunaOrdenada)?.GetValue(p);
+            }
 
-            // --- LÓGICA ESPECIAL PARA REF_USA (ITJ FIXO NO FUNDO) ---
+            // --- LÓGICA REF_USA (Mantida a regra de negócio do ITJ) ---
             if (_ultimaColunaOrdenada == "Ref_USA")
             {
-                Func<Processo, bool> ehITJ = p => (p.Ref_USA?.Trim().EndsWith("ITJ", StringComparison.OrdinalIgnoreCase) ?? false);
-                Func<Processo, bool> ehVazio = p => string.IsNullOrWhiteSpace(p.Ref_USA);
-
-                // 1. Cria a "Base" da ordenação.
-                // Ao usar OrderBy fixo aqui, criamos uma regra que NÃO muda com o clique do usuário.
-                // ITJ ganha peso 1 (fundo), Normais ganham peso 0 (topo).
                 var queryBase = lista
-                    .OrderBy(p => ehITJ(p) ? 1 : 0)    // REGRA DE OURO: ITJ sempre vai para o grupo de baixo
-                    .ThenBy(p => ehVazio(p) ? 1 : 0);  // Vazios ficam abaixo dos normais, mas acima ou junto com ITJ dependendo da lógica
+                    .OrderBy(p => IsITJ(p.Ref_USA) ? 1 : 0)
+                    .ThenBy(p => string.IsNullOrWhiteSpace(p.Ref_USA) ? 1 : 0);
 
-                // 2. Aplica a ordenação do usuário (Asc/Desc) APENAS no conteúdo (Ano/Número)
-                if (_ultimaDirecaoAscendente)
-                {
-                    return queryBase
-                        .ThenBy(p => ExtrairAnoNumero(p.Ref_USA))
-                        .ToList();
-                }
-                else
-                {
-                    return queryBase
-                        .ThenByDescending(p => ExtrairAnoNumero(p.Ref_USA))
-                        .ToList();
-                }
+                return _ultimaDirecaoAscendente
+                    ? queryBase.ThenBy(p => ExtrairAnoNumeroSortKey(p.Ref_USA)).ToList()
+                    : queryBase.ThenByDescending(p => ExtrairAnoNumeroSortKey(p.Ref_USA)).ToList();
             }
 
-            // Função auxiliar para tratar nulos na ordenação
-            bool IsEmpty(object? v) => v == null || (v is string s && string.IsNullOrWhiteSpace(s));
+            // --- ORDENAÇÃO GENÉRICA OTIMIZADA ---
+            return _ultimaDirecaoAscendente
+                ? lista.OrderBy(p => selector(p) == null ? 1 : 0).ThenBy(selector).ToList()
+                : lista.OrderBy(p => selector(p) == null ? 1 : 0).ThenByDescending(selector).ToList();
+        }
 
-            if (_ultimaDirecaoAscendente)
+        // Helper rápido para verificar ITJ
+        private bool IsITJ(string refUsa) =>
+            refUsa != null && refUsa.TrimEnd().EndsWith("ITJ", StringComparison.OrdinalIgnoreCase);
+
+        // Otimização: Retorna um long (ex: 202400123) para ordenação numérica rápida sem criar tuplas ou structs
+        private long ExtrairAnoNumeroSortKey(string refUsa)
+        {
+            if (string.IsNullOrWhiteSpace(refUsa)) return 0;
+
+            // Assume formato "NUMERO/ANO" ex: "123/25" ou "123/2025"
+            // Evita Split se possível para performance extrema, mas Split é aceitável aqui.
+            var partes = refUsa.Split('/', ' ');
+            if (partes.Length >= 2)
             {
-                return lista
-                    .OrderBy(p => IsEmpty(propInfo.GetValue(p)) ? 1 : 0) // Nulos no final
-                    .ThenBy(p => propInfo.GetValue(p))
-                    .ToList();
+                if (int.TryParse(partes[0], out int numero) && int.TryParse(partes[1], out int ano))
+                {
+                    // Normaliza ano (ex: 25 vira 2025) para garantir ordenação correta
+                    int anoCompleto = ano < 100 ? 2000 + ano : ano;
+                    return (long)anoCompleto * 1000000 + numero;
+                }
             }
-            else
-            {
-                return lista
-                    .OrderBy(p => IsEmpty(propInfo.GetValue(p)) ? 1 : 0) // Nulos no final
-                    .ThenByDescending(p => propInfo.GetValue(p))
-                    .ToList();
-            }
+            return 0;
         }
         private void DGVSelecionado_ColumnHeaderMouseClick(object sender, DataGridViewCellMouseEventArgs e)
         {
@@ -484,15 +468,18 @@ namespace Trabalho
 
             _processosExibidos = processosOrdenados;
 
+            var nomeGrid = ObterNomeGridStatus(StatusBloco.SolicitarNumerario);
+            _usuarioLogado.PreferenciasGrids ??= new Dictionary<string, List<string>>();
+            _usuarioLogado.PreferenciasGrids.TryGetValue(nomeGrid, out var colunasVisiveis);
+            GridColumnManager.ConfigurarGrid(DGVSelecionado, nomeGrid, colunasVisiveis);
+
+            _bindingSource.DataSource = _processosExibidos;
+            _bindingSource.ResetBindings(false);
+
             var blocoInfo = BlocoInfo[StatusBloco.SolicitarNumerario];
             LblTitulo.Text = $"{blocoInfo.Nome} ({processos.Count})";
             LblTitulo.ForeColor = blocoInfo.Cor == Color.Black ? Color.White : Color.Black;
             LblTitulo.BackColor = blocoInfo.Cor;
-
-            _dadosExibicaoAtual = processosOrdenados.Cast<dynamic>().ToList();
-            DGVSelecionado.DataSource = _processosExibidos;
-
-            ConfigurarColunasDataGridViewProcesso();
 
             Blocos.Visible = false;
             MostrarItens.Visible = true;
@@ -510,15 +497,18 @@ namespace Trabalho
 
             _processosExibidos = processosOrdenados;
 
+            var nomeGrid = ObterNomeGridStatus(StatusBloco.DIDUIMPParaDigitacao);
+            _usuarioLogado.PreferenciasGrids ??= new Dictionary<string, List<string>>();
+            _usuarioLogado.PreferenciasGrids.TryGetValue(nomeGrid, out var colunasVisiveis);
+            GridColumnManager.ConfigurarGrid(DGVSelecionado, nomeGrid, colunasVisiveis);
+
+            _bindingSource.DataSource = _processosExibidos;
+            _bindingSource.ResetBindings(false);
+
             var blocoInfo = BlocoInfo[StatusBloco.DIDUIMPParaDigitacao];
             LblTitulo.Text = $"{blocoInfo.Nome} ({processos.Count})";
             LblTitulo.ForeColor = blocoInfo.Cor == Color.Black ? Color.White : Color.Black;
             LblTitulo.BackColor = blocoInfo.Cor;
-
-            _dadosExibicaoAtual = processosOrdenados.Cast<dynamic>().ToList();
-            DGVSelecionado.DataSource = _processosExibidos; 
-
-            ConfigurarColunasDataGridViewProcesso();
 
             Blocos.Visible = false;
             MostrarItens.Visible = true;
@@ -582,5 +572,17 @@ namespace Trabalho
             Blocos.Visible = true;
             AtualizarContadores();
         }
+
+
+    }
+
+}
+public static class DataGridViewExtensions
+{
+    public static void DoubleBuffered(this DataGridView dgv, bool setting)
+    {
+        Type dgvType = dgv.GetType();
+        PropertyInfo pi = dgvType.GetProperty("DoubleBuffered", BindingFlags.Instance | BindingFlags.NonPublic);
+        pi?.SetValue(dgv, setting, null);
     }
 }
