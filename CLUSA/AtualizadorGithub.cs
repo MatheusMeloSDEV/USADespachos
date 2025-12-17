@@ -259,8 +259,12 @@ del ""{batPath}""
         private static string NormalizarVersao(string? v)
         {
             if (string.IsNullOrWhiteSpace(v)) return "";
+
+            // Remove o 'v' (ex: v1.0.0 -> 1.0.0) e remove sufixos beta (ex: 1.0.0-beta -> 1.0.0)
             var partes = v.TrimStart('v', 'V').Split('-')[0].Split('.');
-            return string.Join(".", partes.Take(3));
+
+            // Alterado de 3 para 4 para pegar a revisão (ex: 1.2.7.1)
+            return string.Join(".", partes.Take(4));
         }
         public async Task BaixarEInstalarAppAsync()
         {

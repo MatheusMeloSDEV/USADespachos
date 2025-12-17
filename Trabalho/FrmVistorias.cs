@@ -13,6 +13,7 @@ namespace Trabalho
 
         private readonly Logado _logado;
         private readonly RepositorioUsers _repositorioUsers;
+        private readonly LogRepository _logRepo;
         private Users? _usuarioLogado;
 
         // BindingSources
@@ -47,6 +48,7 @@ namespace Trabalho
             _vistoriaService = new VistoriaService(database);
             _repositorioVistorias = new RepositorioVistorias(database);
             _repositorioProcesso = new RepositorioProcesso();
+            _logRepo = new LogRepository();
 
             _repositorioUsers = new RepositorioUsers();
             _logado = logado;
@@ -267,6 +269,12 @@ namespace Trabalho
 
             if (processadas > 0)
             {
+                await _logRepo.RegistrarLogAsync(
+                    "Sincronização",
+                    "Fila offline de vistorias processada com sucesso",
+                    $"Itens sincronizados: {processadas} | Erros descartados: {errosDados}"
+                );
+
                 BtnRecarrega.Text = "Sincronização concluída!";
                 await Task.Delay(3000);
                 BtnRecarrega.Text = "";
@@ -415,8 +423,15 @@ namespace Trabalho
         }
         private List<Vistoria> FiltrarOrdenar(List<Vistoria> lista, StatusVistoria status)
         {
-            return lista
-                .Where(v => v.Status == status)
+            var query = lista.Where(v => v.Status == status);
+
+            if (status == StatusVistoria.ProcessoDadoEntrada)
+            {
+                return query
+                    .OrderByDescending(v => v.DataRegistroLPCO ?? DateTime.MinValue)
+                    .ToList();
+            }
+            return query
                 .OrderBy(v => v.Previsao ?? DateTime.MaxValue)
                 .ToList();
         }
@@ -437,6 +452,9 @@ namespace Trabalho
                 return;
             }
 
+            // Guarda o status antigo para o log antes de mudar
+            var statusAntigo = vistoriaSelecionada.Status;
+
             vistoriaSelecionada.Status = novoStatus;
             await UpsertVistoriaComFilaAsync(vistoriaSelecionada);
 
@@ -445,6 +463,14 @@ namespace Trabalho
 
             AjustarAlturaDataGridView(dgvOrigem);
             AjustarAlturaDataGridView(dgvDestino);
+
+            // --- 4. LOG DE MOVIMENTAÇÃO ---
+            // Fire-and-forget seguro (não trava a UI)
+            _ = _logRepo.RegistrarLogAsync(
+                "Movimentação Vistoria",
+                $"LPCO {vistoriaSelecionada.LPCO} movido para {novoStatus}",
+                $"Processo: {vistoriaSelecionada.Ref_USA} | De: {statusAntigo} -> Para: {novoStatus} | Usuário: {_logado.Usuario}"
+            );
         }
 
         private void AjustarTodosDataGridViews()
@@ -524,10 +550,17 @@ namespace Trabalho
                 // 3. Atualiza a UI (Remove da tela)
                 bindingSource.Remove(vistoria);
 
+                await _logRepo.RegistrarLogAsync(
+                    "Finalização Vistoria",
+                    $"Vistoria {acao} para LPCO {vistoria.LPCO}",
+                    $"Processo: {vistoria.Ref_USA} | Status Final: {novoStatusMotivoExigencia} | Usuário: {_logado.Usuario}"
+                );
+
                 MessageBox.Show($"Vistoria finalizada e LPCO atualizado como {novoStatusMotivoExigencia}!", "Sucesso", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
             catch (Exception ex)
             {
+                await _logRepo.RegistrarLogAsync("Erro Vistoria", $"Falha ao finalizar {vistoria.LPCO}", ex.Message);
                 MessageBox.Show($"Erro ao processar a solicitação: {ex.Message}", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
             finally

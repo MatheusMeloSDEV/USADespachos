@@ -49,7 +49,7 @@
             MenuItemExit = new ToolStripMenuItem();
             MenuItemAdmin = new ToolStripMenuItem();
             MenuItemVistoria = new ToolStripMenuItem();
-            vencimentosToolStripMenuItem = new ToolStripMenuItem();
+            MenuItemVencimentos = new ToolStripMenuItem();
             MenuitemFinanceiro = new ToolStripMenuItem();
             timerReleaseExit = new System.Windows.Forms.Timer(components);
             pictureBox1 = new PictureBox();
@@ -70,7 +70,7 @@
             // 
             // Menu
             // 
-            Menu.Items.AddRange(new ToolStripItem[] { MenuItemHome, MenuItemNotifications, planilhasToolStripMenuItem, MenuItemUsuario, MenuItemAdmin, MenuItemVistoria, vencimentosToolStripMenuItem, MenuitemFinanceiro });
+            Menu.Items.AddRange(new ToolStripItem[] { MenuItemHome, MenuItemNotifications, planilhasToolStripMenuItem, MenuItemUsuario, MenuItemAdmin, MenuItemVistoria, MenuItemVencimentos, MenuitemFinanceiro });
             Menu.Location = new Point(0, 0);
             Menu.Name = "Menu";
             Menu.Size = new Size(1264, 34);
@@ -178,21 +178,21 @@
             // MenuItemConfiguracoes
             // 
             MenuItemConfiguracoes.Name = "MenuItemConfiguracoes";
-            MenuItemConfiguracoes.Size = new Size(180, 22);
+            MenuItemConfiguracoes.Size = new Size(151, 22);
             MenuItemConfiguracoes.Text = "Configurações";
             MenuItemConfiguracoes.Click += MenuItemConfiguracoes_Click;
             // 
             // MenuItemChangePassword
             // 
             MenuItemChangePassword.Name = "MenuItemChangePassword";
-            MenuItemChangePassword.Size = new Size(180, 22);
+            MenuItemChangePassword.Size = new Size(151, 22);
             MenuItemChangePassword.Text = "Mudar senha";
             MenuItemChangePassword.Click += MenuItemChangePassword_Click;
             // 
             // MenuItemExit
             // 
             MenuItemExit.Name = "MenuItemExit";
-            MenuItemExit.Size = new Size(180, 22);
+            MenuItemExit.Size = new Size(151, 22);
             MenuItemExit.Text = "Sair";
             MenuItemExit.Click += MenuItemExit_Click;
             // 
@@ -211,11 +211,12 @@
             MenuItemVistoria.Text = "Vistoria";
             MenuItemVistoria.Click += MenuItemVistoria_Click;
             // 
-            // vencimentosToolStripMenuItem
+            // MenuItemVencimentos
             // 
-            vencimentosToolStripMenuItem.Name = "vencimentosToolStripMenuItem";
-            vencimentosToolStripMenuItem.Size = new Size(87, 30);
-            vencimentosToolStripMenuItem.Text = "Vencimentos";
+            MenuItemVencimentos.Name = "MenuItemVencimentos";
+            MenuItemVencimentos.Size = new Size(87, 30);
+            MenuItemVencimentos.Text = "Vencimentos";
+            MenuItemVencimentos.Click += MenuItemVencimentos_Click;
             // 
             // MenuitemFinanceiro
             // 
@@ -356,7 +357,7 @@
         private PictureBox pictureBox1;
         private Panel panel1;
         private ToolStripMenuItem MenuItemMenu;
-        private ToolStripMenuItem vencimentosToolStripMenuItem;
+        private ToolStripMenuItem MenuItemVencimentos;
         private ContextMenuStrip contextMenuStripNotifications;
         private Panel panel2;
         private ToolStrip toolStrip1;

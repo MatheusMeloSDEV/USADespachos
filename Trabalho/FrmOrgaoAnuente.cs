@@ -16,6 +16,7 @@ namespace Trabalho
 
         private readonly Logado _logado;
         private readonly RepositorioUsers _repositorioUsers;
+        private readonly LogRepository _logRepo;
         private Users? _usuarioLogado;
 
         public FrmOrgaoAnuente(Logado logado)
@@ -27,6 +28,7 @@ namespace Trabalho
             DgvOrgaoAnuente.DataSource = _bsLpcoViewModel;
 
             _repositorioUsers = new RepositorioUsers();
+            _logRepo = new LogRepository();
             _logado = logado;
         }
 
@@ -297,14 +299,18 @@ namespace Trabalho
                     // Nós só precisamos verificar se o usuário clicou em OK.
                     if (frm.ShowDialog() == DialogResult.OK)
                     {
-                        // Se o usuário clicou OK, os dados já foram salvos.
-                        // Agora só precisamos atualizar a grade na tela principal.
+                        await _logRepo.RegistrarLogAsync(
+                            "Edição",
+                            $"Órgão Anuente (LI {orgaoParaEditar.Numero}) do processo {orgaoParaEditar.Ref_USA} foi atualizado",
+                            $"Usuário: {_logado.Usuario}"
+                        );
                         await CarregarDadosAsync();
                     }
                 }
             }
             catch (Exception ex)
             {
+                await _logRepo.RegistrarLogAsync("Erro", "Falha ao abrir edição de Órgão Anuente", ex.Message);
                 MessageBox.Show($"Erro ao editar o órgão anuente: {ex.Message}", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }

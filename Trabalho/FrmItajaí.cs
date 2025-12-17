@@ -67,25 +67,25 @@ namespace Trabalho
         {
             try
             {
-                var registros = await _repositorio.ListarPrincipalOtimizadoAsync("ITJ");
-                var registrosFiltrados = registros.Where(p => p.Status != "Finalizado");
+                var registros = await _repositorio.ListarAtivosPorSufixoAsync("ITJ");
 
-                var registrosOrdenados = registrosFiltrados
-                    .OrderBy(p => p.DataDeAtracacao == null || p.DataDeAtracacao == DateTime.MinValue ? 1 : 0) // primeiro os com data
-                    .ThenBy(p => p.DataDeAtracacao ?? DateTime.MaxValue)
+                var registrosOrdenados = registros
+                    .OrderByDescending(p => p.DataDeAtracacao) 
                     .ToList();
+
                 _listaOriginal = registrosOrdenados;
 
                 BsProcesso.DataSource = registrosOrdenados;
                 DGVItajai.DataSource = BsProcesso;
                 BsProcesso.ResetBindings(false);
+
             }
             catch (Exception ex)
             {
                 MessageBox.Show($"Erro ao carregar os dados: {ex.Message}", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
-       
+
         private void PopularComboBoxDePesquisa()
         {
             var camposIgnorados = new HashSet<string>

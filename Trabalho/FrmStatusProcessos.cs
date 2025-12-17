@@ -12,33 +12,6 @@ namespace Trabalho
 {
     public partial class FrmStatusProcessos : Form
     {
-        private string ObterNomeGridStatus(StatusBloco status)
-        {
-            return status switch
-            {
-                StatusBloco.AguardandoCE => "DGVAguardandoCE",
-                StatusBloco.ParaRedestinar => "DGVParaRedestinar",
-                StatusBloco.Redestinados => "DGVRedestinados",
-                StatusBloco.AtracadosSemPresencaCarga => "DGVAtracadosSemPresencaCarga",
-                StatusBloco.SituacaoSIGVIG => "DGVSituacaoSIGVIG",
-                StatusBloco.AtracadosComPresencaCarga => "DGVAtracadosComPresencaCarga",
-                StatusBloco.Deferidos => "DGVDeferidos",
-                StatusBloco.SolicitarNumerario => "DGVSolicitarNumerario",
-                StatusBloco.DIDUIMPParaDigitacao => "DGVDIDUIMPParaDigitacao",
-                _ => "DGVAguardandoCE"
-            };
-        }
-
-        private enum BlocoExibido
-        {
-            Nenhum,
-            StatusPadrao,
-            SolicitarNumerario,
-            DIDUIMPParaDigitacao
-        }
-        private BlocoExibido _blocoExibidoAtual = BlocoExibido.Nenhum;
-        private StatusBloco? _statusBlocoAtual;
-        private List<Processo> _processosExibidos = new List<Processo>();
         public enum StatusBloco
         {
             AguardandoCE,
@@ -51,34 +24,83 @@ namespace Trabalho
             SolicitarNumerario,
             DIDUIMPParaDigitacao
         }
-        private void MostrarLoading(string mensagem = "Carregando...")
+
+        private static readonly Dictionary<StatusBloco, (string Nome, Color Cor, string GridName)> BlocoConfig =
+            new()
+            {
+                { StatusBloco.AguardandoCE, ("Aguardando CE", Color.BlueViolet, "DGVAguardandoCE") },
+                { StatusBloco.ParaRedestinar, ("Para Redestinar", Color.Red, "DGVParaRedestinar") },
+                { StatusBloco.Redestinados, ("Redestinados", Color.FromArgb(0,192,192), "DGVRedestinados") },
+                { StatusBloco.AtracadosSemPresencaCarga, ("Atracados S/Presença de Carga", Color.Yellow, "DGVAtracadosSemPresencaCarga") },
+                { StatusBloco.SituacaoSIGVIG, ("Atracados Situação SIGVIG", Color.FromArgb(255,128,0), "DGVSituacaoSIGVIG") },
+                { StatusBloco.AtracadosComPresencaCarga, ("Atracados com Presença de Carga", Color.Black, "DGVAtracadosComPresencaCarga") },
+                { StatusBloco.Deferidos, ("Deferidos", Color.Lime, "DGVDeferidos") },
+                { StatusBloco.SolicitarNumerario, ("Solicitar Numerário", Color.FromArgb(255,192,192), "DGVSolicitarNumerario") },
+                { StatusBloco.DIDUIMPParaDigitacao, ("DI/DUIMP para Digitação", Color.FromArgb(192,0,0), "DGVDIDUIMPParaDigitacao") }
+            };
+
+        // Estado da Tela
+        private StatusBloco? _statusBlocoAtual;
+        private List<Processo> _processosExibidos = [];
+        private List<Processo> _todosProcessos = []; // Cache único do banco
+
+        // Ordenação
+        private string? _ultimaColunaOrdenada = null;
+        private bool _ultimaDirecaoAscendente = true;
+
+        // Componentes Auxiliares
+        private FrmLoadingOverlay? _overlay;
+        private readonly RepositorioUsers _repositorioUsers = new();
+        private Users? _usuarioLogado;
+        private readonly Logado _logado;
+
+        private Control? ObterControlePorStatus(StatusBloco status)
+        {
+            return status switch
+            {
+                StatusBloco.AguardandoCE => BtnAguardandoCE,
+                StatusBloco.ParaRedestinar => BtnParaRedestinar,
+                StatusBloco.Redestinados => BtnRedestinados,
+                StatusBloco.AtracadosSemPresencaCarga => BtnAtracadosSPresencaDeCarga,
+                StatusBloco.SituacaoSIGVIG => BtnSituacaoSIGVIG,
+                StatusBloco.AtracadosComPresencaCarga => BtnAtracadosCPresencaDeCarga,
+                StatusBloco.Deferidos => BtnDeferidos,
+                StatusBloco.SolicitarNumerario => BtnSolicitarNumerario,
+                StatusBloco.DIDUIMPParaDigitacao => BtnDIDUIMPParaDigitacao,
+                _ => null
+            };
+        }
+
+        private enum BlocoExibido
+        {
+            Nenhum,
+            StatusPadrao,
+            SolicitarNumerario,
+            DIDUIMPParaDigitacao
+        }
+        private BlocoExibido _blocoExibidoAtual = BlocoExibido.Nenhum;
+
+        private void MostrarLoading(string mensagem)
         {
             if (_overlay != null) return;
-
-            _overlay = new FrmLoadingOverlay();
-            _overlay.Opacity = 0.60;
+            _overlay = new FrmLoadingOverlay { Opacity = 0.60 };
             _overlay.lblLoading.Text = mensagem;
-
-            // Faz o overlay cobrir TODO o cliente do formulário
             var rect = this.RectangleToScreen(this.ClientRectangle);
             _overlay.StartPosition = FormStartPosition.Manual;
             _overlay.Location = rect.Location;
             _overlay.Size = rect.Size;
-
             _overlay.Show(this);
             _overlay.BringToFront();
         }
 
-
         private void EsconderLoading()
         {
-            if (_overlay == null) return;
-            _overlay.Close();
-            _overlay.Dispose();
+            _overlay?.Close();
+            _overlay?.Dispose();
             _overlay = null;
         }
-        // Dicionário estático para ordenação rápida (evita Reflection lento)
-        private static readonly Dictionary<string, Func<Processo, object>> _propSelectors = new()
+
+        private static readonly Dictionary<string, Func<Processo, object?>> _propSelectors = new()
         {
             // Identificadores Principais
             { "Ref_USA", p => p.Ref_USA },
@@ -154,22 +176,13 @@ namespace Trabalho
                 { StatusBloco.DIDUIMPParaDigitacao, ("DI/DUIMP para Digitação", Color.FromArgb(192,0,0)) }
             };
 
-        private List<dynamic> _dadosExibicaoAtual = new();
-        private string? _ultimaColunaOrdenada = null;
-        private bool _ultimaDirecaoAscendente = true;
-        private List<Processo> _todosProcessos = new();
-        private FrmLoadingOverlay? _overlay;
-
-        private readonly RepositorioUsers _repositorioUsers = new();
-        private Users? _usuarioLogado;
-        private Logado _logado;
+        private readonly List<dynamic> _dadosExibicaoAtual = [];
         public FrmStatusProcessos(Logado logado)
         {
             InitializeComponent();
             MostrarItens.Visible = false;
-
             _logado = logado;
-            _bindingSource = new BindingSource();
+            _bindingSource = [];
             DGVSelecionado.DoubleBuffered(true);
         }
         private async void FrmStatusProcessos_Load(object? sender, EventArgs e)
@@ -177,21 +190,78 @@ namespace Trabalho
             _usuarioLogado = await _repositorioUsers.GetByIdAsync(_logado.Id);
             if (_usuarioLogado == null)
             {
-                MessageBox.Show("Não foi possível carregar o usuário logado.", "Erro",
-                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("Erro ao carregar usuário.", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
 
             GridColumnManager.RegistrarCatalogosPadrao();
+
+            // AQUI: A Única chamada ao banco de dados
             await CarregarProcessosAsync();
         }
         // Só filtra pelo status calculado
+        // SUBSTITUIR ESTE MÉTODO NO SEU FrmStatusProcessos.cs
         private List<Processo> ObterProcessosPorStatus(StatusBloco status)
         {
-            string statusStr = status.ToString();
-            return _todosProcessos
-                .Where(p => p.CondicaoProcesso == statusStr)
-                .ToList();
+            // Variável auxiliar para data atual (normalizada para data sem hora, se necessário)
+            var hoje = DateTime.Now.Date;
+
+            return status switch
+            {
+                // 1. AGUARDANDO CE: Entra quando CE em branco (Navio já validado pelo status "Ativo" do banco ou Ref_USA)
+                StatusBloco.AguardandoCE => _todosProcessos
+                    .Where(p => (string.IsNullOrWhiteSpace(p.CE)))
+                    .ToList(),
+
+                // 2. PARA REDESTINAR: Tem CE preenchido, mas não está marcado como Redestinação
+                StatusBloco.ParaRedestinar => _todosProcessos
+                    .Where(p => !string.IsNullOrWhiteSpace(p.Veiculo)
+                             && p.Redestinacao != true)
+                    .ToList(),
+
+                // 3. REDESTINADOS: Marcado como Redestinação e ainda não atracou (ou atracou hoje/futuro)
+                // *Nota: Sai quando Data de Atracação for atual ou menor (ou seja, quando atraca de fato, vira atracado)*
+                StatusBloco.Redestinados => _todosProcessos
+                    .Where(p => p.Redestinacao == true
+                             && (!p.DataDeAtracacao.HasValue || p.DataDeAtracacao.Value.Date > hoje))
+                    .ToList(),
+
+                // 4. ATRACADOS SEM PRESENÇA: Atracado (data <= hoje) e sem flag de carga
+                StatusBloco.AtracadosSemPresencaCarga => _todosProcessos
+                    .Where(p => p.DataDeAtracacao.HasValue
+                             && p.DataDeAtracacao.Value.Date <= hoje
+                             && !p.PresencaDeCarga)
+                    .ToList(),
+
+                // 5. ATRACADOS SITUAÇÃO SIGVIG: Atracado (data <= hoje) e SigVig pendente (false)
+                StatusBloco.SituacaoSIGVIG => _todosProcessos
+                    .Where(p => p.DataDeAtracacao.HasValue
+                             && p.DataDeAtracacao.Value.Date <= hoje
+                             && !p.SigVig) // !p.SigVig significa que não está OK
+                    .ToList(),
+
+                // 6. ATRACADOS COM PRESENÇA: Apenas a flag de presença
+                StatusBloco.AtracadosComPresencaCarga => _todosProcessos
+                    .Where(p => p.PresencaDeCarga)
+                    .ToList(),
+
+                // 7. DEFERIDOS: Regra complexa de LI/LPCO
+                StatusBloco.Deferidos => _todosProcessos
+                    .Where(p => ProcessoHelper.IsDeferido(p) && !p.DataRegistroDI.HasValue)
+                    .ToList(),
+
+                // 8. SOLICITAR NUMERÁRIO: Atracado e sem numerário
+                StatusBloco.SolicitarNumerario => _todosProcessos
+                    .Where(p => p.DataDeAtracacao.HasValue && !p.Numerario)
+                    .ToList(),
+
+                // 9. DI/DUIMP PARA DIGITAÇÃO: Atracado e sem rascunho de DI
+                StatusBloco.DIDUIMPParaDigitacao => _todosProcessos
+                    .Where(p => p.DataDeAtracacao.HasValue && string.IsNullOrWhiteSpace(p.RascunhoDI))
+                    .ToList(),
+
+                _ => new List<Processo>()
+            };
         }
         private async Task CarregarProcessosAsync()
         {
@@ -200,20 +270,21 @@ namespace Trabalho
                 MostrarLoading("Carregando processos...");
 
                 var processoService = new RepositorioProcesso();
+
+                // 1. Busca Única no Banco
                 var todos = await processoService.ListarProcessosAtivosParaStatusAsync();
-                var processosNaoFinalizados = todos
+
+                // 2. Filtra finalizados gerais e guarda em memória
+                _todosProcessos = todos
                     .Where(p => !string.Equals(p.Status, "Finalizado", StringComparison.OrdinalIgnoreCase))
                     .ToList();
 
-                _todosProcessos = await Task.Run(() =>
+                // Nota: Ainda chamamos o Helper para preencher a coluna "CondicaoProcesso" (para exibição no Grid),
+                // mas NÃO usamos mais ela para filtrar os blocos.
+                await Task.Run(() =>
                 {
-                    processosNaoFinalizados.AsParallel()
-                        .ForAll(p => ProcessoHelper.AtualizarCondicaoProcesso(p));
-                    return processosNaoFinalizados;
+                    _todosProcessos.AsParallel().ForAll(p => ProcessoHelper.AtualizarCondicaoProcesso(p));
                 });
-
-                _bindingSource.DataSource = _todosProcessos;
-                _bindingSource.ResetBindings(false);
 
                 AtualizarContadores();
             }
@@ -225,104 +296,89 @@ namespace Trabalho
 
         private void MostrarItensPorStatus(StatusBloco status)
         {
-            DGVSelecionado.SuspendLayout(); // Pára de desenhar
+            DGVSelecionado.SuspendLayout();
             try
             {
-                _blocoExibidoAtual = BlocoExibido.StatusPadrao;
+                // 1. Prepara UI
+                MostrarItens.Visible = true;
+                Blocos.Visible = false;
+
                 _statusBlocoAtual = status;
 
+                // 2. Obtém e Ordena Dados
                 var processos = ObterProcessosPorStatus(status);
                 _processosExibidos = OrdenarLista(processos);
 
-                var nomeGrid = ObterNomeGridStatus(status);
+                // 3. Configura Grid
+                if (!BlocoConfig.TryGetValue(status, out var config)) return;
 
-                // Configuração de colunas
-                if (_usuarioLogado.PreferenciasGrids == null)
-                    _usuarioLogado.PreferenciasGrids = new Dictionary<string, List<string>>();
+                if (_usuarioLogado?.PreferenciasGrids == null)
+                    _usuarioLogado!.PreferenciasGrids = new Dictionary<string, List<string>>();
 
-                _usuarioLogado.PreferenciasGrids.TryGetValue(nomeGrid, out var colunasVisiveis);
-                GridColumnManager.ConfigurarGrid(DGVSelecionado, nomeGrid, colunasVisiveis);
+                _usuarioLogado.PreferenciasGrids.TryGetValue(config.GridName, out var colunasVisiveis);
 
-                _bindingSource.DataSource = _processosExibidos;
-                _bindingSource.ResetBindings(false);
+                // Limpeza completa
+                DGVSelecionado.DataSource = null;
+                DGVSelecionado.Columns.Clear();
 
-                // UI Updates
-                var info = BlocoInfo[status];
-                LblTitulo.Text = $"{info.Nome} ({processos.Count})";
-                LblTitulo.ForeColor = info.Cor == Color.Black ? Color.White : Color.Black;
-                LblTitulo.BackColor = info.Cor;
+                GridColumnManager.ConfigurarGrid(DGVSelecionado, config.GridName, colunasVisiveis);
 
-                Blocos.Visible = false;
-                MostrarItens.Visible = true;
+                // 4. Vincula Dados
+                DGVSelecionado.DataSource = _processosExibidos;
+
+                // 5. Atualiza Cabeçalho
+                LblTitulo.Text = $"{config.Nome} ({processos.Count})";
+                LblTitulo.ForeColor = config.Cor == Color.Black ? Color.White : Color.Black;
+                LblTitulo.BackColor = config.Cor;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Erro ao exibir grid: {ex.Message}");
             }
             finally
             {
-                DGVSelecionado.ResumeLayout(); // Volta a desenhar
+                DGVSelecionado.ResumeLayout();
             }
         }
 
 
         // OTIMIZAÇÃO DE ORDENAÇÃO
-        private List<Processo> OrdenarLista(List<Processo> lista)
+        private List<Processo> OrdenarLista(List<Processo>? lista)
         {
-            // Se a lista for pequena, não faz diferença, mas para listas grandes, previne alocações
-            if (lista == null || lista.Count == 0) return lista;
+            if (lista == null || lista.Count == 0) return new List<Processo>();
 
-            // 1. Lógica Padrão (Sem clique ou reset)
-            if (string.IsNullOrEmpty(_ultimaColunaOrdenada))
+            Func<Processo, object?> selector = null;
+            if (!string.IsNullOrEmpty(_ultimaColunaOrdenada))
             {
-                return lista
-                    .OrderBy(p => IsITJ(p.Ref_USA) ? 1 : 0) // ITJ no fundo
-                    .ThenBy(p => string.IsNullOrWhiteSpace(p.Ref_USA) ? 1 : 0)
-                    .ThenBy(p => ExtrairAnoNumeroSortKey(p.Ref_USA)) // Usa chave numérica direta
-                    .ToList();
+                var propInfo = typeof(Processo).GetProperty(_ultimaColunaOrdenada);
+                if (propInfo != null) selector = p => propInfo.GetValue(p);
             }
 
-            // Recupera o seletor rápido do dicionário (Sem Reflection)
-            if (!_propSelectors.TryGetValue(_ultimaColunaOrdenada, out var selector))
+            if (selector == null || _ultimaColunaOrdenada == "Ref_USA")
             {
-                // Fallback caso a coluna não esteja mapeada (segurança)
-                selector = p => p.GetType().GetProperty(_ultimaColunaOrdenada)?.GetValue(p);
-            }
-
-            // --- LÓGICA REF_USA (Mantida a regra de negócio do ITJ) ---
-            if (_ultimaColunaOrdenada == "Ref_USA")
-            {
-                var queryBase = lista
+                var query = lista
                     .OrderBy(p => IsITJ(p.Ref_USA) ? 1 : 0)
                     .ThenBy(p => string.IsNullOrWhiteSpace(p.Ref_USA) ? 1 : 0);
 
                 return _ultimaDirecaoAscendente
-                    ? queryBase.ThenBy(p => ExtrairAnoNumeroSortKey(p.Ref_USA)).ToList()
-                    : queryBase.ThenByDescending(p => ExtrairAnoNumeroSortKey(p.Ref_USA)).ToList();
+                    ? query.ThenBy(p => ExtrairAnoNumeroSortKey(p.Ref_USA)).ToList()
+                    : query.ThenByDescending(p => ExtrairAnoNumeroSortKey(p.Ref_USA)).ToList();
             }
 
-            // --- ORDENAÇÃO GENÉRICA OTIMIZADA ---
             return _ultimaDirecaoAscendente
                 ? lista.OrderBy(p => selector(p) == null ? 1 : 0).ThenBy(selector).ToList()
                 : lista.OrderBy(p => selector(p) == null ? 1 : 0).ThenByDescending(selector).ToList();
         }
+        private static bool IsITJ(string refUsa) => refUsa != null && refUsa.TrimEnd().EndsWith("ITJ", StringComparison.OrdinalIgnoreCase);
 
-        // Helper rápido para verificar ITJ
-        private bool IsITJ(string refUsa) =>
-            refUsa != null && refUsa.TrimEnd().EndsWith("ITJ", StringComparison.OrdinalIgnoreCase);
-
-        // Otimização: Retorna um long (ex: 202400123) para ordenação numérica rápida sem criar tuplas ou structs
-        private long ExtrairAnoNumeroSortKey(string refUsa)
+        private static long ExtrairAnoNumeroSortKey(string refUsa)
         {
             if (string.IsNullOrWhiteSpace(refUsa)) return 0;
-
-            // Assume formato "NUMERO/ANO" ex: "123/25" ou "123/2025"
-            // Evita Split se possível para performance extrema, mas Split é aceitável aqui.
             var partes = refUsa.Split('/', ' ');
-            if (partes.Length >= 2)
+            if (partes.Length >= 2 && int.TryParse(partes[0], out int numero) && int.TryParse(partes[1], out int ano))
             {
-                if (int.TryParse(partes[0], out int numero) && int.TryParse(partes[1], out int ano))
-                {
-                    // Normaliza ano (ex: 25 vira 2025) para garantir ordenação correta
-                    int anoCompleto = ano < 100 ? 2000 + ano : ano;
-                    return (long)anoCompleto * 1000000 + numero;
-                }
+                int anoCompleto = ano < 100 ? 2000 + ano : ano;
+                return (long)anoCompleto * 1000000 + numero;
             }
             return 0;
         }
@@ -331,195 +387,54 @@ namespace Trabalho
             var coluna = DGVSelecionado.Columns[e.ColumnIndex];
             var propriedade = coluna.DataPropertyName;
 
-            // Validação básica
             if (string.IsNullOrWhiteSpace(propriedade) || _processosExibidos.Count == 0) return;
 
-            // 1. Define a Direção (Alterna Ascendente/Descendente)
             if (_ultimaColunaOrdenada == propriedade)
-            {
                 _ultimaDirecaoAscendente = !_ultimaDirecaoAscendente;
-            }
             else
             {
                 _ultimaColunaOrdenada = propriedade;
-                _ultimaDirecaoAscendente = true; // Nova coluna começa Ascendente
+                _ultimaDirecaoAscendente = true;
             }
 
-            // 2. Chama o método central que criamos no passo anterior
-            // Ele vai pegar a lista atual, ordenar baseada nas variáveis acima e retornar a lista pronta.
             _processosExibidos = OrdenarLista(_processosExibidos);
-
-            // 3. Atualiza a Grade (Ligação Direta)
-            DGVSelecionado.DataSource = null; // Reset para garantir refresh visual
             DGVSelecionado.DataSource = _processosExibidos;
 
-            // 4. Atualiza as Setinhas (Glyphs) no cabeçalho
             foreach (DataGridViewColumn col in DGVSelecionado.Columns)
-            {
-                if (col.Name == coluna.Name)
-                {
-                    col.HeaderCell.SortGlyphDirection = _ultimaDirecaoAscendente
-                        ? SortOrder.Ascending
-                        : SortOrder.Descending;
-                }
-                else
-                {
-                    col.HeaderCell.SortGlyphDirection = SortOrder.None;
-                }
-            }
-        }
-        private (int ano, int numero) ExtrairAnoNumero(string refUsa)
-        {
-            if (string.IsNullOrWhiteSpace(refUsa)) return (0, 0);
-            string refLimpa = refUsa.Split(' ').FirstOrDefault() ?? refUsa;
-            var partes = refLimpa.Split('/');
-            int numero = 0, ano = 0;
-            if (partes.Length == 2)
-            {
-                int.TryParse(partes[0], out numero);
-                int.TryParse(partes[1], out ano);
-            }
-            return (ano, numero);
+                col.HeaderCell.SortGlyphDirection = (col.Name == coluna.Name)
+                    ? (_ultimaDirecaoAscendente ? SortOrder.Ascending : SortOrder.Descending)
+                    : SortOrder.None;
         }
         private void AtualizarContadores()
         {
-            // Para os blocos "normais"
             foreach (StatusBloco status in Enum.GetValues(typeof(StatusBloco)))
             {
-                var count = ObterProcessosPorStatus(status).Count;
-                var label = ObterLabelPorStatus(status);
-                var textoBase = BlocoInfo[status].Nome;
-                if (label != null)
-                    label.Text = count > 0 ? $"{textoBase}\n({count})" : textoBase;
+                // Chama a lógica independente para cada bloco
+                int count = ObterProcessosPorStatus(status).Count;
+
+                var controle = ObterControlePorStatus(status);
+
+                if (controle != null && BlocoConfig.TryGetValue(status, out var info))
+                {
+                    controle.Text = count > 0 ? $"{info.Nome}\n({count})" : info.Nome;
+                }
             }
-
-            // Bloco especial "Solicitar Numerário"
-            var countSolicitarNumerario = ObterProcessosSolicitarNumerario().Count;
-            if (BtnSolicitarNumerario != null)
-                BtnSolicitarNumerario.Text = $"Solicitar Numerário\n({countSolicitarNumerario})";
-
-            // Bloco especial "DI/DUIMP para Digitação"
-            var countDIDuimp = ObterProcessosDIDuimpParaDigitacao().Count;
-            if (BtnDIDUIMPParaDigitacao != null)
-                BtnDIDUIMPParaDigitacao.Text = $"DI/DUIMP para Digitação\n({countDIDuimp})";
         }
 
-
-        // Métodos de vinculação de UI
-        private Label ObterLabelPorStatus(StatusBloco status)
-        {
-            return status switch
-            {
-                StatusBloco.AguardandoCE => BtnAguardandoCE,
-                StatusBloco.ParaRedestinar => BtnParaRedestinar,
-                StatusBloco.Redestinados => BtnRedestinados,
-                StatusBloco.AtracadosSemPresencaCarga => BtnAtracadosSPresencaDeCarga,
-                StatusBloco.SituacaoSIGVIG => BtnSituacaoSIGVIG,
-                StatusBloco.AtracadosComPresencaCarga => BtnAtracadosCPresencaDeCarga,
-                StatusBloco.Deferidos => BtnDeferidos,
-                StatusBloco.SolicitarNumerario => BtnSolicitarNumerario,
-                StatusBloco.DIDUIMPParaDigitacao => BtnDIDUIMPParaDigitacao,
-                _ => throw new ArgumentException($"Status inválido: {status}", nameof(status))
-            };
-        }
-        private List<Processo> ObterProcessosSolicitarNumerario()
-        {
-            // Aqui você define exatamente as regras de entrada/saída
-            return _todosProcessos
-                .Where(p =>
-                    p.DataDeAtracacao.HasValue &&
-                    !p.Numerario
-                ).ToList();
-        }
-
-        private List<Processo> ObterProcessosDIDuimpParaDigitacao()
-        {
-            return _todosProcessos
-                .Where(p =>
-                    p.DataDeAtracacao.HasValue &&
-                    string.IsNullOrWhiteSpace(p.RascunhoDI)
-                ).ToList();
-        }
-        // Event handlers por status
-        private void BtnAguardandoCE_Click(object sender, EventArgs e) =>
-            MostrarItensPorStatus(StatusBloco.AguardandoCE);
-        private void BtnParaRedestinar_Click(object sender, EventArgs e) =>
-            MostrarItensPorStatus(StatusBloco.ParaRedestinar);
-        private void BtnRedestinados_Click(object sender, EventArgs e) =>
-            MostrarItensPorStatus(StatusBloco.Redestinados);
-        private void BtnAtracadosSPresencaDeCarga_Click(object sender, EventArgs e) =>
-            MostrarItensPorStatus(StatusBloco.AtracadosSemPresencaCarga);
-        private void BtnSituacaoSIGVIG_Click(object sender, EventArgs e) =>
-            MostrarItensPorStatus(StatusBloco.SituacaoSIGVIG);
-        private void BtnAtracadosCPresencaDeCarga_Click(object sender, EventArgs e) =>
-            MostrarItensPorStatus(StatusBloco.AtracadosComPresencaCarga);
-        private void BtnDeferidos_Click(object sender, EventArgs e) =>
-            MostrarItensPorStatus(StatusBloco.Deferidos);
-        private void BtnSolicitarNumerario_Click(object sender, EventArgs e)
-        {
-            _blocoExibidoAtual = BlocoExibido.SolicitarNumerario;
-            var processos = ObterProcessosDIDuimpParaDigitacao();
-
-            var processosOrdenados = processos
-                .OrderBy(p => (p.Ref_USA?.Trim().EndsWith("ITJ", StringComparison.OrdinalIgnoreCase) ?? false) ? 1 : 0)
-                .ThenBy(p => string.IsNullOrWhiteSpace(p.Ref_USA) ? 1 : 0)
-                .ThenBy(p => ExtrairAnoNumero(p.Ref_USA))
-                .ToList();
-
-            _processosExibidos = processosOrdenados;
-
-            var nomeGrid = ObterNomeGridStatus(StatusBloco.SolicitarNumerario);
-            _usuarioLogado.PreferenciasGrids ??= new Dictionary<string, List<string>>();
-            _usuarioLogado.PreferenciasGrids.TryGetValue(nomeGrid, out var colunasVisiveis);
-            GridColumnManager.ConfigurarGrid(DGVSelecionado, nomeGrid, colunasVisiveis);
-
-            _bindingSource.DataSource = _processosExibidos;
-            _bindingSource.ResetBindings(false);
-
-            var blocoInfo = BlocoInfo[StatusBloco.SolicitarNumerario];
-            LblTitulo.Text = $"{blocoInfo.Nome} ({processos.Count})";
-            LblTitulo.ForeColor = blocoInfo.Cor == Color.Black ? Color.White : Color.Black;
-            LblTitulo.BackColor = blocoInfo.Cor;
-
-            Blocos.Visible = false;
-            MostrarItens.Visible = true;
-        }
-        private void BtnDIDUIMPParaDigitacao_Click(object sender, EventArgs e)
-        {
-            _blocoExibidoAtual = BlocoExibido.DIDUIMPParaDigitacao;
-            var processos = ObterProcessosDIDuimpParaDigitacao();
-
-            var processosOrdenados = processos
-                .OrderBy(p => (p.Ref_USA?.Trim().EndsWith("ITJ", StringComparison.OrdinalIgnoreCase) ?? false) ? 1 : 0)
-                .ThenBy(p => string.IsNullOrWhiteSpace(p.Ref_USA) ? 1 : 0)
-                .ThenBy(p => ExtrairAnoNumero(p.Ref_USA))
-                .ToList();
-
-            _processosExibidos = processosOrdenados;
-
-            var nomeGrid = ObterNomeGridStatus(StatusBloco.DIDUIMPParaDigitacao);
-            _usuarioLogado.PreferenciasGrids ??= new Dictionary<string, List<string>>();
-            _usuarioLogado.PreferenciasGrids.TryGetValue(nomeGrid, out var colunasVisiveis);
-            GridColumnManager.ConfigurarGrid(DGVSelecionado, nomeGrid, colunasVisiveis);
-
-            _bindingSource.DataSource = _processosExibidos;
-            _bindingSource.ResetBindings(false);
-
-            var blocoInfo = BlocoInfo[StatusBloco.DIDUIMPParaDigitacao];
-            LblTitulo.Text = $"{blocoInfo.Nome} ({processos.Count})";
-            LblTitulo.ForeColor = blocoInfo.Cor == Color.Black ? Color.White : Color.Black;
-            LblTitulo.BackColor = blocoInfo.Cor;
-
-            Blocos.Visible = false;
-            MostrarItens.Visible = true;
-        }
+        private void BtnAguardandoCE_Click(object sender, EventArgs e) => MostrarItensPorStatus(StatusBloco.AguardandoCE);
+        private void BtnParaRedestinar_Click(object sender, EventArgs e) => MostrarItensPorStatus(StatusBloco.ParaRedestinar);
+        private void BtnRedestinados_Click(object sender, EventArgs e) => MostrarItensPorStatus(StatusBloco.Redestinados);
+        private void BtnAtracadosSPresencaDeCarga_Click(object sender, EventArgs e) => MostrarItensPorStatus(StatusBloco.AtracadosSemPresencaCarga);
+        private void BtnSituacaoSIGVIG_Click(object sender, EventArgs e) => MostrarItensPorStatus(StatusBloco.SituacaoSIGVIG);
+        private void BtnAtracadosCPresencaDeCarga_Click(object sender, EventArgs e) => MostrarItensPorStatus(StatusBloco.AtracadosComPresencaCarga);
+        private void BtnDeferidos_Click(object sender, EventArgs e) => MostrarItensPorStatus(StatusBloco.Deferidos);
+        private void BtnSolicitarNumerario_Click(object sender, EventArgs e) => MostrarItensPorStatus(StatusBloco.SolicitarNumerario);
+        private void BtnDIDUIMPParaDigitacao_Click(object sender, EventArgs e) => MostrarItensPorStatus(StatusBloco.DIDUIMPParaDigitacao);
         private async void DGVSelecionado_CellDoubleClick(object sender, DataGridViewCellEventArgs e)
         {
             if (e.RowIndex < 0 || e.RowIndex >= _processosExibidos.Count) return;
 
             var processoSelecionado = _processosExibidos[e.RowIndex];
-
-            // 1. Guarda o ID do processo que estamos editando
             string idSelecionado = processoSelecionado.Id.ToString();
 
             using var frm = new FrmModificaProcesso { processo = processoSelecionado, Modo = "Editar" };
@@ -527,32 +442,17 @@ namespace Trabalho
 
             await CarregarProcessosAsync();
 
-            // Recarrega a lista (que agora vai respeitar a ordenação graças ao passo 1 e 2)
-            switch (_blocoExibidoAtual)
+            if (_statusBlocoAtual.HasValue)
             {
-                case BlocoExibido.SolicitarNumerario:
-                    BtnSolicitarNumerario_Click(null, EventArgs.Empty);
-                    break;
-                case BlocoExibido.DIDUIMPParaDigitacao:
-                    BtnDIDUIMPParaDigitacao_Click(null, EventArgs.Empty);
-                    break;
-                case BlocoExibido.StatusPadrao:
-                    if (_statusBlocoAtual.HasValue)
-                        MostrarItensPorStatus(_statusBlocoAtual.Value);
-                    break;
+                MostrarItensPorStatus(_statusBlocoAtual.Value);
+                RestaurarSelecao(idSelecionado);
             }
-
-            // 2. Restaura a seleção e o scroll para o item que foi editado
-            RestaurarSelecao(idSelecionado);
         }
 
         private void RestaurarSelecao(string idProcesso)
         {
             if (string.IsNullOrEmpty(idProcesso)) return;
-
-            // Procura na lista atual onde está o processo com esse ID
             var item = _processosExibidos.FirstOrDefault(p => p.Id.ToString() == idProcesso);
-
             if (item != null)
             {
                 int index = _processosExibidos.IndexOf(item);
@@ -560,8 +460,6 @@ namespace Trabalho
                 {
                     DGVSelecionado.ClearSelection();
                     DGVSelecionado.Rows[index].Selected = true;
-
-                    // Rola a tela até o item
                     DGVSelecionado.FirstDisplayedScrollingRowIndex = index;
                 }
             }
@@ -582,7 +480,9 @@ public static class DataGridViewExtensions
     public static void DoubleBuffered(this DataGridView dgv, bool setting)
     {
         Type dgvType = dgv.GetType();
-        PropertyInfo pi = dgvType.GetProperty("DoubleBuffered", BindingFlags.Instance | BindingFlags.NonPublic);
+
+        PropertyInfo? pi = dgvType.GetProperty("DoubleBuffered", BindingFlags.Instance | BindingFlags.NonPublic);
+
         pi?.SetValue(dgv, setting, null);
     }
 }

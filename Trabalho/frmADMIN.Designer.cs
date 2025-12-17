@@ -31,97 +31,58 @@
             components = new System.ComponentModel.Container();
             DataGridViewCellStyle dataGridViewCellStyle1 = new DataGridViewCellStyle();
             DataGridViewCellStyle dataGridViewCellStyle2 = new DataGridViewCellStyle();
-            dataGridView1 = new DataGridView();
-            iDDataGridViewTextBoxColumn = new DataGridViewTextBoxColumn();
-            usernameDataGridViewTextBoxColumn = new DataGridViewTextBoxColumn();
-            passwordDataGridViewTextBoxColumn = new DataGridViewTextBoxColumn();
-            adminDataGridViewCheckBoxColumn = new DataGridViewCheckBoxColumn();
+            DataGridViewCellStyle dataGridViewCellStyle3 = new DataGridViewCellStyle();
+            DataGridViewCellStyle dataGridViewCellStyle4 = new DataGridViewCellStyle();
+            DGVAdmin = new DataGridView();
             BSAdmin = new BindingSource(components);
             btnAdcionar = new Button();
             btnExcluir = new Button();
             btnEditar = new Button();
-            ((System.ComponentModel.ISupportInitialize)dataGridView1).BeginInit();
+            dgvLogs = new DataGridView();
+            ((System.ComponentModel.ISupportInitialize)DGVAdmin).BeginInit();
             ((System.ComponentModel.ISupportInitialize)BSAdmin).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)dgvLogs).BeginInit();
             SuspendLayout();
             // 
-            // dataGridView1
+            // DGVAdmin
             // 
-            dataGridView1.AllowUserToAddRows = false;
-            dataGridView1.AllowUserToDeleteRows = false;
-            dataGridView1.AllowUserToResizeColumns = false;
-            dataGridView1.AllowUserToResizeRows = false;
-            dataGridView1.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
-            dataGridView1.AutoGenerateColumns = false;
+            DGVAdmin.AllowUserToAddRows = false;
+            DGVAdmin.AllowUserToDeleteRows = false;
+            DGVAdmin.AllowUserToResizeColumns = false;
+            DGVAdmin.AllowUserToResizeRows = false;
+            DGVAdmin.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left;
+            DGVAdmin.AutoGenerateColumns = false;
             dataGridViewCellStyle1.Alignment = DataGridViewContentAlignment.MiddleCenter;
             dataGridViewCellStyle1.BackColor = SystemColors.Control;
-            dataGridViewCellStyle1.Font = new Font("Segoe UI", 9F, FontStyle.Regular, GraphicsUnit.Point);
+            dataGridViewCellStyle1.Font = new Font("Segoe UI", 9F);
             dataGridViewCellStyle1.ForeColor = SystemColors.WindowText;
             dataGridViewCellStyle1.SelectionBackColor = SystemColors.Highlight;
             dataGridViewCellStyle1.SelectionForeColor = SystemColors.HighlightText;
             dataGridViewCellStyle1.WrapMode = DataGridViewTriState.True;
-            dataGridView1.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle1;
-            dataGridView1.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            dataGridView1.Columns.AddRange(new DataGridViewColumn[] { iDDataGridViewTextBoxColumn, usernameDataGridViewTextBoxColumn, passwordDataGridViewTextBoxColumn, adminDataGridViewCheckBoxColumn });
-            dataGridView1.DataSource = BSAdmin;
+            DGVAdmin.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle1;
+            DGVAdmin.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            DGVAdmin.DataSource = BSAdmin;
             dataGridViewCellStyle2.Alignment = DataGridViewContentAlignment.MiddleLeft;
             dataGridViewCellStyle2.BackColor = SystemColors.Window;
-            dataGridViewCellStyle2.Font = new Font("Segoe UI", 9F, FontStyle.Regular, GraphicsUnit.Point);
+            dataGridViewCellStyle2.Font = new Font("Segoe UI", 9F);
             dataGridViewCellStyle2.ForeColor = SystemColors.ControlText;
             dataGridViewCellStyle2.NullValue = null;
             dataGridViewCellStyle2.SelectionBackColor = SystemColors.Highlight;
             dataGridViewCellStyle2.SelectionForeColor = SystemColors.HighlightText;
             dataGridViewCellStyle2.WrapMode = DataGridViewTriState.False;
-            dataGridView1.DefaultCellStyle = dataGridViewCellStyle2;
-            dataGridView1.Location = new Point(12, 12);
-            dataGridView1.Name = "dataGridView1";
-            dataGridView1.ReadOnly = true;
-            dataGridView1.RowHeadersVisible = false;
-            dataGridView1.RowTemplate.Height = 25;
-            dataGridView1.Size = new Size(656, 426);
-            dataGridView1.TabIndex = 3;
-            // 
-            // iDDataGridViewTextBoxColumn
-            // 
-            iDDataGridViewTextBoxColumn.DataPropertyName = "ID";
-            iDDataGridViewTextBoxColumn.HeaderText = "ID";
-            iDDataGridViewTextBoxColumn.Name = "iDDataGridViewTextBoxColumn";
-            iDDataGridViewTextBoxColumn.ReadOnly = true;
-            iDDataGridViewTextBoxColumn.Visible = false;
-            // 
-            // usernameDataGridViewTextBoxColumn
-            // 
-            usernameDataGridViewTextBoxColumn.AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
-            usernameDataGridViewTextBoxColumn.DataPropertyName = "Username";
-            usernameDataGridViewTextBoxColumn.HeaderText = "Username";
-            usernameDataGridViewTextBoxColumn.Name = "usernameDataGridViewTextBoxColumn";
-            usernameDataGridViewTextBoxColumn.ReadOnly = true;
-            // 
-            // passwordDataGridViewTextBoxColumn
-            // 
-            passwordDataGridViewTextBoxColumn.AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
-            passwordDataGridViewTextBoxColumn.DataPropertyName = "Password";
-            passwordDataGridViewTextBoxColumn.HeaderText = "Password";
-            passwordDataGridViewTextBoxColumn.Name = "passwordDataGridViewTextBoxColumn";
-            passwordDataGridViewTextBoxColumn.ReadOnly = true;
-            // 
-            // adminDataGridViewCheckBoxColumn
-            // 
-            adminDataGridViewCheckBoxColumn.DataPropertyName = "Admin";
-            adminDataGridViewCheckBoxColumn.HeaderText = "Admin";
-            adminDataGridViewCheckBoxColumn.Name = "adminDataGridViewCheckBoxColumn";
-            adminDataGridViewCheckBoxColumn.ReadOnly = true;
-            // 
-            // BSAdmin
-            // 
-            BSAdmin.DataMember = "ListaUsers";
-            BSAdmin.DataSource = typeof(CLUSA.RepositorioUsers);
+            DGVAdmin.DefaultCellStyle = dataGridViewCellStyle2;
+            DGVAdmin.Location = new Point(12, 41);
+            DGVAdmin.Name = "DGVAdmin";
+            DGVAdmin.ReadOnly = true;
+            DGVAdmin.RowHeadersVisible = false;
+            DGVAdmin.Size = new Size(179, 397);
+            DGVAdmin.TabIndex = 3;
             // 
             // btnAdcionar
             // 
-            btnAdcionar.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-            btnAdcionar.Location = new Point(687, 33);
+            btnAdcionar.Location = new Point(12, 12);
             btnAdcionar.Name = "btnAdcionar";
-            btnAdcionar.Size = new Size(75, 23);
+            btnAdcionar.Size = new Size(66, 23);
             btnAdcionar.TabIndex = 4;
             btnAdcionar.Text = "Adicionar";
             btnAdcionar.UseVisualStyleBackColor = true;
@@ -129,10 +90,9 @@
             // 
             // btnExcluir
             // 
-            btnExcluir.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-            btnExcluir.Location = new Point(687, 96);
+            btnExcluir.Location = new Point(84, 12);
             btnExcluir.Name = "btnExcluir";
-            btnExcluir.Size = new Size(75, 23);
+            btnExcluir.Size = new Size(53, 23);
             btnExcluir.TabIndex = 5;
             btnExcluir.Text = "Excluir";
             btnExcluir.UseVisualStyleBackColor = true;
@@ -140,37 +100,71 @@
             // 
             // btnEditar
             // 
-            btnEditar.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-            btnEditar.Location = new Point(687, 158);
+            btnEditar.Location = new Point(143, 12);
             btnEditar.Name = "btnEditar";
-            btnEditar.Size = new Size(75, 23);
+            btnEditar.Size = new Size(48, 23);
             btnEditar.TabIndex = 6;
             btnEditar.Text = "Editar";
             btnEditar.UseVisualStyleBackColor = true;
             btnEditar.Click += BtnEditar_Click;
             // 
-            // frmADMIN
+            // dgvLogs
+            // 
+            dgvLogs.AllowUserToAddRows = false;
+            dgvLogs.AllowUserToDeleteRows = false;
+            dgvLogs.AllowUserToResizeColumns = false;
+            dgvLogs.AllowUserToResizeRows = false;
+            dgvLogs.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            dgvLogs.AutoGenerateColumns = false;
+            dataGridViewCellStyle3.Alignment = DataGridViewContentAlignment.MiddleCenter;
+            dataGridViewCellStyle3.BackColor = SystemColors.Control;
+            dataGridViewCellStyle3.Font = new Font("Segoe UI", 9F);
+            dataGridViewCellStyle3.ForeColor = SystemColors.WindowText;
+            dataGridViewCellStyle3.SelectionBackColor = SystemColors.Highlight;
+            dataGridViewCellStyle3.SelectionForeColor = SystemColors.HighlightText;
+            dataGridViewCellStyle3.WrapMode = DataGridViewTriState.True;
+            dgvLogs.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle3;
+            dgvLogs.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            dgvLogs.DataSource = BSAdmin;
+            dataGridViewCellStyle4.Alignment = DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle4.BackColor = SystemColors.Window;
+            dataGridViewCellStyle4.Font = new Font("Segoe UI", 9F);
+            dataGridViewCellStyle4.ForeColor = SystemColors.ControlText;
+            dataGridViewCellStyle4.NullValue = null;
+            dataGridViewCellStyle4.SelectionBackColor = SystemColors.Highlight;
+            dataGridViewCellStyle4.SelectionForeColor = SystemColors.HighlightText;
+            dataGridViewCellStyle4.WrapMode = DataGridViewTriState.False;
+            dgvLogs.DefaultCellStyle = dataGridViewCellStyle4;
+            dgvLogs.Location = new Point(197, 12);
+            dgvLogs.Name = "dgvLogs";
+            dgvLogs.ReadOnly = true;
+            dgvLogs.RowHeadersVisible = false;
+            dgvLogs.Size = new Size(591, 426);
+            dgvLogs.TabIndex = 7;
+            // 
+            // FrmAdmin
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(800, 450);
             ControlBox = false;
+            Controls.Add(dgvLogs);
             Controls.Add(btnEditar);
             Controls.Add(btnExcluir);
             Controls.Add(btnAdcionar);
-            Controls.Add(dataGridView1);
-            Name = "frmADMIN";
+            Controls.Add(DGVAdmin);
+            Name = "FrmAdmin";
             Text = "ADMIN";
             WindowState = FormWindowState.Maximized;
-            FormClosed += FrmADMIN_FormClosed;
             Load += FrmADMIN_Load;
-            ((System.ComponentModel.ISupportInitialize)dataGridView1).EndInit();
+            ((System.ComponentModel.ISupportInitialize)DGVAdmin).EndInit();
             ((System.ComponentModel.ISupportInitialize)BSAdmin).EndInit();
+            ((System.ComponentModel.ISupportInitialize)dgvLogs).EndInit();
             ResumeLayout(false);
         }
 
         #endregion
-        private DataGridView dataGridView1;
+        private DataGridView DGVAdmin;
         private Button btnAdcionar;
         private Button btnExcluir;
         private Button btnEditar;
@@ -179,5 +173,6 @@
         private DataGridViewTextBoxColumn usernameDataGridViewTextBoxColumn;
         private DataGridViewTextBoxColumn passwordDataGridViewTextBoxColumn;
         private DataGridViewCheckBoxColumn adminDataGridViewCheckBoxColumn;
+        private DataGridView dgvLogs;
     }
 }

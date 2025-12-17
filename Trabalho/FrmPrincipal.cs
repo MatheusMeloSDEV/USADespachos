@@ -90,19 +90,43 @@ namespace Trabalho
 
         private async void NotificacaoTimer_Tick(object? sender, EventArgs e)
         {
-            // 1. Sustentabilidade: Limpeza de notificações antigas (ex: mais de 90 dias)
-            await _gerenciadorNotificacao.ExcluirNotificacoesAntigasAsync(DateTime.Now.AddDays(-90));
+            // 1. PAUSA O TIMER IMEDIATAMENTE
+            // Isso impede que ele dispare de novo se a conexão estiver lenta
+            _notificacaoTimer.Stop();
 
-            // 2. Sincronização de Processos Ativos (Atualiza dias restantes)
-            // Assumindo ListarTodosAtivosAsync busca apenas o necessário para otimização
-            var processosMonitorados = await _repositorioProcesso.ListarProcessosAtivosParaStatusAsync();
-            await SincronizarTodasNotificacoes(processosMonitorados);
-
-            // 3. Atualiza a UI
-            await AtualizarContadorNotificacoesMenu();
-            if (contextMenuStripNotifications.Visible)
+            try
             {
-                await PopularContextMenuNotifications();
+                // 2. Proteção Geral (Para não travar a UI se a internet cair)
+                // Se der erro aqui, o usuário nem percebe, apenas pula esse ciclo
+
+                // A. Limpeza (Rápido)
+                await _gerenciadorNotificacao.ExcluirNotificacoesAntigasAsync(DateTime.Now.AddDays(-90));
+
+                // B. A parte pesada (Sincronização)
+                var processosMonitorados = await _repositorioProcesso.ListarProcessosAtivosParaStatusAsync();
+
+                // Aqui dentro deve ter aquele try/catch individual que conversamos antes
+                await SincronizarTodasNotificacoes(processosMonitorados);
+
+                // C. Atualiza UI
+                await AtualizarContadorNotificacoesMenu();
+
+                // Só recarrega a lista visual se o menu estiver aberto (Economiza consulta)
+                if (contextMenuStripNotifications.Visible)
+                {
+                    await PopularContextMenuNotifications();
+                }
+            }
+            catch (Exception ex)
+            {
+                // Log silencioso (Console ou Arquivo) para não incomodar o usuário com popups a cada 30s
+                System.Diagnostics.Debug.WriteLine($"Erro no Timer de Notificação: {ex.Message}");
+            }
+            finally
+            {
+                // 3. RETOMA O TIMER
+                // Independente se deu certo ou erro, volta a contar 30 segundos a partir de AGORA
+                _notificacaoTimer.Start();
             }
         }
 
@@ -302,6 +326,8 @@ namespace Trabalho
         => ShowSingleFormOfType(() => new FrmFinanceiro());
         private void MenuItemAdmin_Click(object? sender, EventArgs e)
         => ShowSingleFormOfType(() => new FrmAdmin());
+        private void MenuItemVencimentos_Click(object sender, EventArgs e)
+        => ShowSingleFormOfType(() => new FrmVencimentos());
         private void MenuItemMaximize_Click(object? sender, EventArgs e) => this.WindowState = FormWindowState.Maximized;
         private void MenuItemMinimize_Click(object? sender, EventArgs e) => this.WindowState = FormWindowState.Minimized;
         private async void MenuItemConfiguracoes_Click(object sender, EventArgs e)
@@ -334,10 +360,6 @@ namespace Trabalho
                     MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
-
-
-
-
         private async void BtnAddNotifUrg_Click(object sender, EventArgs e)
         {
             var usuariosDestino = (await _repositorioUsers.FindAllAsync())
@@ -472,7 +494,6 @@ namespace Trabalho
             var frm = new FrmMudarSenha(_logadoUsuario);
             frm.ShowDialog();
         }
-
     }
     #endregion
 }

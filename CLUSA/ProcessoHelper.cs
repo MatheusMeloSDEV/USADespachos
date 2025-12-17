@@ -13,43 +13,41 @@ namespace CLUSA
         /// </summary>
         public static void AtualizarCondicaoProcesso(Processo processo)
         {
-            // Garante que Capa existe
-            if (processo.Capa == null)
-            {
-                processo.Capa = new Capa();
-            }
+            if (processo.Capa == null) processo.Capa = new Capa();
 
-            // 1. AGUARDANDO CE - Entra quando CE estiver em branco
-            if (string.IsNullOrWhiteSpace(processo.Capa.CE))
+            // --- 1. REGRAS DE AÇÃO IMEDIATA (Prioridade Máxima) ---
+
+            // 10. FINALIZADO
+            if (processo.DataRegistroDI.HasValue)
             {
-                processo.CondicaoProcesso = "AguardandoCE";
+                processo.CondicaoProcesso = "Finalizado";
                 return;
             }
 
-            // 2. PARA REDESTINAR - Entra quando CE preenchido, Sai quando REDESTINAÇÃO check
-            if (!string.IsNullOrWhiteSpace(processo.Capa.CE) &&
-                processo.Redestinacao != true)
+            // 9. DI/DUIMP PARA DIGITAÇÃO
+            if (processo.DataEmbarque.HasValue &&
+                processo.DataEmbarque.Value.Date <= DateTime.Now.Date &&
+                (string.IsNullOrWhiteSpace(processo.RascunhoDI) && string.IsNullOrWhiteSpace(processo.DI)))
             {
-                processo.CondicaoProcesso = "ParaRedestinar";
+                processo.CondicaoProcesso = "DIDUIMPParaDigitacao";
                 return;
             }
 
-            // 3. REDESTINADOS - Entra quando REDESTINAÇÃO check, Sai quando DATA DE ATRACAÇÃO for data atual ou menor
-            if (processo.Redestinacao == true &&
-                (!processo.DataDeAtracacao.HasValue || processo.DataDeAtracacao.Value.Date > DateTime.Now.Date))
+            // 8. SOLICITAR NUMERÁRIO
+            if (processo.DataEmbarque.HasValue && processo.Numerario == false)
             {
-                processo.CondicaoProcesso = "Redestinados";
+                processo.CondicaoProcesso = "SolicitarNumerario";
                 return;
             }
 
-            if (processo.DataDeAtracacao.HasValue &&
-                processo.DataDeAtracacao.Value.Date <= DateTime.Now.Date &&
-                !processo.PresencaDeCarga)
+            // 6. ATRACADOS COM PRESENÇA DE CARGA
+            if (processo.PresencaDeCarga)
             {
-                processo.CondicaoProcesso = "AtracadosSemPresencaCarga";
+                processo.CondicaoProcesso = "AtracadosComPresencaCarga";
                 return;
             }
 
+            // 5. SITUAÇÃO SIGVIG
             if (processo.DataDeAtracacao.HasValue &&
                 processo.DataDeAtracacao.Value.Date <= DateTime.Now.Date &&
                 !processo.SigVig)
@@ -58,45 +56,30 @@ namespace CLUSA
                 return;
             }
 
-            // 6. ATRACADOS COM PRESENÇA DE CARGA - Entra quando presença de carga check, Sai quando todos LPCOs deferidos
-            if (processo.PresencaDeCarga && !VerificarTodosLPCOsDeferidos(processo))
+            // 4. ATRACADOS SEM PRESENÇA DE CARGA
+            if (processo.DataDeAtracacao.HasValue &&
+                processo.DataDeAtracacao.Value.Date <= DateTime.Now.Date)
             {
-                processo.CondicaoProcesso = "AtracadosComPresencaCarga";
+                processo.CondicaoProcesso = "AtracadosSemPresencaCarga";
                 return;
             }
 
-            // 7. DEFERIDOS - Entra quando todos LPCOs deferidos, Sai quando registrar DI
-            if (VerificarTodosLPCOsDeferidos(processo) && !processo.DataRegistroDI.HasValue)
+            // 3. REDESTINADOS
+            if (processo.Redestinacao == true &&
+                (!processo.DataDeAtracacao.HasValue || processo.DataDeAtracacao.Value.Date > DateTime.Now.Date))
             {
-                processo.CondicaoProcesso = "Deferidos";
+                processo.CondicaoProcesso = "Redestinados";
                 return;
             }
 
-            // 8. SOLICITAR NUMERÁRIO - Entra quando tiver data de embarque, Sai quando numerário solicitado
-            if (processo.DataEmbarque.HasValue &&
-                processo.Numerario == false)
+            // 2. PARA REDESTINAR
+            if (!string.IsNullOrWhiteSpace(processo.Capa.CE) && processo.Redestinacao != true)
             {
-                processo.CondicaoProcesso = "SolicitarNumerario";
+                processo.CondicaoProcesso = "ParaRedestinar";
                 return;
             }
 
-            // 9. DI/DUIMP PARA DIGITAÇÃO - Entra quando data embarque <= hoje, Sai quando rascunho preenchido
-            if (processo.DataEmbarque.HasValue &&
-                processo.DataEmbarque.Value.Date <= DateTime.Now.Date &&
-                (string.IsNullOrWhiteSpace(processo.RascunhoDI) && string.IsNullOrWhiteSpace(processo.DI))) // CORREÇÃO: Usar && e verificar se está VAZIO
-            {
-                processo.CondicaoProcesso = "DIDUIMPParaDigitacao";
-                return;
-            }
-
-            // 10. FINALIZADO - Quando tiver registro de DI
-            if (processo.DataRegistroDI.HasValue)
-            {
-                processo.CondicaoProcesso = "Finalizado";
-                return;
-            }
-
-            // Default: se não se encaixar em nenhuma condição, mantém "AguardandoCE"
+            // 1. DEFAULT
             processo.CondicaoProcesso = "AguardandoCE";
         }
 
@@ -132,27 +115,24 @@ namespace CLUSA
         /// <summary>
         /// Verifica se todos os LPCOs de todas as LIs estão deferidos
         /// </summary>
-        private static bool VerificarTodosLPCOsDeferidos(Processo processo)
+        public static bool IsDeferido(Processo processo)
         {
-            // Se não tem LI, considera como não deferido (ou não precisa de LPCO). Mantendo sua lógica:
+            // Se não tem LI, considera não deferido/não aplicável
             if (processo.LI == null || !processo.LI.Any())
                 return false;
 
-            bool temAlgumLPCO = processo.LI.Any(li => li.LPCO != null && li.LPCO.Any());
-            if (!temAlgumLPCO)
-                return true;
+            // Se tem LI mas não tem LPCO, ou se todos LPCOs estão OK
+            // A lógica original era: Se tem LPCO, todos devem estar deferidos.
 
-            // --- OTIMIZAÇÃO LINQ ---
-            // Verifica se EXISTE (Any) algum LPCO que NÃO está deferido.
-            // Se encontrar um, o resultado da função é 'false'.
-            return !processo.LI
-                .SelectMany(li => li.LPCO ?? Enumerable.Empty<LpcoInfo>()) // Expande todas as LPCOs em uma única lista
-                .Any(lpco =>
-                     // Condição de NÃO DEFERIDO:
-                     // 1. Não tem Data de Deferimento E/OU
-                     // 2. Está em Exigência
-                     !lpco.DataDeferimentoLPCO.HasValue || lpco.EmExigencia
-                );
+            bool temAlgumLPCO = processo.LI.Any(li => li.LPCO != null && li.LPCO.Any());
+            if (!temAlgumLPCO) return true; // Sem LPCO = "Ok" para Deferido (Conforme sua regra original)
+
+            // Verifica se existe algum RUIM
+            bool existePendente = processo.LI
+                .SelectMany(li => li.LPCO ?? Enumerable.Empty<LpcoInfo>())
+                .Any(lpco => !lpco.DataDeferimentoLPCO.HasValue || lpco.EmExigencia);
+
+            return !existePendente;
         }
     }
 

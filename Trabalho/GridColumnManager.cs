@@ -202,7 +202,7 @@ namespace Trabalho
         {
             new("Ref_USA", "Ref. USA", autoSizeMode: DataGridViewAutoSizeColumnMode.AllCells),
             new("Importador", "Importador", minimumWidth: 200),
-            new("SR", "SR", autoSizeMode: DataGridViewAutoSizeColumnMode.AllCells),
+            new("SR", "Ref. IMP", autoSizeMode: DataGridViewAutoSizeColumnMode.AllCells),
             new("Produto", "Produto", minimumWidth: 200),
             new("Marca", "Marca"),
             new("Veiculo", "Veículo"),
@@ -227,7 +227,7 @@ namespace Trabalho
             new("DataCarregamentoDI", "Data Carregamento", formato: "dd/MM/yyyy"),
             new("DataMinutaDI", "Data Minuta", formato: "dd/MM/yyyy"),
             new("ParametrizacaoDI", "Parametrização DI"),
-            new("DataDeAtracacao", "Atracação", formato: "dd/MM/yyyy"),
+            new("DataDeAtracacao", "Atracação", formato: "dd/MM/yyyy HH:mm"),
             new("Inspecao", "Inspeção", formato: "dd/MM/yyyy"),
             new("DataEmbarque", "Embarque", formato: "dd/MM/yyyy"),
             new("DataRecebOriginais", "Receb. Originais", formato: "dd/MM/yyyy"),
@@ -303,14 +303,15 @@ namespace Trabalho
             var colunasVistoria = new List<DefinicaoColuna>
         {
             new("LPCO", "LPCO"),
-            new("LI", "LI"),
-            new("Importador", "Importador", minimumWidth: 200),
+            new("LI", "LI", autoSizeMode: DataGridViewAutoSizeColumnMode.AllCells),
+            new("Importador", "Importador", minimumWidth: 150),
             new("Container", "Container"),
             new("Conhecimento", "Conhecimento"),
             new("Ref_USA", "Ref. USA"),
             new("Produto", "Produto", minimumWidth: 200),
             new("ParametrizacaoLPCO", "Parametrização LPCO"),
             new("Terminal", "Terminal"),
+            new("DataRegistroLPCO", "Registro LPCO", formato: "dd/MM/yyyy"),
             new("Previsao", "Previsão", formato: "dd/MM/yyyy"),
             new("Notas", "Notas", minimumWidth: 250),
             new("Status", "Status", autoSizeMode: DataGridViewAutoSizeColumnMode.AllCells)

@@ -59,7 +59,7 @@
             // 
             // cmbGrids
             // 
-            cmbGrids.ForeColor = SystemColors.ScrollBar;
+            cmbGrids.ForeColor = SystemColors.MenuText;
             cmbGrids.Name = "cmbGrids";
             cmbGrids.Size = new Size(200, 25);
             cmbGrids.Text = "Selecione a tabela...";
@@ -72,8 +72,8 @@
             btnMoveDireita.Image = (Image)resources.GetObject("btnMoveDireita.Image");
             btnMoveDireita.ImageTransparentColor = Color.Magenta;
             btnMoveDireita.Name = "btnMoveDireita";
-            btnMoveDireita.Size = new Size(82, 22);
-            btnMoveDireita.Text = "Mover Direita";
+            btnMoveDireita.Size = new Size(76, 22);
+            btnMoveDireita.Text = "Mover baixo";
             btnMoveDireita.Click += BtnDescer_Click;
             // 
             // btnMoveEsquerda
@@ -83,8 +83,8 @@
             btnMoveEsquerda.Image = (Image)resources.GetObject("btnMoveEsquerda.Image");
             btnMoveEsquerda.ImageTransparentColor = Color.Magenta;
             btnMoveEsquerda.Name = "btnMoveEsquerda";
-            btnMoveEsquerda.Size = new Size(96, 22);
-            btnMoveEsquerda.Text = "Mover Esquerda";
+            btnMoveEsquerda.Size = new Size(74, 22);
+            btnMoveEsquerda.Text = "Mover cima";
             btnMoveEsquerda.Click += BtnSubir_Click;
             // 
             // lblContador

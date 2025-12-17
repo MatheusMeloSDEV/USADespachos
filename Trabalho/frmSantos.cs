@@ -1,4 +1,14 @@
 ﻿using CLUSA;
+using iText.Kernel.Pdf;
+using iText.Layout;
+using iText.Layout.Element;
+using iText.Layout.Properties;
+using iText.Kernel.Font;
+using iText.IO.Font.Constants;
+using iText.IO.Font;
+using iText.Kernel.Geom; // For PageSize
+using iText.Kernel.Colors; // For ColorConstants
+using System.IO;
 using MongoDB.Driver;
 using System.ComponentModel;
 using System.Diagnostics;
@@ -15,6 +25,7 @@ namespace Trabalho
         private List<Processo> _listaOriginal = new();
 
         private readonly RepositorioUsers _repositorioUsers;
+        private readonly LogRepository _logRepo;
         private Users? _usuarioLogado;
         private readonly Logado _logado;
 
@@ -30,6 +41,7 @@ namespace Trabalho
 
             _repositorio = new RepositorioProcesso();
             _repositorioUsers = new RepositorioUsers();
+            _logRepo = new LogRepository();
             _logado = logado;
             this.Shown += FrmSantos_Shown;
         }
@@ -172,6 +184,11 @@ namespace Trabalho
                 try
                 {
                     await _repositorio.DeleteAsync(processoSelecionado.Id.ToString());
+                    await _logRepo.RegistrarLogAsync(
+                        "Exclusão",
+                        $"Processo {processoSelecionado.Ref_USA} excluído via Grid Santos",
+                        $"Usuário: {_logado.Usuario}"
+                    );
                     BsProcesso.Remove(processoSelecionado);
                     _cacheAutoComplete.Clear(); // Limpa cache
                 }
@@ -254,6 +271,11 @@ namespace Trabalho
                     try
                     {
                         pdfPath = PythonRunner.ExecutarExportador(importador).Trim();
+                        _ = Task.Run(() => _logRepo.RegistrarLogAsync(
+                            "Exportação",
+                            "Follow-Up gerado",
+                            $"Usuário: {_logado.Usuario} | Registros visíveis: {DGVSantos.RowCount}"
+                        ));
                     }
                     catch (Exception ex)
                     {
@@ -440,6 +462,117 @@ namespace Trabalho
                 this.WindowState = FormWindowState.Normal;
             if (this.WindowState == FormWindowState.Normal)
                 this.WindowState = FormWindowState.Maximized;
+        }
+
+        private void BtnDownloadTabela_Click(object sender, EventArgs e)
+        {
+            // 1. Get visible columns to export
+            var colunasVisiveis = DGVSantos.Columns.Cast<DataGridViewColumn>()
+                                           .Where(c => c.Visible)
+                                           .ToList();
+
+            if (colunasVisiveis.Count == 0)
+            {
+                MessageBox.Show("Nenhuma coluna visível para exportar.", "Aviso");
+                return;
+            }
+
+            // 2. Ask user for file location
+            using var sfd = new SaveFileDialog();
+            sfd.Filter = "Arquivo PDF (*.pdf)|*.pdf";
+            sfd.FileName = $"Relatorio_Santos_{DateTime.Now:yyyyMMdd_HHmm}.pdf";
+
+            if (sfd.ShowDialog() != DialogResult.OK) return;
+
+            try
+            {
+                // 3. Initialize PDF Writer and Document
+                using var writer = new PdfWriter(sfd.FileName);
+                using var pdf = new PdfDocument(writer);
+                var document = new Document(pdf, PageSize.A3.Rotate());
+                document.SetMargins(10, 10, 10, 10);
+
+                // 4. Load Fonts (Standard Helvetica)
+                // Using explicit encoding to be safe
+                var fontRegular = PdfFontFactory.CreateFont(StandardFonts.HELVETICA, PdfEncodings.WINANSI);
+                var fontBold = PdfFontFactory.CreateFont(StandardFonts.HELVETICA_BOLD, PdfEncodings.WINANSI);
+
+                // 5. Add Title
+                var titulo = new Paragraph("Relatório de Processos - Santos")
+                    .SetFont(fontBold)
+                    .SetFontSize(18)
+                    .SetTextAlignment(TextAlignment.CENTER);
+
+                document.Add(titulo);
+                document.Add(new Paragraph("\n")); // Spacer
+
+                _ = Task.Run(() => _logRepo.RegistrarLogAsync(
+                    "Exportação",
+                    "Relatório PDF da tabela Santos gerado",
+                    $"Usuário: {_logado.Usuario} | Registros visíveis: {DGVSantos.RowCount}"
+                ));
+
+                // 6. Create Table
+                // UseAllAvailableWidth makes the table span the page width
+                var table = new Table(UnitValue.CreatePercentArray(colunasVisiveis.Count)).UseAllAvailableWidth();
+
+                // 7. Add Headers
+                foreach (var col in colunasVisiveis)
+                {
+                    var headerText = col.HeaderText ?? string.Empty;
+                    var cell = new Cell().Add(new Paragraph(headerText)
+                        .SetFont(fontBold)
+                        .SetFontSize(10));
+
+                    cell.SetBackgroundColor(iText.Kernel.Colors.ColorConstants.LIGHT_GRAY);
+                    table.AddHeaderCell(cell);
+                }
+
+                // 8. Add Data Rows
+                foreach (DataGridViewRow row in DGVSantos.Rows)
+                {
+                    if (row.IsNewRow) continue;
+
+                    foreach (var col in colunasVisiveis)
+                    {
+                        // Safe string conversion
+                        var cellValue = row.Cells[col.Index].Value;
+                        var textValue = cellValue?.ToString() ?? "";
+
+                        var cell = new Cell().Add(new Paragraph(textValue)
+                            .SetFont(fontRegular)
+                            .SetFontSize(7));
+
+                        table.AddCell(cell);
+                    }
+                }
+
+                // 9. Add Table to Document and Close
+                document.Add(table);
+                document.Close();
+
+                // 10. Success Message and Open File
+                if (MessageBox.Show("PDF gerado com sucesso! Deseja abrir agora?", "Sucesso",
+                    MessageBoxButtons.YesNo, MessageBoxIcon.Information) == DialogResult.Yes)
+                {
+                    // Open the PDF safely
+                    var p = new ProcessStartInfo(sfd.FileName) { UseShellExecute = true };
+                    Process.Start(p);
+                }
+            }
+            catch (IOException ioEx)
+            {
+                // Catch file access errors specifically
+                MessageBox.Show($"Não foi possível salvar o arquivo. Verifique se ele já está aberto em outro programa.\n\nDetalhe: {ioEx.Message}",
+                    "Arquivo em Uso", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            }
+            catch (Exception ex)
+            {
+                // Catch all other errors (like iText specific ones)
+                var mensagemErro = ex.InnerException != null ? ex.InnerException.Message : ex.Message;
+                MessageBox.Show($"Erro real: {mensagemErro}\n\nStack: {ex.StackTrace}",
+                    "Erro Crítico", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
     }
 }

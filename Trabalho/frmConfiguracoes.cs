@@ -12,12 +12,45 @@ using System.Windows.Forms;
 
 namespace Trabalho
 {
+
     public partial class frmConfiguracoes : Form
     {
         private readonly ObjectId _usuarioId;
         private Dictionary<string, List<string>> _preferenciasLocais;
+        private readonly LogRepository _logRepo;
         private string _gridAtual;
+        private List<string> ObterPadraoInicial(string nomeGrid)
+        {
+            // 1. EXCEÇÕES: Grids que NÃO devem seguir o padrão global
+            // Se for Anuente ou Vistoria, retorna null.
+            // (Retornar null faz o sistema exibir TODAS as colunas disponíveis naquele grid)
+            if (nomeGrid == "DGVOrgaoAnuente" || nomeGrid == "DGVVistorias")
+            {
+                return null;
+            }
 
+            // 2. PADRÃO GLOBAL (Default)
+            // Aplica-se a DGVSantos, DGVItajai, AguardandoCE, Finalizados, etc.
+            return new List<string>
+                {
+                    "Importador",           // IMP
+                    "Ref_USA",              // N/REF
+                    "SR",                   // SFREF
+                    "Veiculo",              // NAVIO
+                    "DataDeAtracacao",      // DATA e HRS
+                    "Terminal",             // TERMINAL
+                    "LocalDeDesembaraco",   // LOCAL
+                    "Container",            // CONTAINER
+                    "CE",                   // CE
+                    "OrgaosAnuentesString", // ANUT
+                    "FreeTime",             // FT
+                    "VencimentoFreeTime",   // VENC
+                    "VencimentoFMA",        // FMA
+                    "Numerario",            // NUM
+                    "CapaOK",               // CP
+                    "DI"                    // DI
+                };
+        }
         // Lista dos 11 grids disponíveis
         private readonly Dictionary<string, string> _gridsDisponiveis = new()
         {
@@ -36,7 +69,7 @@ namespace Trabalho
             { "DGVSantos", "🚢 Processos Santos" },
             { "DGVItajai", "🚢 Processos Itajaí" },
             { "DGVFinalizados", "✅ Finalizados" },
-            { "DGVOrgaoAnuente", "🏛️ Órgãos Anuentes" },
+            { "DgvOrgaoAnuente", "🏛️ Órgãos Anuentes" },
             { "DGVVistorias", "🔍 Vistorias" }
         };
 
@@ -44,6 +77,8 @@ namespace Trabalho
         {
             _usuarioId = usuarioId;
             _preferenciasLocais = new Dictionary<string, List<string>>(preferenciasAtuais ?? new Dictionary<string, List<string>>());
+
+            _logRepo = new LogRepository();
 
             InitializeComponent();
             CarregarGridsDisponiveis();
@@ -94,15 +129,22 @@ namespace Trabalho
                 return;
             }
 
-            // Obter preferências salvas para este grid
-            _preferenciasLocais.TryGetValue(nomeGrid, out var colunasSalvas);
+            // 1. Tenta obter preferências salvas pelo usuário
+            _preferenciasLocais.TryGetValue(nomeGrid, out var colunasParaExibir);
+
+            // 2. SE NÃO tiver nada salvo, tenta pegar o "Padrão Inicial" (Sua lista do Excel)
+            if (colunasParaExibir == null || !colunasParaExibir.Any())
+            {
+                colunasParaExibir = ObterPadraoInicial(nomeGrid);
+            }
 
             int ordem = 1;
 
-            if (colunasSalvas != null && colunasSalvas.Any())
+            // 3. Verifica se agora temos uma lista (seja do usuário ou o padrão)
+            if (colunasParaExibir != null && colunasParaExibir.Any())
             {
-                // Adiciona primeiro as colunas na ordem salva
-                foreach (var nomeColuna in colunasSalvas)
+                // A. Adiciona primeiro as colunas da lista (Marcadas como VISÍVEIS)
+                foreach (var nomeColuna in colunasParaExibir)
                 {
                     var coluna = todasColunas.FirstOrDefault(c => c.NomePropriedade == nomeColuna);
                     if (coluna != null)
@@ -111,10 +153,11 @@ namespace Trabalho
                     }
                 }
 
-                // Depois adiciona as não selecionadas
+                // B. Depois adiciona o resto das colunas que sobraram (Marcadas como NÃO VISÍVEIS)
                 foreach (var coluna in todasColunas)
                 {
-                    if (!colunasSalvas.Contains(coluna.NomePropriedade))
+                    // Se a coluna não estava na lista de cima, adiciona ela agora
+                    if (!colunasParaExibir.Contains(coluna.NomePropriedade))
                     {
                         AdicionarLinhaColunaNoGrid(ordem++, coluna, false);
                     }
@@ -122,7 +165,7 @@ namespace Trabalho
             }
             else
             {
-                // Se não tem preferências, adiciona todas marcadas (padrão)
+                // 4. Caso extremo: Não tem salvo e não tem padrão definido -> Mostra TUDO
                 foreach (var coluna in todasColunas)
                 {
                     AdicionarLinhaColunaNoGrid(ordem++, coluna, true);
@@ -230,22 +273,32 @@ namespace Trabalho
 
             AtualizarNumeracao();
         }
-        private void BtnReset_Click(object sender, EventArgs e)
+        private async void BtnReset_Click(object sender, EventArgs e)
         {
             if (string.IsNullOrEmpty(_gridAtual)) return;
 
+            string nomeGridAmigavel = _gridsDisponiveis[_gridAtual];
+
             var resultado = MessageBox.Show(
-                $"Tem certeza que deseja resetar as colunas do grid '{_gridsDisponiveis[_gridAtual]}'?\n\nTodas as colunas serão marcadas e a ordem será resetada.",
-                "Confirmar Reset",
+                $"Deseja restaurar o padrão original do grid '{nomeGridAmigavel}'?",
+                "Restaurar Padrão",
                 MessageBoxButtons.YesNo,
                 MessageBoxIcon.Question);
 
             if (resultado == DialogResult.Yes)
             {
-                _preferenciasLocais.Remove(_gridAtual);
+                if (_preferenciasLocais.ContainsKey(_gridAtual))
+                    _preferenciasLocais.Remove(_gridAtual);
+
                 CarregarColunasDoGrid(_gridAtual);
 
-                MessageBox.Show("Grid resetado com sucesso!", "Sucesso", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                // --- LOG DE RESET ---
+                // Também exige mudança para 'async void'
+                await _logRepo.RegistrarLogAsync(
+                    "Configuração",
+                    $"Restaurou padrão original do grid: {nomeGridAmigavel}",
+                    "Ação de Reset manual"
+                );
             }
         }
         private void frmConfiguracoes_FormClosing(object sender, FormClosingEventArgs e)
@@ -254,14 +307,43 @@ namespace Trabalho
                 SalvarColunasGridAtual();
         }
 
-        private void BtnSalvar_Click(object sender, EventArgs e)
+        private async void BtnSalvar_Click(object sender, EventArgs e)
         {
             SalvarColunasGridAtual();
+
+            // Lógica para montar mensagem detalhada do log
+            string detalhesLog = "Nenhum grid selecionado";
+            if (!string.IsNullOrEmpty(_gridAtual))
+            {
+                // Conta quantas colunas estão ativas para esse grid específico
+                _preferenciasLocais.TryGetValue(_gridAtual, out var colunas);
+                int qtdColunas = colunas?.Count ?? 0;
+                string nomeAmigavel = _gridsDisponiveis.ContainsKey(_gridAtual) ? _gridsDisponiveis[_gridAtual] : _gridAtual;
+
+                detalhesLog = $"Grid: {nomeAmigavel} | Colunas Visíveis: {qtdColunas}";
+            }
+
+            // --- LOG DE CONFIGURAÇÃO ---
+            // Note: Mudei a assinatura do método para 'async void' para suportar o await
+            try
+            {
+                await _logRepo.RegistrarLogAsync(
+                    "Configuração",
+                    "Preferências de colunas alteradas pelo usuário",
+                    detalhesLog
+                );
+            }
+            catch (Exception ex)
+            {
+                // Se der erro no log, não impede o fluxo principal, mas é bom saber (debug)
+                System.Diagnostics.Debug.WriteLine("Erro ao gravar log: " + ex.Message);
+            }
+
             MessageBox.Show(
-                        "Configurações salvas com sucesso!\n\nAs alterações serão aplicadas ao reabrir os grids.",
-                        "Sucesso",
-                        MessageBoxButtons.OK,
-                        MessageBoxIcon.Information);
+                "Configurações salvas com sucesso!\n\nAs alterações serão aplicadas ao reabrir os grids.",
+                "Sucesso",
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Information);
         }
 
         private void DgvColunas_CellValueChanged(object sender, DataGridViewCellEventArgs e)

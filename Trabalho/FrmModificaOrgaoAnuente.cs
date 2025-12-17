@@ -1,6 +1,7 @@
 ﻿using CLUSA;
 using MongoDB.Driver;
 using System.Data;
+using Newtonsoft.Json;
 
 namespace Trabalho
 {
@@ -10,6 +11,8 @@ namespace Trabalho
         public Processo Processo { get; set; }
         private bool _dadosForamAlterados = false;
 
+        private readonly LogRepository _logRepo; // <--- NOVO
+        private OrgaoAnuente _orgaoOriginal;
         public bool IsViewOnly { get; set; } = false;
         private readonly RepositorioOrgaoAnuente _repositorioOrgaoAnuente;
         private readonly RepositorioProcesso _repositorioProcesso;
@@ -22,6 +25,7 @@ namespace Trabalho
             var client = new MongoClient(ConfigDatabase.MongoConnectionString);
             var database = client.GetDatabase(ConfigDatabase.MongoDatabaseName);
 
+            _logRepo = new LogRepository();
             _repositorioVistorias = new RepositorioVistorias(database);
             _repositorioOrgaoAnuente = repositorioOrgaoAnuente;
             _repositorioProcesso = repositorioProcesso;
@@ -37,6 +41,13 @@ namespace Trabalho
                 this.Close();
                 return;
             }
+
+            var settings = new Newtonsoft.Json.JsonSerializerSettings();
+            settings.Converters.Add(new ObjectIdConverter());
+
+            var json = Newtonsoft.Json.JsonConvert.SerializeObject(OrgaoAnuente, settings);
+            _orgaoOriginal = Newtonsoft.Json.JsonConvert.DeserializeObject<OrgaoAnuente>(json, settings);
+
             CarregarDados();
             if (IsViewOnly)
             {
@@ -101,6 +112,58 @@ namespace Trabalho
                     DesabilitarControlesRecursivamente(c);
                 }
             }
+        }
+        private string ObterAlteracoesDetalhadas()
+        {
+            var mudancas = new List<string>();
+
+            // Compara campos simples da LI
+            if (_orgaoOriginal.Numero != OrgaoAnuente.Numero)
+                mudancas.Add($"Número LI: '{_orgaoOriginal.Numero}' -> '{OrgaoAnuente.Numero}'");
+
+            if (_orgaoOriginal.NCM != OrgaoAnuente.NCM)
+                mudancas.Add($"NCM: '{_orgaoOriginal.NCM}' -> '{OrgaoAnuente.NCM}'");
+
+            if (_orgaoOriginal.DataRegistro != OrgaoAnuente.DataRegistro)
+                mudancas.Add($"Data Registro: '{_orgaoOriginal.DataRegistro:d}' -> '{OrgaoAnuente.DataRegistro:d}'");
+
+            if (_orgaoOriginal.Pendencia != OrgaoAnuente.Pendencia)
+                mudancas.Add($"Pendência alterada"); // Texto longo, melhor só avisar que mudou
+
+            // Compara LPCOs (Lógica mais complexa pois é uma lista)
+            // Verifica LPCOs adicionados
+            foreach (var novo in OrgaoAnuente.LPCO)
+            {
+                var original = _orgaoOriginal.LPCO.FirstOrDefault(l => l.NomeOrgao == novo.NomeOrgao);
+
+                if (original == null)
+                {
+                    mudancas.Add($"Novo LPCO adicionado: {novo.NomeOrgao}");
+                }
+                else
+                {
+                    // Se já existia, compara detalhes do LPCO
+                    if (original.StatusLPCO != novo.StatusLPCO)
+                        mudancas.Add($"{novo.NomeOrgao} Status: '{original.StatusLPCO}' -> '{novo.StatusLPCO}'");
+
+                    if (original.LPCO != novo.LPCO)
+                        mudancas.Add($"{novo.NomeOrgao} Número: '{original.LPCO}' -> '{novo.LPCO}'");
+
+                    if (original.MotivoExigencia != novo.MotivoExigencia)
+                        mudancas.Add($"{novo.NomeOrgao} Exigência: '{original.MotivoExigencia}' -> '{novo.MotivoExigencia}'");
+                }
+            }
+
+            // Verifica LPCOs removidos
+            foreach (var antigo in _orgaoOriginal.LPCO)
+            {
+                if (!OrgaoAnuente.LPCO.Any(l => l.NomeOrgao == antigo.NomeOrgao))
+                {
+                    mudancas.Add($"LPCO removido: {antigo.NomeOrgao}");
+                }
+            }
+
+            return string.Join("; ", mudancas);
         }
         private void MarcarComoAlterado(object? sender, EventArgs e)
         {
@@ -348,6 +411,19 @@ namespace Trabalho
             try
             {
                 await SalvarDadosDosControlesAsync();
+
+                string detalhesAlteracao = ObterAlteracoesDetalhadas();
+
+                if (!string.IsNullOrEmpty(detalhesAlteracao))
+                {
+                    await _repositorioOrgaoAnuente.UpdateAsync(OrgaoAnuente);
+
+                    await _logRepo.RegistrarLogAsync(
+                        "Edição Detalhada",
+                        $"LI {OrgaoAnuente.Numero} alterada",
+                        $"Mudanças: {detalhesAlteracao}" 
+                    );
+                }
 
                 await _repositorioOrgaoAnuente.UpdateAsync(OrgaoAnuente);
 

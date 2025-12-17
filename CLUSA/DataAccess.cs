@@ -430,6 +430,7 @@ namespace CLUSA
         public string Produto { get; set; } = string.Empty;
         public string ParametrizacaoLPCO { get; set; } = string.Empty;
         public string Terminal { get; set; } = string.Empty;
+        public DateTime? DataRegistroLPCO { get; set; } = null;
         public DateTime? Previsao { get; set; } = null;
 
         // Dados específicos da Vistoria (editáveis)
@@ -524,6 +525,7 @@ namespace CLUSA
                             Produto = orgaoAnuente.Produto,
                             ParametrizacaoLPCO = lpcoInfo.ParametrizacaoLPCO ?? "",
                             Terminal = processoPai?.Terminal ?? string.Empty,
+                            DataRegistroLPCO = lpcoInfo.DataRegistroLPCO,
                             Previsao = processoPai?.DataDeAtracacao,
                             Status = statusSugerido
                         };
@@ -541,7 +543,8 @@ namespace CLUSA
                             // Só atualiza se algo mudou
                             if (mudouParametrizacao ||
                                 vistoriaDb.Terminal != novaVistoria.Terminal ||
-                                vistoriaDb.Previsao != novaVistoria.Previsao)
+                                vistoriaDb.Previsao != novaVistoria.Previsao ||
+                                vistoriaDb.DataRegistroLPCO != novaVistoria.DataRegistroLPCO)
                             {
                                 var filter = Builders<Vistoria>.Filter.Eq(x => x.Id, vistoriaDb.Id);
                                 bulkOps.Add(new ReplaceOneModel<Vistoria>(filter, novaVistoria));
@@ -946,31 +949,46 @@ namespace CLUSA
         {
             if (processo == null || string.IsNullOrWhiteSpace(processo.Ref_USA)) return;
 
-            // 1. Limpa anteriores deste processo
-            await _notificacaoRepo.ExcluirPorRefUsaAsync(processo.Ref_USA);
-
-            var tasks = new List<Task>();
-
-            // 2. Redestinação
-            if (processo.DataDeAtracacao.HasValue)
+            try
             {
-                int dias = (processo.DataDeAtracacao.Value - DateTime.Today).Days;
-                if (dias >= 0 && dias <= 5 && (processo.Redestinacao == null || processo.Redestinacao == false))
+                // 1. Limpa anteriores deste processo
+                await _notificacaoRepo.ExcluirPorRefUsaAsync(processo.Ref_USA);
+
+                var tasks = new List<Task>();
+
+                // 2. Redestinação
+                if (processo.DataDeAtracacao.HasValue)
                 {
-                    tasks.Add(CriarNotificacaoSeNecessarioAsync(processo.Ref_USA,
-                        $"Processo {processo.Ref_USA}: Redestinar container ao terminal"));
+                    int dias = (processo.DataDeAtracacao.Value - DateTime.Today).Days;
+                    // Verifica se está no prazo E se NÃO foi feita redestinação
+                    if (dias >= 0 && dias <= 5 && (processo.Redestinacao == null || processo.Redestinacao == false))
+                    {
+                        tasks.Add(CriarNotificacaoSeNecessarioAsync(processo.Ref_USA,
+                            $"Processo {processo.Ref_USA}: Redestinar container ao terminal"));
+                    }
                 }
-            }
 
-            // 3. Vencimentos (Executa em paralelo)
-            if (processo.DataRegistroDI == null)
+                // 3. Vencimentos
+                if (processo.DataRegistroDI == null)
+                {
+                    tasks.Add(CheckVencimento(processo, processo.VencimentoFreeTime, "FreeTime"));
+                    tasks.Add(CheckVencimento(processo, processo.VencimentoFMA, "FMA"));
+                    tasks.Add(CheckVencimento(processo, processo.VencimentoLI_LPCO, "LI/LPCO"));
+                }
+
+                await Task.WhenAll(tasks);
+            }
+            catch (MongoConnectionException ex)
             {
-                tasks.Add(CheckVencimento(processo, processo.VencimentoFreeTime, "FreeTime"));
-                tasks.Add(CheckVencimento(processo, processo.VencimentoFMA, "FMA"));
-                tasks.Add(CheckVencimento(processo, processo.VencimentoLI_LPCO, "LI/LPCO"));
+                // Logar erro mas NÃO parar a aplicação. 
+                // O Timer vai tentar de novo em alguns segundos/minutos.
+                Console.WriteLine($"Erro de conexão ao sincronizar {processo.Ref_USA}: {ex.Message}");
             }
-
-            await Task.WhenAll(tasks);
+            catch (Exception ex)
+            {
+                // Captura erros genéricos de Socket
+                Console.WriteLine($"Erro genérico ao sincronizar {processo.Ref_USA}: {ex.Message}");
+            }
         }
 
         private Task CheckVencimento(Processo doc, DateTime? vencimento, string nomeExibicao)
@@ -1040,12 +1058,200 @@ namespace CLUSA
     }
     #endregion
 
-   #region "Models Auxiliares"
-    public class Agencia
+    #region "Vencimentos"
+    public static class DadosEstaticos
     {
-        public string Numero { get; set; } = string.Empty;
-        public decimal Custo { get; set; }
+        // Retorna a lista bruta sempre que precisar
+        public static List<(string Nome, string Cnpj)> ObterListaCNPJs()
+        {
+            return new List<(string Nome, string Cnpj)>
+            {
+                ("ACCIO", "48.583.422/0001-63"),
+                ("ALICE ALIMENTOS", "39.304.199/0001-87"),
+                ("ALICE ALIMENTOS", "39.304.199/0002-68"),
+                ("AURORA", "83.310.441/0083-63"),
+                ("BRASCOD", "05.399.489/0001-30"),
+                ("CASA FLORA", "62.808.506/0007-74"),
+                ("CASA FLORA", "62.808.506/0001-89"),
+                ("COPY DATA", "01.208.994/0002-80"),
+                ("DAMPER", "51.512.514/0001-67"),
+                ("ELTO COMERCIAL", "20.277.795/0001-97"),
+                ("FMG", "15.810.362/0001-15"),
+                ("FREEWAY", "04.600.832/0003-61"),
+                ("FREEWAY", "04.600.832/0002-80"),
+                ("FREEWAY", "04.600.832/0001-08"),
+                ("FREEWAY", "04.600.832/0004-42"),
+                ("FRUGAL", "02.736.467/0003-91"),
+                ("FRUGAL", "02.736.467/0002-00"),
+                ("KUKAMAR", "09.606.174/0001-77"),
+                ("LEITESOL", "65.979.973/0002-40"),
+                ("LIBRA", "45.848.470/0001-48"),
+                ("MARHUA", "48.950.432/0001-90"),
+                ("MARCOL", "47.462.981/0001-52"),
+                ("MARNOBRE", "18.861.087/0001-57"),
+                ("MGA", "60.356.037/0001-89"),
+                ("NOR IMPORT", "07.635.660/0001-98"),
+                ("REBELA", "69.324.853/0001-85"),
+                ("SEIKO", "45.865.824/0001-62"),
+                ("VANUCCI", "30.037.571/0001-61"),
+                ("VILA SIMPATIA", "07.722.158/0001-14"),
+                ("ZARAGOZA", "05.868.574/0010-90"),
+                ("ZARAGOZA", "05.868.574/0005-23")
+            };
+        }
+    }
+    public class Vencimento
+    {
+        [BsonId]
+        [BsonRepresentation(BsonType.ObjectId)]
+        public string Id { get; set; }
+
+        [BsonElement("importador")]
+        public string Importador { get; set; } // Ex: "FREEWAY"
+
+        [BsonElement("cnpjs")]
+        public List<string> Cnpjs { get; set; } // Ex: ["04.600.../0001", "04.600.../0002"]
+
+        [BsonElement("data_radar")]
+        [BsonIgnoreIfNull]
+        public DateTime? DataVencimentoRadar { get; set; }
+
+        [BsonElement("data_procuracao")]
+        [BsonIgnoreIfNull]
+        public DateTime? DataVencimentoProcuracao { get; set; }
+
+        [BsonElement("data_ecac")]
+        [BsonIgnoreIfNull]
+        public DateTime? DataVencimentoEcac { get; set; }
+
+        [BsonElement("data_sigvig")]
+        [BsonIgnoreIfNull]
+        public DateTime? DataVencimentoSigvig { get; set; }
+
+        [BsonElement("data_lecom")]
+        [BsonIgnoreIfNull]
+        public DateTime? DataVencimentoLecom { get; set; }
+
+        [BsonElement("ultima_notificacao")]
+        [BsonIgnoreIfNull]
+        public DateTime? DataUltimaNotificacao { get; set; }
+    }
+    #endregion
+    #region "Repositório Vencimentos"
+    public class VencimentoRepository
+    {
+        private readonly IMongoCollection<Vencimento> _collection;
+
+        public VencimentoRepository()
+        {
+            var database = ConfigDatabase.GetDatabase();
+            _collection = database.GetCollection<Vencimento>("vencimentos");
+        }
+
+        public async Task AdicionarAsync(Vencimento vencimento)
+        {
+            await _collection.InsertOneAsync(vencimento);
+        }
+
+        public async Task<List<Vencimento>> ObterTodosAsync()
+        {
+            return await _collection.Find(_ => true).ToListAsync();
+        }
+
+        // --- NOVOS MÉTODOS PARA OS BOTÕES FUNCIONAREM ---
+
+        // Necessário para preencher a tela de edição
+        public async Task<Vencimento> ObterPorIdAsync(string id)
+        {
+            return await _collection.Find(x => x.Id == id).FirstOrDefaultAsync();
+        }
+
+        // Necessário para salvar a edição
+        public async Task AtualizarAsync(Vencimento vencimento)
+        {
+            // Substitui o documento antigo pelo novo onde o ID for igual
+            await _collection.ReplaceOneAsync(x => x.Id == vencimento.Id, vencimento);
+        }
+
+        public async Task ExcluirAsync(string id)
+        {
+            await _collection.DeleteOneAsync(x => x.Id == id);
+        }
+    }
+
+    #endregion
+
+    #region "Log Model"
+
+        public class LogSistema
+        {
+            [BsonId]
+            [BsonRepresentation(BsonType.ObjectId)]
+            public string Id { get; set; }
+
+            [BsonElement("data_hora")]
+            public DateTime DataHora { get; set; } = DateTime.Now; // Pega a hora atual automaticamente
+
+            [BsonElement("tipo_acao")]
+            public string TipoAcao { get; set; } // Ex: "Criação", "Edição", "Exclusão", "Email"
+
+            [BsonElement("mensagem")]
+            public string Mensagem { get; set; } // Ex: "Vencimento da FREEWAY editado."
+
+            [BsonElement("detalhes_tecnicos")]
+            [BsonIgnoreIfNull]
+            public string Detalhes { get; set; } // Opcional: Para guardar erros ou IDs
+        }
+
+    #endregion
+    #region "Log Repositório"
+    public class LogRepository
+    {
+        private readonly IMongoCollection<LogSistema> _collection;
+
+        public LogRepository()
+        {
+            var database = ConfigDatabase.GetDatabase();
+            _collection = database.GetCollection<LogSistema>("logs_sistema");
+        }
+
+        public async Task<List<LogSistema>> ObterUltimosAsync(int quantidade)
+        {
+            var sort = Builders<LogSistema>.Sort.Descending(x => x.DataHora);
+
+            return await _collection.Find(_ => true)
+                                    .Sort(sort)
+                                    .Limit(quantidade)
+                                    .ToListAsync();
+        }
+        public async Task RegistrarLogAsync(string tipo, string mensagem, string detalhes = null)
+        {
+            var log = new LogSistema
+            {
+                TipoAcao = tipo,
+                Mensagem = mensagem,
+                Detalhes = detalhes
+            };
+
+            await _collection.InsertOneAsync(log);
+        }
+
+        // Método para ler os logs (para exibir num Grid futuramente)
+        public async Task<List<LogSistema>> ObterTodosAsync()
+        {
+            // Ordena do mais recente para o mais antigo
+            return await _collection.Find(_ => true)
+                                    .SortByDescending(x => x.DataHora)
+                                    .ToListAsync();
+        }
     }
     #endregion
 
-}
+    #region "Models Auxiliares"
+    public class Agencia
+            {
+                public string Numero { get; set; } = string.Empty;
+                public decimal Custo { get; set; }
+            }
+        }
+    #endregion

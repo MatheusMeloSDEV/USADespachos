@@ -104,6 +104,23 @@ namespace CLUSA
             // Traz apenas o necessário. Se precisar de projeção (trazer menos colunas), adicione .Project(...)
             return await _colecao.Find(filtroFinal).ToListAsync();
         }
+        public async Task<List<Processo>> ListarAtivosPorSufixoAsync(string sufixo)
+        {
+            var builder = Builders<Processo>.Filter;
+
+            // 1. Filtro: Status NÃO PODE SER "Finalizado"
+            // Usamos Ne (Not Equal)
+            var filtroStatus = builder.Ne(p => p.Status, "Finalizado");
+
+            // 2. Filtro: Ref_USA DEVE terminar com o sufixo
+            var regex = new BsonRegularExpression($"{sufixo}$", "i");
+            var filtroSufixo = builder.Regex(p => p.Ref_USA, regex);
+
+            // Combina: (Não Finalizado) E (Termina com Sufixo)
+            var filtroFinal = builder.And(filtroStatus, filtroSufixo);
+
+            return await _colecao.Find(filtroFinal).ToListAsync();
+        }
         /// <summary>
         /// Traz apenas os campos essenciais para os serviços de background (Vistoria e Notificação).
         /// Otimizado com PROJECTION para não carregar o objeto inteiro na memória.
@@ -112,23 +129,7 @@ namespace CLUSA
         {
             var filter = Builders<Processo>.Filter.Ne(p => p.Status, "Finalizado");
 
-            // PROJEÇÃO: Traz somente o que o VistoriaService e o GerenciadorNotificacao usam.
-            // Isso reduz o tráfego de rede de 100MB para 2MB, por exemplo.
-            var projection = Builders<Processo>.Projection
-                .Include(p => p.Id)
-                .Include(p => p.Ref_USA)
-                .Include(p => p.Importador)
-                .Include(p => p.Terminal)
-                .Include(p => p.DataDeAtracacao)
-                .Include(p => p.Redestinacao)       // Usado em Notificações
-                .Include(p => p.DataRegistroDI)     // Usado em Notificações
-                .Include(p => p.VencimentoFreeTime) // Usado em Notificações
-                .Include(p => p.VencimentoFMA)      // Usado em Notificações
-                .Include(p => p.VencimentoLI_LPCO); // Usado em Notificações
-
-            return await _colecao.Find(filter)
-                .Project<Processo>(projection)
-                .ToListAsync();
+            return await _colecao.Find(filter).ToListAsync();
         }
 
         public async Task CreateAsync(Processo processo)

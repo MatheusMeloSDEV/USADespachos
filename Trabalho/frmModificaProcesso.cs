@@ -3,6 +3,8 @@ using MongoDB.Bson;
 using MongoDB.Driver;
 using System.Data;
 using System.Diagnostics;
+using System.Reflection;
+using Newtonsoft.Json;
 
 namespace Trabalho
 {
@@ -19,17 +21,33 @@ namespace Trabalho
         public OrigemProcesso Origem { get; set; }
         private readonly RepositorioProcesso _repositorio;
         private readonly RepositorioNotificacao _notificacaoRepo;
+        private readonly LogRepository _logRepo;
         private bool _dadosForamAlterados = false;
+        private Processo _processoOriginal;
 
         public FrmModificaProcesso()
         {
             InitializeComponent();
             _repositorio = new RepositorioProcesso();
             _notificacaoRepo = new RepositorioNotificacao();
+            _logRepo = new LogRepository();
         }
 
         private void FrmModificaProcesso_Load(object? sender, EventArgs e)
         {
+            if (Modo == "Editar" && processo != null)
+            {
+                var settings = new JsonSerializerSettings();
+                settings.Converters.Add(new ObjectIdConverter());
+
+                var json = JsonConvert.SerializeObject(processo, settings);
+                _processoOriginal = JsonConvert.DeserializeObject<Processo>(json, settings);
+            }
+            else
+            {
+                // Se for novo, o original é vazio
+                _processoOriginal = new Processo();
+            }
             this.Icon = Icon.ExtractAssociatedIcon(Application.ExecutablePath);
             switch (Origem)
             {
@@ -81,6 +99,118 @@ namespace Trabalho
                 {
                     AnexarEventoDeAlteracao(c);
                 }
+            }
+        }
+        private string GerarLogCompletoDeAlteracoes()
+        {
+            var mudancas = new List<string>();
+
+            // 1. Compara todas as propriedades simples do PROCESSO (String, Int, Date, Bool...)
+            // Ignora: Listas e Objetos complexos (Capa) que faremos separadamente
+            var ignorar = new HashSet<string> { "Id", "_id", "LI", "Capa", "DocRecebidos" };
+            mudancas.AddRange(CompararPropriedades(_processoOriginal, processo, ignorar));
+
+            // 2. Compara a CAPA (se existir)
+            if (_processoOriginal.Capa != null && processo.Capa != null)
+            {
+                var mudancasCapa = CompararPropriedades(_processoOriginal.Capa, processo.Capa, new HashSet<string>());
+                if (mudancasCapa.Any())
+                {
+                    mudancas.Add("[Alterações na CAPA]:");
+                    mudancas.AddRange(mudancasCapa);
+                }
+            }
+
+            // 3. Compara Listas Específicas (LIs)
+            CompararListaLIs(mudancas);
+
+            // 4. Compara CheckedListBox (Docs Recebidos)
+            CompararArrays(mudancas, "Documentos", _processoOriginal.DocRecebidos, processo.DocRecebidos);
+
+            if (mudancas.Count == 0) return "Sem alterações detectadas.";
+
+            return string.Join("; ", mudancas);
+        }
+
+        /// <summary>
+        /// Mágica do Reflection: Compara propriedade por propriedade
+        /// </summary>
+        private List<string> CompararPropriedades(object antigo, object novo, HashSet<string> ignorar)
+        {
+            var diferencas = new List<string>();
+
+            if (antigo == null || novo == null) return diferencas;
+
+            // Pega todas as propriedades da classe
+            PropertyInfo[] propriedades = antigo.GetType().GetProperties();
+
+            foreach (var prop in propriedades)
+            {
+                if (ignorar.Contains(prop.Name)) continue;
+
+                // Pega o valor
+                object valorAntigo = prop.GetValue(antigo);
+                object valorNovo = prop.GetValue(novo);
+
+                // Formata datas para não comparar horas se não precisar
+                string sAntigo = FormatarValor(valorAntigo);
+                string sNovo = FormatarValor(valorNovo);
+
+                // Compara as strings
+                if (sAntigo != sNovo)
+                {
+                    // Adiciona na lista: "Exportador: 'Empresa A' -> 'Empresa B'"
+                    diferencas.Add($"{prop.Name}: '{sAntigo}' -> '{sNovo}'");
+                }
+            }
+
+            return diferencas;
+        }
+
+        private string FormatarValor(object val)
+        {
+            if (val == null) return "Vazio";
+            if (val is DateTime dt) return dt.ToShortDateString(); // Ignora hora, se quiser hora use ToString()
+            if (val is decimal dec) return dec.ToString("N2"); // Formata dinheiro
+            if (val is bool b) return b ? "Sim" : "Não";
+            return val.ToString().Trim();
+        }
+
+        private void CompararListaLIs(List<string> logs)
+        {
+            int qtdOriginal = _processoOriginal.LI?.Count ?? 0;
+            int qtdAtual = processo.LI?.Count ?? 0;
+
+            if (qtdOriginal != qtdAtual)
+            {
+                logs.Add($"Quantidade de LIs: {qtdOriginal} -> {qtdAtual}");
+            }
+            else
+            {
+                // Se a quantidade é a mesma, tenta comparar os números
+                for (int i = 0; i < qtdAtual; i++)
+                {
+                    var liAntiga = _processoOriginal.LI[i];
+                    var liNova = processo.LI[i];
+
+                    if (liAntiga.Numero != liNova.Numero)
+                        logs.Add($"LI[{i + 1}]: '{liAntiga.Numero}' -> '{liNova.Numero}'");
+
+                    // Você pode adicionar mais campos da LI aqui se quiser
+                    if (liAntiga.NCM != liNova.NCM)
+                        logs.Add($"LI {liNova.Numero} (NCM): '{liAntiga.NCM}' -> '{liNova.NCM}'");
+                }
+            }
+        }
+
+        private void CompararArrays(List<string> logs, string nomeCampo, string[] antigo, string[] novo)
+        {
+            string strAntigo = antigo == null ? "" : string.Join(", ", antigo);
+            string strNovo = novo == null ? "" : string.Join(", ", novo);
+
+            if (strAntigo != strNovo)
+            {
+                logs.Add($"{nomeCampo}: [{strAntigo}] -> [{strNovo}]");
             }
         }
         private void frmModificaProcesso_FormClosing(object? sender, FormClosingEventArgs e)
@@ -143,14 +273,13 @@ namespace Trabalho
             BsModificaProcesso.EndEdit();
             this.ValidateChildren();
 
-            // --- Salva dados gerais ---
+            // 1. Salva dados gerais (Capa, Datas, CheckBoxes)
             processo.DocRecebidos = ObterItensSelecionados(checkedListBox1);
             processo.FormaRecOriginais = checkedListBox2.CheckedItems.Count > 0 ? checkedListBox2.CheckedItems[0]?.ToString() ?? "" : "";
             processo.Marca = (new[] { "Sacos", "Caixas", "Pallets" }.Contains(cbMarca.Text))
                 ? $"{numMarca.Value} {cbMarca.Text}"
                 : $"{numMarca.Value} x {cbMarca.Text}";
 
-            // --- Salva as datas do processo principal ---
             processo.DataRegistroDI = DTPdataderegistrodi.Checked ? DTPdataderegistrodi.Value : null;
             processo.DataDesembaracoDI = DTPdatadedesembaracodi.Checked ? DTPdatadedesembaracodi.Value : null;
             processo.DataCarregamentoDI = DTPdatadecarregamentodi.Checked ? DTPdatadecarregamentodi.Value : null;
@@ -161,28 +290,23 @@ namespace Trabalho
             processo.DataMinutaDI = dtpDataMinuta.Checked ? dtpDataMinuta.Value : null;
             processo.Capa.CE = txtCE.Text;
 
+            // Cálculo de Vencimentos
             if (DTPdatadeatracacao.Checked)
             {
                 processo.VencimentoFMA = DataHelper.CalcularVencimento(DTPdatadeatracacao.Value, 85);
                 dtpVencimentoFMA.Value = processo.VencimentoFMA ?? dtpVencimentoFMA.Value;
-            }
-            else
-            {
-                processo.VencimentoFMA = null;
-            }
 
-            if (DTPdatadeatracacao.Checked)
-            {
                 processo.VencimentoFreeTime = DataHelper.CalcularVencimento(DTPdatadeatracacao.Value, Convert.ToInt32(NUMfreetime.Value));
                 dtpVencimentoFreeTime.Value = processo.VencimentoFreeTime ?? dtpVencimentoFreeTime.Value;
             }
             else
             {
+                processo.VencimentoFMA = null;
                 processo.VencimentoFreeTime = null;
             }
 
+            // Vencimento LI/LPCO
             DateTime? dataMaisAntiga = null;
-
             if (processo.LI != null && processo.LI.Count > 0)
             {
                 dataMaisAntiga = processo.LI
@@ -194,15 +318,7 @@ namespace Trabalho
             {
                 processo.VencimentoLI_LPCO = DataHelper.CalcularVencimento(dataMaisAntiga.Value, 80);
                 if (processo.VencimentoLI_LPCO.HasValue)
-                {
                     dtpVencimentoLI_LPCO.Value = processo.VencimentoLI_LPCO.Value;
-                }
-                else
-                {
-                    dtpVencimentoLI_LPCO.Value = DateTime.Today;
-                    dtpVencimentoLI_LPCO.Format = DateTimePickerFormat.Custom;
-                    dtpVencimentoLI_LPCO.CustomFormat = " ";
-                }
             }
             else
             {
@@ -212,18 +328,13 @@ namespace Trabalho
             processo.HistoricoDoProcesso = TXTstatusdoprocesso.Text;
             processo.Pendencia = TXTpendencia.Text;
 
-            if (processo.Capa == null)
-            {
-                processo.Capa = new Capa();
-            }
-
-            // Copia os valores dos campos principais do Processo para os campos correspondentes na Capa.
+            if (processo.Capa == null) processo.Capa = new Capa();
             processo.Capa.Container = processo.Container;
             processo.Capa.Master = processo.Veiculo;
             processo.Capa.SigvigSelecionado = processo.SIGVIGSelecionado;
             processo.Capa.SigvigLiberado = processo.SIGVIGLiberado;
 
-            // --- Salva os dados das abas dinâmicas de LI e LPCO ---
+            // 2. Salva as LIs da tela para a memória
             foreach (TabPage abaLi in TCLi.TabPages)
             {
                 if (abaLi.Controls.OfType<LIEditControl>().FirstOrDefault() is LIEditControl liControl)
@@ -232,11 +343,30 @@ namespace Trabalho
                 }
             }
 
-            
-
+            // 3. Limpa LIs vazias
             processo.LI.RemoveAll(li => string.IsNullOrWhiteSpace(li.Numero) || li.Numero == "Nova LI");
 
-            // 🆕 ATUALIZA A CONDIÇÃO DO PROCESSO AUTOMATICAMENTE
+            // =========================================================================
+            // 🛡️ CORREÇÃO (Esta parte DEVE vir antes do ProcessoHelper) 🛡️
+            // =========================================================================
+            var duplicadas = processo.LI
+                .GroupBy(li => li.Numero)
+                .Where(g => g.Count() > 1)
+                .Select(g => g.Key)
+                .ToList();
+
+            if (duplicadas.Any())
+            {
+                string msg = $"O sistema encontrou LIs com números iguais!\n" +
+                             $"Duplicados: {string.Join(", ", duplicadas)}\n\n" +
+                             $"Por favor, corrija os números ou apague as abas extras antes de salvar.";
+
+                // Isso interrompe o salvamento AQUI, antes de dar o erro crítico
+                throw new Exception(msg);
+            }
+            // =========================================================================
+
+            // 4. Só agora chama o Helper (que causava o erro se tivesse duplicada)
             ProcessoHelper.AtualizarCondicaoProcesso(processo);
         }
         private async void btnAdiciona_Click(object? sender, EventArgs e)
@@ -269,13 +399,45 @@ namespace Trabalho
                 if (Modo == "Adicionar")
                 {
                     await _repositorio.CreateAsync(processo);
-                    Modo = "Editar"; // Depois de criar, o modo muda para edição
+
+                    // Log simples para criação
+                    await _logRepo.RegistrarLogAsync("Criação", $"Novo processo: {processo.Ref_USA}");
+
+                    var settings = new Newtonsoft.Json.JsonSerializerSettings();
+                    settings.Converters.Add(new ObjectIdConverter());
+                    var json = Newtonsoft.Json.JsonConvert.SerializeObject(processo, settings);
+                    _processoOriginal = Newtonsoft.Json.JsonConvert.DeserializeObject<Processo>(json, settings);
+
+                    Modo = "Editar";
                     TXTnr.Enabled = false;
+
                 }
-                else // Modo "Editar"
+                else
                 {
+                    // --- AQUI ESTÁ A MUDANÇA ---
+                    // Gera o relatório completo de tudo que mudou automaticamente
+                    string logDetalhado = GerarLogCompletoDeAlteracoes();
+
                     await _repositorio.UpdateAsync(processo);
+
+                    // Grava no banco apenas se houve alteração
+                    if (logDetalhado != "Sem alterações detectadas.")
+                    {
+                        await _logRepo.RegistrarLogAsync(
+                            "Edição",
+                            $"Atualização em {processo.Ref_USA}",
+                            logDetalhado // Vai salvar: "Importador: A -> B; Data: 10/10 -> 11/10..."
+                        );
+                    }
+
+                    var settings = new Newtonsoft.Json.JsonSerializerSettings();
+                    settings.Converters.Add(new ObjectIdConverter()); // Importante para não travar!
+
+                    var json = Newtonsoft.Json.JsonConvert.SerializeObject(processo, settings);
+                    _processoOriginal = Newtonsoft.Json.JsonConvert.DeserializeObject<Processo>(json, settings);
                 }
+
+                await SincronizarOrgaoAnuenteAsync();
 
                 await ExcluirNotificacoesAutomaticamente(processo);
 
@@ -288,10 +450,29 @@ namespace Trabalho
             }
             catch (Exception ex)
             {
+                await _logRepo.RegistrarLogAsync("Erro", $"Falha ao salvar processo {processo.Ref_USA}", ex.Message);
                 MessageBox.Show($"Erro ao salvar o processo: {ex.Message}", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
+        private async Task SincronizarOrgaoAnuenteAsync()
+        {
+            var lisValidas = processo.LI
+                .Where(li => !string.IsNullOrWhiteSpace(li.Numero))
+                .Select(li => li.Numero)
+                .ToList();
 
+            var db = ConfigDatabase.GetDatabase();
+            var collection = db.GetCollection<OrgaoAnuente>("OrgaoAnuente");
+
+            var filtroRef = Builders<OrgaoAnuente>.Filter.Eq(x => x.Ref_USA, processo.Ref_USA);
+
+            var update = Builders<OrgaoAnuente>.Update.PullFilter(
+                "LIs", 
+                Builders<BsonDocument>.Filter.Nin("Numero", lisValidas) 
+            );
+
+            await collection.UpdateOneAsync(filtroRef, update);
+        }
 
         #endregion
 
@@ -315,13 +496,11 @@ namespace Trabalho
                 BackColor = SystemColors.Control
             };
 
-            // 1. Cria uma instância do nosso novo UserControl.
             var editorLi = new LIEditControl
             {
-                Dock = DockStyle.Fill // Faz ele preencher a aba
+                Dock = DockStyle.Fill
             };
 
-            // 2. Chama o método do UserControl para vincular os dados da LI.
             editorLi.VincularDados(li);
 
             // MUDANÇA: Atualiza o texto da aba de forma segura.
@@ -350,45 +529,55 @@ namespace Trabalho
             this.Text += "*";
         }
 
-        private void BtnExcluirLi_Click(object sender, EventArgs e)
+        private async void BtnExcluirLi_Click(object sender, EventArgs e)
         {
-            // 1. Verifica se existe alguma aba de LI selecionada para excluir.
-            if (TCLi.TabCount == 0 || TCLi.SelectedTab == null)
+            // 1. Verifica se há abas e se alguma está selecionada
+            if (TCLi.TabCount == 0 || TCLi.SelectedIndex < 0)
             {
                 MessageBox.Show("Nenhuma LI selecionada para excluir.", "Aviso", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return;
             }
 
-            // 2. Pega a aba e o objeto LicencaImportacao associado a ela.
-            var abaSelecionada = TCLi.SelectedTab;
-            if (abaSelecionada.Tag is not LicencaImportacao liParaExcluir)
-            {
-                MessageBox.Show("Erro ao identificar os dados da LI selecionada.", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return;
-            }
+            // 2. Obtém o índice da aba selecionada
+            int indice = TCLi.SelectedIndex;
 
-            // 3. Pede confirmação ao usuário.
+            // Recupera o objeto LI para exibir o número na mensagem de confirmação (opcional)
+            var aba = TCLi.TabPages[indice];
+            var liParaExcluir = aba.Tag as LicencaImportacao;
+            string numeroLi = liParaExcluir?.Numero ?? "Desconhecida";
+
+            // 3. Pede confirmação
             var resultado = MessageBox.Show(
-                $"Tem certeza que deseja excluir a LI '{liParaExcluir.Numero}' e todos os seus LPCOs associados?",
+                $"Tem certeza que deseja excluir a LI '{numeroLi}' e todos os seus LPCOs associados?",
                 "Confirmar Exclusão de LI",
                 MessageBoxButtons.YesNo,
                 MessageBoxIcon.Warning);
 
-            if (resultado == DialogResult.No)
+            if (resultado == DialogResult.No) return;
+
+            // 4. REMOÇÃO SEGURA POR ÍNDICE
+            // Remove do objeto de dados (processo.LI) se o índice for válido
+            if (indice < processo.LI.Count)
             {
-                return;
+                processo.LI.RemoveAt(indice);
             }
 
-            // 4. Executa a exclusão nos dados e na interface.
-            processo.LI.Remove(liParaExcluir);    // Remove da lista de dados do Processo
-            TCLi.TabPages.Remove(abaSelecionada); // Remove a aba da tela
+            // Remove a aba visualmente
+            TCLi.TabPages.RemoveAt(indice);
 
-            // 5. Marca que houve uma alteração nos dados
-            // MarcarComoAlterado(sender, e);
-            MessageBox.Show("LI removida. As alterações serão salvas quando você salvar o processo.", "LI Removida", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            // 5. Atualiza estado
             AtualizarEstadoBotoesLI();
+
+            await _logRepo.RegistrarLogAsync(
+                "Exclusão",
+                $"LI {numeroLi} removida do processo {processo.Ref_USA}",
+                $"Usuário removeu a aba da LI"
+            );
+
             _dadosForamAlterados = true;
             this.Text += "*";
+
+            MessageBox.Show("LI removida com sucesso.", "LI Removida", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
         #endregion
@@ -415,27 +604,31 @@ namespace Trabalho
         {
             dtp.ShowCheckBox = true;
 
-            // Se já existe uma data salva no banco, usa ela.
             if (data.HasValue)
             {
                 dtp.Checked = true;
                 dtp.Value = data.Value;
-                dtp.Format = DateTimePickerFormat.Short;
+
+                // LÓGICA NOVA PARA EXIBIR HORA AO CARREGAR
+                if (dtp.Name == "DTPdatadeatracacao")
+                {
+                    dtp.Format = DateTimePickerFormat.Custom;
+                    dtp.CustomFormat = "dd/MM/yyyy HH:mm";
+                }
+                else
+                {
+                    dtp.Format = DateTimePickerFormat.Short;
+                }
             }
-            else // Se for um objeto novo (data == null)
+            else
             {
-                dtp.Checked = false; // Começa desmarcado
-
-                // MUDANÇA PRINCIPAL: Define o valor subjacente para a data de hoje.
-                // Assim, se o usuário marcar a caixa, a data que aparecerá será a de hoje,
-                // e não uma data antiga do designer.
-                dtp.Value = DateTime.Today;
-
+                dtp.Checked = false;
+                dtp.Value = DateTime.Today; // Data base para quando o usuário clicar
                 dtp.Format = DateTimePickerFormat.Custom;
-                dtp.CustomFormat = " "; // Deixa visualmente em branco
+                dtp.CustomFormat = " ";
             }
 
-            // O evento para formatar a aparência continua o mesmo.
+            // Reinscrição do evento (mantém igual ao seu código original)
             dtp.ValueChanged -= Dtp_ValueChanged_Format;
             dtp.ValueChanged += Dtp_ValueChanged_Format;
         }
@@ -445,10 +638,28 @@ namespace Trabalho
         {
             if (sender is DateTimePicker picker)
             {
-                picker.Format = picker.Checked ? DateTimePickerFormat.Short : DateTimePickerFormat.Custom;
+                if (picker.Checked)
+                {
+                    // Verifique se o controle atual é o que deve mostrar as horas
+                    // (Substitua "DTPDatadeChegada" pelo nome exato do seu componente no Designer)
+                    if (picker.Name == "DTPdatadeatracacao")
+                    {
+                        picker.Format = DateTimePickerFormat.Custom;
+                        picker.CustomFormat = "dd/MM/yyyy HH:mm"; // Mostra Dia, Mês, Ano, Hora e Minuto
+                    }
+                    else
+                    {
+                        picker.Format = DateTimePickerFormat.Short; // Padrão (apenas data) para os outros
+                    }
+                }
+                else
+                {
+                    // Se estiver desmarcado (nulo visualmente)
+                    picker.Format = DateTimePickerFormat.Custom;
+                    picker.CustomFormat = " ";
+                }
             }
         }
-
         private void CarregarCheckedListBoxes()
         {
             // 1. Lida com o CheckedListBox de multi-seleção ("Docs Recebidos")
