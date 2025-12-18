@@ -960,11 +960,12 @@ namespace CLUSA
                 if (processo.DataDeAtracacao.HasValue)
                 {
                     int dias = (processo.DataDeAtracacao.Value - DateTime.Today).Days;
+
                     // Verifica se está no prazo E se NÃO foi feita redestinação
-                    if (dias >= 0 && dias <= 5 && (processo.Redestinacao == null || processo.Redestinacao == false))
+                    if (dias >= 0 && dias <= 10 && (processo.Redestinacao == null || processo.Redestinacao == false))
                     {
                         tasks.Add(CriarNotificacaoSeNecessarioAsync(processo.Ref_USA,
-                            $"Processo {processo.Ref_USA}: Redestinar container ao terminal"));
+                            $"Processo {processo.Ref_USA}: Redestinar container ao terminal ({dias} dias restantes)"));
                     }
                 }
 
