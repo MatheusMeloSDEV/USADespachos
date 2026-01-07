@@ -1,18 +1,11 @@
 ﻿using CLUSA;
-using iText.Kernel.Pdf;
-using iText.Layout;
-using iText.Layout.Element;
-using iText.Layout.Properties;
-using iText.Kernel.Font;
-using iText.IO.Font.Constants;
-using iText.IO.Font;
-using iText.Kernel.Geom; // For PageSize
-using iText.Kernel.Colors; // For ColorConstants
-using System.IO;
+using CLUSA.Repositories;
+using CLUSA.Services;
 using MongoDB.Driver;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Reflection;
+using CLUSA.Models;
 
 namespace Trabalho
 {
@@ -24,8 +17,9 @@ namespace Trabalho
         private ListSortDirection _direcaoOrdenacao;
         private List<Processo> _listaOriginal = new();
 
+        private FrmLoadingOverlay? _overlay;
         private readonly RepositorioUsers _repositorioUsers;
-        private readonly LogRepository _logRepo;
+        private readonly RepositorioLog _logRepo;
         private Users? _usuarioLogado;
         private readonly Logado _logado;
 
@@ -41,7 +35,7 @@ namespace Trabalho
 
             _repositorio = new RepositorioProcesso();
             _repositorioUsers = new RepositorioUsers();
-            _logRepo = new LogRepository();
+            _logRepo = new RepositorioLog();
             _logado = logado;
             this.Shown += FrmSantos_Shown;
         }
@@ -60,6 +54,7 @@ namespace Trabalho
                 }
 
                 GridColumnManager.ConfigurarGrid(DGVSantos, "DGVSantos", colunasVisiveis);
+                GridColumnManager.ConfigurarFormatacaoListas(DGVSantos);
 
                 await CarregarDadosAsync();
 
@@ -150,10 +145,6 @@ namespace Trabalho
                 // Falha silenciosa ou log simples para não atrapalhar o usuário
                 Debug.WriteLine($"Erro autocomplete: {ex.Message}");
             }
-        }
-        private void LimparCacheAutoComplete()
-        {
-            _cacheAutoComplete.Clear();
         }
         private async void BtnAdicionar_Click(object sender, EventArgs e)
         {
@@ -246,7 +237,6 @@ namespace Trabalho
             frm.ShowDialog();
             await CarregarDadosAsync();
         }
-
         private async void BtnExportar_Click(object sender, EventArgs e)
         {
             // Obtém a lista de importadores únicos do repositório
@@ -258,63 +248,27 @@ namespace Trabalho
             {
                 string importador = form.SelectedImporter;
 
-                // 1) Cria sem using
-                var progressForm = new ProgressForm();
-                progressForm.Show(this);       // exibe modeless, com o próprio Form como owner
-
-
-                await Task.Run(() =>
+                try
                 {
-                    string pdfPath = "";
-                    string? mensagemErro = null;
+                    MostrarLoading("Gerando documentos...");
 
-                    try
+                    var service = new CLUSA.Services.FollowUpService();
+
+                    // Isso vai gerar o Excel E o PDF na pasta configurada
+                    string pdfPath = await service.GerarRelatoriosAsync(importador);
+
+                    EsconderLoading();
+
+                    if (MessageBox.Show("Relatórios gerados! Deseja abrir o PDF?", "Sucesso", MessageBoxButtons.YesNo) == DialogResult.Yes)
                     {
-                        pdfPath = PythonRunner.ExecutarExportador(importador).Trim();
-                        _ = Task.Run(() => _logRepo.RegistrarLogAsync(
-                            "Exportação",
-                            "Follow-Up gerado",
-                            $"Usuário: {_logado.Usuario} | Registros visíveis: {DGVSantos.RowCount}"
-                        ));
+                        Process.Start(new ProcessStartInfo(pdfPath) { UseShellExecute = true });
                     }
-                    catch (Exception ex)
-                    {
-                        mensagemErro = $"Erro durante exportação: {ex.Message}";
-                    }
-
-                    Invoke(new Action(() =>
-                    {
-                        progressForm.Close();
-                        progressForm.Dispose();
-
-                        if (mensagemErro != null)
-                        {
-                            MessageBox.Show(mensagemErro, "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                            return;
-                        }
-
-                        var resp = MessageBox.Show(
-                            "Exportação concluída. Deseja abrir o PDF?",
-                            "Resultado",
-                            MessageBoxButtons.YesNo,
-                            MessageBoxIcon.Question
-                        );
-
-                        if (resp == DialogResult.Yes && File.Exists(pdfPath))
-                        {
-                            try
-                            {
-                                // Abre o PDF com o aplicativo padrão, usando o Explorer
-                                Process.Start("explorer.exe", pdfPath);
-                            }
-                            catch (Exception ex)
-                            {
-                                MessageBox.Show($"Erro ao tentar abrir o PDF: {ex.Message}", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                            }
-                        }
-
-                    }));
-                });
+                }
+                catch (Exception ex)
+                {
+                    EsconderLoading();
+                    MessageBox.Show($"Erro: {ex.Message}");
+                }
             }
         }
 
@@ -466,113 +420,96 @@ namespace Trabalho
 
         private void BtnDownloadTabela_Click(object sender, EventArgs e)
         {
-            // 1. Get visible columns to export
-            var colunasVisiveis = DGVSantos.Columns.Cast<DataGridViewColumn>()
-                                           .Where(c => c.Visible)
-                                           .ToList();
-
-            if (colunasVisiveis.Count == 0)
+            // 1. Validação básica
+            if (DGVSantos.Rows.Count == 0)
             {
-                MessageBox.Show("Nenhuma coluna visível para exportar.", "Aviso");
+                MessageBox.Show("Não há dados na tabela para exportar.", "Aviso", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
-            // 2. Ask user for file location
+            // 2. Lógica de seleção (Pergunta ao usuário se exporta tudo ou só a seleção)
+            bool apenasSelecionadas = false;
+            if (DGVSantos.SelectedRows.Count > 0)
+            {
+                var resp = MessageBox.Show(
+                    $"Você tem {DGVSantos.SelectedRows.Count} linhas selecionadas.\nDeseja exportar APENAS a seleção?\n\n(Não = Exportar tudo)",
+                    "Opções de Exportação",
+                    MessageBoxButtons.YesNoCancel,
+                    MessageBoxIcon.Question);
+
+                if (resp == DialogResult.Cancel) return;
+                apenasSelecionadas = (resp == DialogResult.Yes);
+            }
+
+            // 3. Configura o Arquivo
             using var sfd = new SaveFileDialog();
             sfd.Filter = "Arquivo PDF (*.pdf)|*.pdf";
             sfd.FileName = $"Relatorio_Santos_{DateTime.Now:yyyyMMdd_HHmm}.pdf";
 
             if (sfd.ShowDialog() != DialogResult.OK) return;
 
+            // 4. Executa a exportação usando o Serviço
             try
             {
-                // 3. Initialize PDF Writer and Document
-                using var writer = new PdfWriter(sfd.FileName);
-                using var pdf = new PdfDocument(writer);
-                var document = new Document(pdf, PageSize.A3.Rotate());
-                document.SetMargins(10, 10, 10, 10);
+                Cursor.Current = Cursors.WaitCursor; // Feedback visual simples
 
-                // 4. Load Fonts (Standard Helvetica)
-                // Using explicit encoding to be safe
-                var fontRegular = PdfFontFactory.CreateFont(StandardFonts.HELVETICA, PdfEncodings.WINANSI);
-                var fontBold = PdfFontFactory.CreateFont(StandardFonts.HELVETICA_BOLD, PdfEncodings.WINANSI);
+                // Chama a classe estática que criamos
+                PdfExportService.ExportarGridParaPdf(
+                    DGVSantos,
+                    sfd.FileName,
+                    "Relatório de Processos - Santos",
+                    apenasSelecionadas
+                );
 
-                // 5. Add Title
-                var titulo = new Paragraph("Relatório de Processos - Santos")
-                    .SetFont(fontBold)
-                    .SetFontSize(18)
-                    .SetTextAlignment(TextAlignment.CENTER);
+                Cursor.Current = Cursors.Default;
 
-                document.Add(titulo);
-                document.Add(new Paragraph("\n")); // Spacer
+                // 5. Log e Sucesso
+                int qtdExportada = apenasSelecionadas ? DGVSantos.SelectedRows.Count : DGVSantos.Rows.Count;
 
+                // Dispara o log sem travar a UI
                 _ = Task.Run(() => _logRepo.RegistrarLogAsync(
                     "Exportação",
                     "Relatório PDF da tabela Santos gerado",
-                    $"Usuário: {_logado.Usuario} | Registros visíveis: {DGVSantos.RowCount}"
+                    $"Usuário: {_logado.Usuario} | Registros: {qtdExportada}"
                 ));
 
-                // 6. Create Table
-                // UseAllAvailableWidth makes the table span the page width
-                var table = new Table(UnitValue.CreatePercentArray(colunasVisiveis.Count)).UseAllAvailableWidth();
-
-                // 7. Add Headers
-                foreach (var col in colunasVisiveis)
-                {
-                    var headerText = col.HeaderText ?? string.Empty;
-                    var cell = new Cell().Add(new Paragraph(headerText)
-                        .SetFont(fontBold)
-                        .SetFontSize(10));
-
-                    cell.SetBackgroundColor(iText.Kernel.Colors.ColorConstants.LIGHT_GRAY);
-                    table.AddHeaderCell(cell);
-                }
-
-                // 8. Add Data Rows
-                foreach (DataGridViewRow row in DGVSantos.Rows)
-                {
-                    if (row.IsNewRow) continue;
-
-                    foreach (var col in colunasVisiveis)
-                    {
-                        // Safe string conversion
-                        var cellValue = row.Cells[col.Index].Value;
-                        var textValue = cellValue?.ToString() ?? "";
-
-                        var cell = new Cell().Add(new Paragraph(textValue)
-                            .SetFont(fontRegular)
-                            .SetFontSize(7));
-
-                        table.AddCell(cell);
-                    }
-                }
-
-                // 9. Add Table to Document and Close
-                document.Add(table);
-                document.Close();
-
-                // 10. Success Message and Open File
                 if (MessageBox.Show("PDF gerado com sucesso! Deseja abrir agora?", "Sucesso",
                     MessageBoxButtons.YesNo, MessageBoxIcon.Information) == DialogResult.Yes)
                 {
-                    // Open the PDF safely
                     var p = new ProcessStartInfo(sfd.FileName) { UseShellExecute = true };
                     Process.Start(p);
                 }
             }
-            catch (IOException ioEx)
+            catch (IOException)
             {
-                // Catch file access errors specifically
-                MessageBox.Show($"Não foi possível salvar o arquivo. Verifique se ele já está aberto em outro programa.\n\nDetalhe: {ioEx.Message}",
+                Cursor.Current = Cursors.Default;
+                MessageBox.Show("O arquivo está aberto em outro programa. Feche-o e tente novamente.",
                     "Arquivo em Uso", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }
             catch (Exception ex)
             {
-                // Catch all other errors (like iText specific ones)
-                var mensagemErro = ex.InnerException != null ? ex.InnerException.Message : ex.Message;
-                MessageBox.Show($"Erro real: {mensagemErro}\n\nStack: {ex.StackTrace}",
-                    "Erro Crítico", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                Cursor.Current = Cursors.Default;
+                MessageBox.Show($"Erro ao gerar PDF: {ex.Message}", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
+        }
+        private void MostrarLoading(string mensagem)
+        {
+            if (_overlay != null) return;
+            _overlay = new FrmLoadingOverlay { Opacity = 0.60 };
+            _overlay.lblLoading.Text = mensagem;
+            var rect = this.RectangleToScreen(this.ClientRectangle);
+            _overlay.StartPosition = FormStartPosition.Manual;
+            _overlay.Location = rect.Location;
+            _overlay.Size = rect.Size;
+            _overlay.Show(this);
+            _overlay.BringToFront();
+        }
+
+        private void EsconderLoading()
+        {
+            _overlay?.Close();
+            _overlay?.Dispose();
+            _overlay = null;
         }
     }
 }

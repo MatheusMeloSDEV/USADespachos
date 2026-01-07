@@ -1,7 +1,7 @@
-﻿using CLUSA; // Sua namespace dos modelos e repositórios
+﻿using CLUSA.Repositories;
+using CLUSA.Models;
+using CLUSA.Interfaces;
 using System.ComponentModel;
-using System.Threading.Tasks;
-using System.Windows.Forms;
 
 namespace Trabalho
 {
@@ -16,7 +16,7 @@ namespace Trabalho
 
         private readonly Logado _logado;
         private readonly RepositorioUsers _repositorioUsers;
-        private readonly LogRepository _logRepo;
+        private readonly RepositorioLog _logRepo;
         private Users? _usuarioLogado;
 
         public FrmOrgaoAnuente(Logado logado)
@@ -28,7 +28,7 @@ namespace Trabalho
             DgvOrgaoAnuente.DataSource = _bsLpcoViewModel;
 
             _repositorioUsers = new RepositorioUsers();
-            _logRepo = new LogRepository();
+            _logRepo = new RepositorioLog();
             _logado = logado;
         }
 

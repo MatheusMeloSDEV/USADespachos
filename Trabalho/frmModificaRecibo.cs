@@ -1,4 +1,5 @@
-﻿using CLUSA;
+﻿using CLUSA.Models;
+using CLUSA.Repositories;
 using System.Data;
 using System.Globalization;
 

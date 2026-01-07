@@ -1,15 +1,13 @@
-﻿using CLUSA;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Windows.Forms;
+﻿using CLUSA.Models;
+using CLUSA.Repositories;
+using CLUSA.Helpers;
 
 namespace Trabalho
 {
     public partial class FrmModificaVencimentos : Form
     {
-        private readonly VencimentoRepository _repoVencimento;
-        private readonly LogRepository _repoLog;
+        private readonly RepositorioVencimento _repoVencimento;
+        private readonly RepositorioLog _repoLog;
         private string _idEdicao = null;
 
         public class ImportadorOpcao { public string Nome { get; set; } public List<string> Cnpjs { get; set; } }
@@ -17,8 +15,8 @@ namespace Trabalho
         public FrmModificaVencimentos(string idParaEditar = null)
         {
             InitializeComponent();
-            _repoVencimento = new VencimentoRepository();
-            _repoLog = new LogRepository();
+            _repoVencimento = new RepositorioVencimento();
+            _repoLog = new RepositorioLog();
             _idEdicao = idParaEditar;
 
             CarregarComboBox();

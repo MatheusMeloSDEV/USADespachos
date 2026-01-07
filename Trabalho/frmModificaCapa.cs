@@ -1,4 +1,6 @@
 using CLUSA;
+using CLUSA.Models;
+using CLUSA.Services;
 using System.Diagnostics;
 
 namespace Trabalho
@@ -208,79 +210,19 @@ namespace Trabalho
             }
         }
 
-        private void btnExportar_Click(object sender, EventArgs e)
+        private async void btnExportar_Click(object sender, EventArgs e)
         {
-            // 1) Cria e exibe o formulário de progresso
-            var progressForm = new ProgressForm();
-            progressForm.Show(this);
-
-            Task.Run(() =>
+            try
             {
-                string pdfPath = null;
-                string mensagemErro = null;
+                var service = new CapaService();
+                string pdfPath = await service.GerarCapaAsync(ref_usa);
 
-                try
-                {
-                    // 1. Executa o script e armazena a saída (que pode ser um caminho ou um erro)
-                    string resultadoPython = PythonRunner.ExecutarCapa(ref_usa);
-
-                    // 2. CORREÇÃO: VERIFICA O RESULTADO
-                    // Se a string retornada termina com .pdf E o arquivo realmente existe, é sucesso.
-                    if (!string.IsNullOrWhiteSpace(resultadoPython) &&
-                        resultadoPython.Trim().EndsWith(".pdf", StringComparison.OrdinalIgnoreCase) &&
-                        File.Exists(resultadoPython.Trim()))
-                    {
-                        // SUCESSO: O resultado é um caminho de PDF válido.
-                        pdfPath = resultadoPython.Trim();
-                    }
-                    else
-                    {
-                        // FALHA: O resultado não é um PDF válido, então consideramos que é a mensagem de erro.
-                        mensagemErro = resultadoPython;
-                        if (string.IsNullOrWhiteSpace(mensagemErro))
-                        {
-                            mensagemErro = "Ocorreu um erro desconhecido durante a execução do script. A saída estava vazia.";
-                        }
-                    }
-                }
-                catch (Exception ex)
-                {
-                    // Este catch agora pega erros da própria lógica C# (ex: permissões, etc.)
-                    mensagemErro = $"Erro inesperado na aplicação: {ex.Message}";
-                }
-
-                // 3. Atualiza a interface do usuário com o resultado
-                Invoke(new Action(() =>
-                {
-                    progressForm.Close();
-                    progressForm.Dispose();
-
-                    // Agora, se mensagemErro não for nula, ela contém o erro do Python
-                    if (mensagemErro != null)
-                    {
-                        MessageBox.Show(mensagemErro, "Erro na Exportação", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                        return;
-                    }
-
-                    // O resto do código de sucesso permanece o mesmo
-                    var resp = MessageBox.Show(
-                        "Exportação concluída. Deseja abrir o PDF?",
-                        "Sucesso",
-                        MessageBoxButtons.YesNo,
-                        MessageBoxIcon.Question
-                    );
-
-                    if (resp == DialogResult.Yes && File.Exists(pdfPath))
-                    {
-                        Process.Start(new ProcessStartInfo
-                        {
-                            FileName = pdfPath,
-                            UseShellExecute = true
-                        });
-                    }
-                    DialogResult = DialogResult.OK; 
-                }));
-            });
+                System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(pdfPath) { UseShellExecute = true });
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Erro: {ex.Message}");
+            }
         }
         private void SalvarDados()
         {

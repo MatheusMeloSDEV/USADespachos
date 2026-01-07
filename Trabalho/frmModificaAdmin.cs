@@ -1,4 +1,4 @@
-﻿using CLUSA;
+﻿using CLUSA.Models;
 using Timer = System.Windows.Forms.Timer;
 
 namespace Trabalho

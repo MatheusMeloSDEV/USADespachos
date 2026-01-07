@@ -1,4 +1,6 @@
-﻿using CLUSA;
+﻿using CLUSA.Services;
+using CLUSA.Repositories;
+using CLUSA.Models;
 
 namespace Trabalho
 {
@@ -8,6 +10,8 @@ namespace Trabalho
         public static FrmLogin Instance { get; private set; } = null!;
         public Logado Logado { get; private set; } = null!;
         public bool Escuro { get; private set; } = false;
+
+        private const string CaminhoArquivo = @"C:\UsaDespachos\Log.txt";
 
         public FrmLogin()
         {
@@ -23,7 +27,50 @@ namespace Trabalho
             await VerificarAtualizacoesAsync();
         }
 
+        private bool CarregarLoginLocal()
+        {
+            try
+            {
+                if (File.Exists(CaminhoArquivo))
+                {
+                    string conteudo = File.ReadAllText(CaminhoArquivo);
+                    // Supondo formato: usuario|senha
+                    string[] dados = conteudo.Split('|');
 
+                    if (dados.Length >= 2)
+                    {
+                        txtUsername.Text = dados[0];
+                        txtPassword.Text = dados[1];
+                        return true;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                // Silencioso ou log de erro, para não travar a abertura
+                Console.WriteLine($"Erro ao ler login local: {ex.Message}");
+            }
+            return false;
+        }
+        private void SalvarLoginLocal(string usuario, string senha)
+        {
+            try
+            {
+                // Garante que a pasta existe
+                string diretorio = Path.GetDirectoryName(CaminhoArquivo)!;
+                if (!Directory.Exists(diretorio))
+                {
+                    Directory.CreateDirectory(diretorio);
+                }
+
+                // Salva no formato: usuario|senha
+                File.WriteAllText(CaminhoArquivo, $"{usuario}|{senha}");
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Não foi possível salvar o login localmente: {ex.Message}");
+            }
+        }
         private async Task VerificarAtualizacoesAsync()
         {
             var atualizador = new AtualizadorGithub(
@@ -103,6 +150,10 @@ namespace Trabalho
 
             if (Logado.log)
             {
+                if (CbLembrar.Checked)
+                {
+                    SalvarLoginLocal(user.Username, user.Password);
+                }
                 HandleSuccessfulLogin();
             }
             else
@@ -171,8 +222,14 @@ namespace Trabalho
         private void ShowLoginScreen()
         {
             Show();
-            txtPassword.Clear();
-            txtUsername.Clear();
+
+            if (!CarregarLoginLocal())
+            {
+                txtPassword.Clear();
+                txtUsername.Clear();
+            }
+
+            CarregarLoginLocal();
 
             lblPassword.Visible = true;
             txtPassword.Visible = true;

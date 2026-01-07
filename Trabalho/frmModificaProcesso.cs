@@ -5,32 +5,35 @@ using System.Data;
 using System.Diagnostics;
 using System.Reflection;
 using Newtonsoft.Json;
+using CLUSA.Repositories;
+using CLUSA.Helpers;
+using CLUSA.Models;
 
 namespace Trabalho
 {
     public enum OrigemProcesso
     {
-        Santos, // Para processos gerais
-        Itajai  // Para processos com sufixo ITJ
+        Santos,
+        Itajai 
     }
     public partial class FrmModificaProcesso : Form
     {
-        public Processo processo { get; set; }
-        public string Modo { get; set; } = "Adicionar"; // Valor padrão
+        public Processo processo { get; set; } = null!;
+        private Processo _processoOriginal = null!;
+        public string Modo { get; set; } = "Adicionar";
         public bool Visualização { get; set; } = false;
         public OrigemProcesso Origem { get; set; }
         private readonly RepositorioProcesso _repositorio;
         private readonly RepositorioNotificacao _notificacaoRepo;
-        private readonly LogRepository _logRepo;
+        private readonly RepositorioLog _logRepo;
         private bool _dadosForamAlterados = false;
-        private Processo _processoOriginal;
 
         public FrmModificaProcesso()
         {
             InitializeComponent();
             _repositorio = new RepositorioProcesso();
             _notificacaoRepo = new RepositorioNotificacao();
-            _logRepo = new LogRepository();
+            _logRepo = new RepositorioLog();
         }
 
         private void FrmModificaProcesso_Load(object? sender, EventArgs e)
@@ -41,7 +44,7 @@ namespace Trabalho
                 settings.Converters.Add(new ObjectIdConverter());
 
                 var json = JsonConvert.SerializeObject(processo, settings);
-                _processoOriginal = JsonConvert.DeserializeObject<Processo>(json, settings);
+                _processoOriginal = JsonConvert.DeserializeObject<Processo>(json, settings) ?? new Processo();
             }
             else
             {
@@ -141,25 +144,22 @@ namespace Trabalho
 
             if (antigo == null || novo == null) return diferencas;
 
-            // Pega todas as propriedades da classe
             PropertyInfo[] propriedades = antigo.GetType().GetProperties();
 
             foreach (var prop in propriedades)
             {
                 if (ignorar.Contains(prop.Name)) continue;
 
-                // Pega o valor
-                object valorAntigo = prop.GetValue(antigo);
-                object valorNovo = prop.GetValue(novo);
+                // CORREÇÃO AQUI: 'object?' permite que o valor seja nulo
+                object? valorAntigo = prop.GetValue(antigo);
+                object? valorNovo = prop.GetValue(novo);
 
-                // Formata datas para não comparar horas se não precisar
+                // O compilador agora aceita passar 'object?' porque ajustamos o FormatarValor abaixo
                 string sAntigo = FormatarValor(valorAntigo);
                 string sNovo = FormatarValor(valorNovo);
 
-                // Compara as strings
                 if (sAntigo != sNovo)
                 {
-                    // Adiciona na lista: "Exportador: 'Empresa A' -> 'Empresa B'"
                     diferencas.Add($"{prop.Name}: '{sAntigo}' -> '{sNovo}'");
                 }
             }
@@ -169,17 +169,20 @@ namespace Trabalho
 
         private string FormatarValor(object val)
         {
-            if (val == null) return "Vazio";
-            if (val is DateTime dt) return dt.ToShortDateString(); // Ignora hora, se quiser hora use ToString()
-            if (val is decimal dec) return dec.ToString("N2"); // Formata dinheiro
+            if (val == null) return "";
+            if (val is DateTime dt) return dt.ToShortDateString(); 
+            if (val is decimal dec) return dec.ToString("N2");
             if (val is bool b) return b ? "Sim" : "Não";
-            return val.ToString().Trim();
+            return val.ToString() ?? "";
         }
 
         private void CompararListaLIs(List<string> logs)
         {
-            int qtdOriginal = _processoOriginal.LI?.Count ?? 0;
-            int qtdAtual = processo.LI?.Count ?? 0;
+            var listaAntiga = _processoOriginal.LI ?? new List<LicencaImportacao>();
+            var listaNova = processo.LI ?? new List<LicencaImportacao>();
+
+            int qtdOriginal = listaAntiga.Count;
+            int qtdAtual = listaNova.Count;
 
             if (qtdOriginal != qtdAtual)
             {
@@ -187,16 +190,14 @@ namespace Trabalho
             }
             else
             {
-                // Se a quantidade é a mesma, tenta comparar os números
                 for (int i = 0; i < qtdAtual; i++)
                 {
-                    var liAntiga = _processoOriginal.LI[i];
-                    var liNova = processo.LI[i];
+                    var liAntiga = listaAntiga[i];
+                    var liNova = listaNova[i];
 
                     if (liAntiga.Numero != liNova.Numero)
                         logs.Add($"LI[{i + 1}]: '{liAntiga.Numero}' -> '{liNova.Numero}'");
 
-                    // Você pode adicionar mais campos da LI aqui se quiser
                     if (liAntiga.NCM != liNova.NCM)
                         logs.Add($"LI {liNova.Numero} (NCM): '{liAntiga.NCM}' -> '{liNova.NCM}'");
                 }
@@ -334,7 +335,6 @@ namespace Trabalho
             processo.Capa.SigvigSelecionado = processo.SIGVIGSelecionado;
             processo.Capa.SigvigLiberado = processo.SIGVIGLiberado;
 
-            // 2. Salva as LIs da tela para a memória
             foreach (TabPage abaLi in TCLi.TabPages)
             {
                 if (abaLi.Controls.OfType<LIEditControl>().FirstOrDefault() is LIEditControl liControl)
@@ -343,12 +343,8 @@ namespace Trabalho
                 }
             }
 
-            // 3. Limpa LIs vazias
             processo.LI.RemoveAll(li => string.IsNullOrWhiteSpace(li.Numero) || li.Numero == "Nova LI");
 
-            // =========================================================================
-            // 🛡️ CORREÇÃO (Esta parte DEVE vir antes do ProcessoHelper) 🛡️
-            // =========================================================================
             var duplicadas = processo.LI
                 .GroupBy(li => li.Numero)
                 .Where(g => g.Count() > 1)
@@ -361,19 +357,14 @@ namespace Trabalho
                              $"Duplicados: {string.Join(", ", duplicadas)}\n\n" +
                              $"Por favor, corrija os números ou apague as abas extras antes de salvar.";
 
-                // Isso interrompe o salvamento AQUI, antes de dar o erro crítico
                 throw new Exception(msg);
             }
-            // =========================================================================
-
-            // 4. Só agora chama o Helper (que causava o erro se tivesse duplicada)
             ProcessoHelper.AtualizarCondicaoProcesso(processo);
         }
         private async void btnAdiciona_Click(object? sender, EventArgs e)
         {
             try
             {
-                // --- VALIDAÇÃO: Verificar se Ref_USA já existe (APENAS no modo Adicionar) ---
                 if (Modo == "Adicionar" && !string.IsNullOrWhiteSpace(TXTnr.Text))
                 {
                     bool refUsaExiste = await _repositorio.VerificarRefUsaExisteAsync(TXTnr.Text);
@@ -387,26 +378,24 @@ namespace Trabalho
                             MessageBoxIcon.Warning
                         );
 
-                        TXTnr.Clear(); // Limpa o campo
-                        TXTnr.Focus(); // Coloca o foco no campo para nova digitação
-                        return; // Para a execução aqui
+                        TXTnr.Clear(); 
+                        TXTnr.Focus();
+                        return; 
                     }
                 }
 
-                // Se passou na validação, continua salvando
                 SalvarDadosDosControles();
 
                 if (Modo == "Adicionar")
                 {
                     await _repositorio.CreateAsync(processo);
 
-                    // Log simples para criação
                     await _logRepo.RegistrarLogAsync("Criação", $"Novo processo: {processo.Ref_USA}");
 
                     var settings = new Newtonsoft.Json.JsonSerializerSettings();
                     settings.Converters.Add(new ObjectIdConverter());
                     var json = Newtonsoft.Json.JsonConvert.SerializeObject(processo, settings);
-                    _processoOriginal = Newtonsoft.Json.JsonConvert.DeserializeObject<Processo>(json, settings);
+                    _processoOriginal = Newtonsoft.Json.JsonConvert.DeserializeObject<Processo>(json, settings) ?? new Processo();
 
                     Modo = "Editar";
                     TXTnr.Enabled = false;
@@ -770,13 +759,13 @@ namespace Trabalho
             {
                 capa = processo.Capa ?? new Capa(),
                 Modo = this.Modo,
-                ref_usa = processo.Ref_USA,
+                ref_usa = processo.Ref_USA ?? string.Empty,
                 Visualizacao = this.Visualização
             };
 
             if (frm.ShowDialog(this) == DialogResult.OK)
             {
-                processo.Capa = frm.capa;
+                processo.Capa = frm.capa ?? new Capa();
             }
             _dadosForamAlterados = true;
             this.Text += "*";

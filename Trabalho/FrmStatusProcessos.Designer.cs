@@ -41,12 +41,14 @@
             BtnParaRedestinar = new Label();
             BtnRedestinados = new Label();
             MostrarItens = new TableLayoutPanel();
+            BtnDownloadPDF = new PictureBox();
             LblTitulo = new Label();
             BtnVoltar = new PictureBox();
             DGVSelecionado = new DataGridView();
             _bindingSource = new BindingSource(components);
             Blocos.SuspendLayout();
             MostrarItens.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)BtnDownloadPDF).BeginInit();
             ((System.ComponentModel.ISupportInitialize)BtnVoltar).BeginInit();
             ((System.ComponentModel.ISupportInitialize)DGVSelecionado).BeginInit();
             ((System.ComponentModel.ISupportInitialize)_bindingSource).BeginInit();
@@ -233,9 +235,11 @@
             // 
             // MostrarItens
             // 
-            MostrarItens.ColumnCount = 2;
+            MostrarItens.ColumnCount = 3;
             MostrarItens.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 40F));
             MostrarItens.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
+            MostrarItens.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 40F));
+            MostrarItens.Controls.Add(BtnDownloadPDF, 2, 0);
             MostrarItens.Controls.Add(LblTitulo, 1, 0);
             MostrarItens.Controls.Add(BtnVoltar, 0, 0);
             MostrarItens.Controls.Add(DGVSelecionado, 0, 1);
@@ -249,6 +253,18 @@
             MostrarItens.Size = new Size(1264, 681);
             MostrarItens.TabIndex = 12;
             // 
+            // BtnDownloadPDF
+            // 
+            BtnDownloadPDF.Dock = DockStyle.Fill;
+            BtnDownloadPDF.Image = Properties.Resources.Download;
+            BtnDownloadPDF.Location = new Point(1227, 3);
+            BtnDownloadPDF.Name = "BtnDownloadPDF";
+            BtnDownloadPDF.Size = new Size(34, 34);
+            BtnDownloadPDF.SizeMode = PictureBoxSizeMode.StretchImage;
+            BtnDownloadPDF.TabIndex = 4;
+            BtnDownloadPDF.TabStop = false;
+            BtnDownloadPDF.Click += BtnDownloadPDF_Click;
+            // 
             // LblTitulo
             // 
             LblTitulo.AutoSize = true;
@@ -256,7 +272,7 @@
             LblTitulo.Font = new Font("Segoe UI", 20F);
             LblTitulo.Location = new Point(43, 0);
             LblTitulo.Name = "LblTitulo";
-            LblTitulo.Size = new Size(1218, 40);
+            LblTitulo.Size = new Size(1178, 40);
             LblTitulo.TabIndex = 1;
             LblTitulo.Text = "Em Andamento";
             LblTitulo.TextAlign = ContentAlignment.MiddleLeft;
@@ -281,10 +297,13 @@
             DGVSelecionado.Location = new Point(3, 43);
             DGVSelecionado.Name = "DGVSelecionado";
             MostrarItens.SetRowSpan(DGVSelecionado, 2);
+            DGVSelecionado.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
             DGVSelecionado.Size = new Size(1258, 635);
             DGVSelecionado.TabIndex = 3;
             DGVSelecionado.CellDoubleClick += DGVSelecionado_CellDoubleClick;
+            DGVSelecionado.CellValueChanged += DGVSelecionado_CellValueChanged;
             DGVSelecionado.ColumnHeaderMouseClick += DGVSelecionado_ColumnHeaderMouseClick;
+            DGVSelecionado.CurrentCellDirtyStateChanged += DGVSelecionado_CurrentCellDirtyStateChanged;
             // 
             // FrmStatusProcessos
             // 
@@ -301,6 +320,7 @@
             Blocos.PerformLayout();
             MostrarItens.ResumeLayout(false);
             MostrarItens.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)BtnDownloadPDF).EndInit();
             ((System.ComponentModel.ISupportInitialize)BtnVoltar).EndInit();
             ((System.ComponentModel.ISupportInitialize)DGVSelecionado).EndInit();
             ((System.ComponentModel.ISupportInitialize)_bindingSource).EndInit();
@@ -324,5 +344,6 @@
         private PictureBox BtnVoltar;
         private DataGridView DGVSelecionado;
         private BindingSource _bindingSource;
+        private PictureBox BtnDownloadPDF;
     }
 }

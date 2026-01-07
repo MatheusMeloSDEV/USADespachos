@@ -1,22 +1,19 @@
-﻿using CLUSA;
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using System.Windows.Forms;
+﻿using CLUSA.Repositories;
+using CLUSA.Models;
 
 namespace Trabalho
 {
     public partial class FrmAdmin : Form
     {
         private readonly RepositorioUsers repositorio;
-        private readonly LogRepository _logRepo;
+        private readonly RepositorioLog _logRepo;
         public string usuarioLogadoNome;
 
         public FrmAdmin()
         {
             InitializeComponent();
             repositorio = new RepositorioUsers();
-            _logRepo = new LogRepository();
+            _logRepo = new RepositorioLog();
             usuarioLogadoNome = FrmLogin.Instance?.Logado?.Usuario ?? "Desconhecido";
         }
 

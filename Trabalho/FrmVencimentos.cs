@@ -1,21 +1,18 @@
-﻿using CLUSA;
-using System;
-using System.Collections.Generic;
+﻿using CLUSA.Services;
+using CLUSA.Repositories;
 using System.Data;
-using System.Linq; // Importante para formatar a lista
-using System.Windows.Forms;
 
 namespace Trabalho
 {
     public partial class FrmVencimentos : Form
     {
-        private readonly VencimentoRepository _repoVencimento;
-        private readonly LogRepository _repoLog;
+        private readonly RepositorioVencimento _repoVencimento;
+        private readonly RepositorioLog _repoLog;
         public FrmVencimentos()
         {
             InitializeComponent();
-            _repoVencimento = new VencimentoRepository();
-            _repoLog = new LogRepository();
+            _repoVencimento = new RepositorioVencimento();
+            _repoLog = new RepositorioLog();
             // Configurações visuais do Grid
             ConfigurarGrid();
         }

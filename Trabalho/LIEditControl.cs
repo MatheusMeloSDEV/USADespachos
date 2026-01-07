@@ -1,4 +1,4 @@
-﻿using CLUSA;
+﻿using CLUSA.Models;
 
 namespace Trabalho
 {

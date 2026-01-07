@@ -1,7 +1,6 @@
-﻿using CLUSA;
-using MongoDB.Driver;
-using System.Data;
-using Newtonsoft.Json;
+﻿using MongoDB.Driver;
+using CLUSA.Models;
+using CLUSA.Repositories;
 
 namespace Trabalho
 {
@@ -11,7 +10,7 @@ namespace Trabalho
         public Processo Processo { get; set; }
         private bool _dadosForamAlterados = false;
 
-        private readonly LogRepository _logRepo; // <--- NOVO
+        private readonly RepositorioLog _logRepo; // <--- NOVO
         private OrgaoAnuente _orgaoOriginal;
         public bool IsViewOnly { get; set; } = false;
         private readonly RepositorioOrgaoAnuente _repositorioOrgaoAnuente;
@@ -25,7 +24,7 @@ namespace Trabalho
             var client = new MongoClient(ConfigDatabase.MongoConnectionString);
             var database = client.GetDatabase(ConfigDatabase.MongoDatabaseName);
 
-            _logRepo = new LogRepository();
+            _logRepo = new RepositorioLog();
             _repositorioVistorias = new RepositorioVistorias(database);
             _repositorioOrgaoAnuente = repositorioOrgaoAnuente;
             _repositorioProcesso = repositorioProcesso;

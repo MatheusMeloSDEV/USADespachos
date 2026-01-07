@@ -1,14 +1,6 @@
-﻿using CLUSA;
+﻿using CLUSA.Repositories;
 using MongoDB.Bson;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
 using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
 
 namespace Trabalho
 {
@@ -17,7 +9,7 @@ namespace Trabalho
     {
         private readonly ObjectId _usuarioId;
         private Dictionary<string, List<string>> _preferenciasLocais;
-        private readonly LogRepository _logRepo;
+        private readonly RepositorioLog _logRepo;
         private string _gridAtual;
         private List<string> ObterPadraoInicial(string nomeGrid)
         {
@@ -34,6 +26,7 @@ namespace Trabalho
             return new List<string>
                 {
                     "Importador",           // IMP
+                    "Exportador",           // EXP
                     "Ref_USA",              // N/REF
                     "SR",                   // SFREF
                     "Veiculo",              // NAVIO
@@ -78,7 +71,7 @@ namespace Trabalho
             _usuarioId = usuarioId;
             _preferenciasLocais = new Dictionary<string, List<string>>(preferenciasAtuais ?? new Dictionary<string, List<string>>());
 
-            _logRepo = new LogRepository();
+            _logRepo = new RepositorioLog();
 
             InitializeComponent();
             CarregarGridsDisponiveis();

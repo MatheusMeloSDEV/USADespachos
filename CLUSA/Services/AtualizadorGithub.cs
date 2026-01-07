@@ -1,14 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;          
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
-using System.Reflection;       
-using System.Text.Json;            
+using System.Reflection;
+using System.Text.Json;
 using System.Threading.Tasks;
 
-namespace CLUSA
+namespace CLUSA.Services
 {
     public class AtualizadorGithub
     {

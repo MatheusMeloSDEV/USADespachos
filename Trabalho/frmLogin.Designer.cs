@@ -41,6 +41,7 @@
             tLogado = new System.Windows.Forms.Timer(components);
             tErro = new System.Windows.Forms.Timer(components);
             btnFechar = new Button();
+            CbLembrar = new CheckBox();
             ((System.ComponentModel.ISupportInitialize)check).BeginInit();
             SuspendLayout();
             // 
@@ -51,7 +52,7 @@
             lblError.BackColor = Color.Transparent;
             lblError.Font = new Font("Segoe UI", 10F);
             lblError.ForeColor = Color.Red;
-            lblError.Location = new Point(263, 141);
+            lblError.Location = new Point(263, 127);
             lblError.Name = "lblError";
             lblError.Size = new Size(274, 19);
             lblError.TabIndex = 25;
@@ -62,7 +63,7 @@
             // 
             check.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             check.Image = (Image)resources.GetObject("check.Image");
-            check.Location = new Point(334, 237);
+            check.Location = new Point(334, 223);
             check.Name = "check";
             check.Size = new Size(23, 20);
             check.SizeMode = PictureBoxSizeMode.Zoom;
@@ -74,7 +75,7 @@
             // 
             lblLogado.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             lblLogado.AutoSize = true;
-            lblLogado.Location = new Point(363, 240);
+            lblLogado.Location = new Point(363, 226);
             lblLogado.Name = "lblLogado";
             lblLogado.Size = new Size(104, 15);
             lblLogado.TabIndex = 23;
@@ -99,7 +100,7 @@
             lblPassword.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             lblPassword.AutoSize = true;
             lblPassword.BackColor = Color.Transparent;
-            lblPassword.Location = new Point(286, 240);
+            lblPassword.Location = new Point(286, 226);
             lblPassword.Name = "lblPassword";
             lblPassword.Size = new Size(39, 15);
             lblPassword.TabIndex = 21;
@@ -110,7 +111,7 @@
             lblUsername.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             lblUsername.AutoSize = true;
             lblUsername.BackColor = Color.Transparent;
-            lblUsername.Location = new Point(278, 187);
+            lblUsername.Location = new Point(278, 173);
             lblUsername.Name = "lblUsername";
             lblUsername.Size = new Size(47, 15);
             lblUsername.TabIndex = 20;
@@ -121,7 +122,7 @@
             txtPassword.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             txtPassword.BackColor = SystemColors.Control;
             txtPassword.BorderStyle = BorderStyle.FixedSingle;
-            txtPassword.Location = new Point(334, 237);
+            txtPassword.Location = new Point(334, 223);
             txtPassword.Name = "txtPassword";
             txtPassword.PasswordChar = '*';
             txtPassword.Size = new Size(196, 23);
@@ -132,7 +133,7 @@
             txtUsername.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             txtUsername.BackColor = SystemColors.Control;
             txtUsername.BorderStyle = BorderStyle.FixedSingle;
-            txtUsername.Location = new Point(334, 185);
+            txtUsername.Location = new Point(334, 171);
             txtUsername.Name = "txtUsername";
             txtUsername.Size = new Size(196, 23);
             txtUsername.TabIndex = 18;
@@ -155,6 +156,16 @@
             btnFechar.UseVisualStyleBackColor = false;
             btnFechar.Click += BtnFechar_Click;
             // 
+            // CbLembrar
+            // 
+            CbLembrar.AutoSize = true;
+            CbLembrar.Location = new Point(358, 267);
+            CbLembrar.Name = "CbLembrar";
+            CbLembrar.Size = new Size(109, 19);
+            CbLembrar.TabIndex = 27;
+            CbLembrar.Text = "Lembrar senha?";
+            CbLembrar.UseVisualStyleBackColor = true;
+            // 
             // FrmLogin
             // 
             AcceptButton = btnLogin;
@@ -163,6 +174,7 @@
             BackColor = SystemColors.Control;
             ClientSize = new Size(800, 450);
             ControlBox = false;
+            Controls.Add(CbLembrar);
             Controls.Add(btnFechar);
             Controls.Add(lblError);
             Controls.Add(check);
@@ -197,5 +209,6 @@
         private System.Windows.Forms.Timer tLogado;
         private System.Windows.Forms.Timer tErro;
         private Button btnFechar;
+        private CheckBox CbLembrar;
     }
 }

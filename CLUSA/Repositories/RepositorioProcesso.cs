@@ -1,12 +1,12 @@
 ﻿using MongoDB.Bson;
 using MongoDB.Driver;
 using System.Text.RegularExpressions;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using CLUSA.Models;
 
-namespace CLUSA
+namespace CLUSA.Repositories
 {
     public class RepositorioProcesso
     {
@@ -86,7 +86,23 @@ namespace CLUSA
             var filter = Builders<Processo>.Filter.Eq(p => p.Ref_USA, refUsa);
             return await _colecao.Find(filter).FirstOrDefaultAsync();
         }
+        public async Task<List<Processo>> ListarFinalizadosAsync(string sufixoExcluir = "ITJ")
+        {
+            var builder = Builders<Processo>.Filter;
 
+            // 1. Filtro de Status: PEGAR APENAS "Finalizado"
+            var filtroStatus = builder.Eq(p => p.Status, "Finalizado");
+
+            // 2. Filtro de Sufixo (Mantendo a mesma regra de excluir ITJ, se necessário)
+            var regex = new BsonRegularExpression(new Regex($"{sufixoExcluir}$", RegexOptions.IgnoreCase));
+            var filtroSufixo = builder.Not(builder.Regex(p => p.Ref_USA, regex));
+
+            // Combina os filtros
+            var filtroFinal = builder.And(filtroStatus, filtroSufixo);
+
+            // Dica: Se a lista for muito grande, considere adicionar .Limit(1000) ou paginação aqui
+            return await _colecao.Find(filtroFinal).ToListAsync();
+        }
         // Este é o método "Turbo" para o Grid principal
         public async Task<List<Processo>> ListarPrincipalOtimizadoAsync(string sufixoExcluir = "ITJ")
         {

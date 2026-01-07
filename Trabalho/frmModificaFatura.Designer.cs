@@ -224,7 +224,7 @@
             // 
             // BsFatura
             // 
-            BsFatura.DataSource = typeof(CLUSA.Fatura);
+            BsFatura.DataSource = typeof(CLUSA.Models.Fatura);
             // 
             // label21
             // 

@@ -1,17 +1,9 @@
-﻿using CLUSA;
-using MongoDB.Bson;
+﻿using CLUSA.Repositories;
+using CLUSA.Services;
+using CLUSA.Models;
 using MongoDB.Driver;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
 using System.Data;
-using System.Diagnostics;
-using System.Drawing;
 using System.Drawing.Imaging;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
 
 namespace Trabalho
 {
@@ -23,7 +15,7 @@ namespace Trabalho
         private readonly RepositorioNotificacao _notificacaoRepo;
         private readonly RepositorioNotifUrgente _repoNotificacoesUrgentes;
         private readonly RepositorioUsers _repositorioUsers;
-        private readonly GerenciadorNotificacao _gerenciadorNotificacao;
+        private readonly NotificacaoService _NotificacaoService;
 
         private readonly Logado _logadoUsuario;
         private readonly Dictionary<Type, Form> _forms = new();
@@ -45,7 +37,7 @@ namespace Trabalho
             // Injeção de Dependência dos Repositórios e Gerenciador
             _notificacaoRepo = new RepositorioNotificacao(database);
             _repoNotificacoesUrgentes = new RepositorioNotifUrgente(database);
-            _gerenciadorNotificacao = new GerenciadorNotificacao(database);
+            _NotificacaoService = new NotificacaoService(database);
 
             // Configuração do Timer de Sincronização
             _notificacaoTimer = new System.Windows.Forms.Timer();
@@ -100,7 +92,7 @@ namespace Trabalho
                 // Se der erro aqui, o usuário nem percebe, apenas pula esse ciclo
 
                 // A. Limpeza (Rápido)
-                await _gerenciadorNotificacao.ExcluirNotificacoesAntigasAsync(DateTime.Now.AddDays(-90));
+                await _NotificacaoService.ExcluirNotificacoesAntigasAsync(DateTime.Now.AddDays(-90));
 
                 // B. A parte pesada (Sincronização)
                 var processosMonitorados = await _repositorioProcesso.ListarProcessosAtivosParaStatusAsync();
@@ -161,7 +153,7 @@ namespace Trabalho
         {
             foreach (var p in processos)
             {
-                await _gerenciadorNotificacao.SincronizarNotificacoesDoProcessoAsync(p);
+                await _NotificacaoService.SincronizarNotificacoesDoProcessoAsync(p);
             }
         }
 

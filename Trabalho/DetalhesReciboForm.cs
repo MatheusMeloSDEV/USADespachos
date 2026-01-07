@@ -1,4 +1,6 @@
 ﻿using CLUSA;
+using CLUSA.Models;
+using CLUSA.Repositories;
 using System.Diagnostics;
 
 namespace Trabalho

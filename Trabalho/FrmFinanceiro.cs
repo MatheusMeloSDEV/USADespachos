@@ -1,8 +1,5 @@
-﻿using CLUSA;
-using System.Data;
-using System.Diagnostics;
-using System.Drawing;
-using System.Windows.Forms;
+﻿using CLUSA.Repositories;
+using CLUSA.Models;
 
 namespace Trabalho
 {

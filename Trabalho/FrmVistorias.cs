@@ -1,4 +1,6 @@
-﻿using CLUSA;
+﻿using CLUSA.Repositories;
+using CLUSA.Services;
+using CLUSA.Models;
 using MongoDB.Driver;
 using System.Data;
 using System.Diagnostics;
@@ -13,7 +15,7 @@ namespace Trabalho
 
         private readonly Logado _logado;
         private readonly RepositorioUsers _repositorioUsers;
-        private readonly LogRepository _logRepo;
+        private readonly RepositorioLog _logRepo;
         private Users? _usuarioLogado;
 
         // BindingSources
@@ -48,7 +50,7 @@ namespace Trabalho
             _vistoriaService = new VistoriaService(database);
             _repositorioVistorias = new RepositorioVistorias(database);
             _repositorioProcesso = new RepositorioProcesso();
-            _logRepo = new LogRepository();
+            _logRepo = new RepositorioLog();
 
             _repositorioUsers = new RepositorioUsers();
             _logado = logado;

@@ -1,9 +1,4 @@
-﻿using MongoDB.Bson;
-using System;
-using System.Collections.Generic;
-using System.Drawing;
-using System.Linq;
-using System.Windows.Forms;
+﻿using CLUSA.Models;
 
 namespace Trabalho
 {
@@ -45,22 +40,31 @@ namespace Trabalho
         /// Configura um DataGridView com base nas preferências do usuário.
         /// </summary>
         public static void ConfigurarGrid(
-            DataGridView dgv,
-            string nomeGrid,
-            List<string> colunasVisiveis,
-            bool aplicarEstiloPadrao = true)
+    DataGridView dgv,
+    string nomeGrid,
+    List<string> colunasVisiveis,
+    bool aplicarEstiloPadrao = true)
         {
             if (dgv == null) throw new ArgumentNullException(nameof(dgv));
 
             dgv.Columns.Clear();
 
-            // Configurações básicas
+            // --- Configurações básicas ---
             dgv.AutoGenerateColumns = false;
             dgv.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
             dgv.RowHeadersVisible = false;
             dgv.AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.None;
             dgv.DefaultCellStyle.WrapMode = DataGridViewTriState.False;
             dgv.ShowCellToolTips = true;
+
+            // --- AQUI ESTÁ A ALTERAÇÃO ---
+            // Define um azul bem suave (AliceBlue) ou você pode usar Color.LightBlue
+            // Ou personalizar com RGB: Color.FromArgb(180, 220, 255)
+            dgv.DefaultCellStyle.SelectionBackColor = Color.FromArgb(200, 225, 255);
+
+            // Importante: Texto preto para dar contraste com o fundo claro
+            dgv.DefaultCellStyle.SelectionForeColor = Color.Black;
+            // -----------------------------
 
             var todasColunas = ObterCatalogo(nomeGrid);
 
@@ -72,7 +76,7 @@ namespace Trabalho
                     .ToList();
             }
 
-            // Adicionar colunas visíveis (apenas as que existem no catálogo)
+            // Adicionar colunas visíveis
             foreach (var nomeColuna in colunasVisiveis)
             {
                 var definicao = todasColunas.FirstOrDefault(c => c.NomePropriedade == nomeColuna);
@@ -87,6 +91,22 @@ namespace Trabalho
             {
                 AplicarEstiloPadrao(dgv, todasColunas);
             }
+        }
+        public static void ConfigurarFormatacaoListas(DataGridView dgv)
+        {
+            dgv.CellFormatting += (sender, e) =>
+            {
+                var grid = (DataGridView)sender;
+
+                // Se a coluna for "LI", formata a lista de licenças
+                if (grid.Columns[e.ColumnIndex].DataPropertyName == "LI" && e.Value is List<LicencaImportacao> lista)
+                {
+                    e.Value = string.Join(", ", lista
+                        .Select(x => x.Numero)
+                        .Where(n => !string.IsNullOrWhiteSpace(n)));
+                    e.FormattingApplied = true;
+                }
+            };
         }
 
         /// <summary>
@@ -202,11 +222,13 @@ namespace Trabalho
         {
             new("Ref_USA", "Ref. USA", autoSizeMode: DataGridViewAutoSizeColumnMode.AllCells),
             new("Importador", "Importador", minimumWidth: 200),
+            new("Exportador", "Exportador", minimumWidth: 200),
             new("SR", "Ref. IMP", autoSizeMode: DataGridViewAutoSizeColumnMode.AllCells),
             new("Produto", "Produto", minimumWidth: 200),
             new("Marca", "Marca"),
             new("Veiculo", "Veículo"),
             new("PortoDestino", "Porto Destino"),
+            new("LI", "Números LI", minimumWidth: 150, somenteLeitura: true),
             new("FLO", "FLO"),
             new("FreeTime", "Free Time", formato: "N0", centralizar: true),
             new("Terminal", "Terminal"),
@@ -215,7 +237,7 @@ namespace Trabalho
             new("CE", "CE"),
             new("Container", "Container"),
             new("PresencaDeCarga", "Presença Carga", tipoColuna: TipoColunaGrid.CheckBox, centralizar: true),
-            new("CapaOK", "Capa OK", tipoColuna: TipoColunaGrid.CheckBox, centralizar: true),
+            new("CapaOK", "Capa OK", minimumWidth:50, tipoColuna: TipoColunaGrid.CheckBox, centralizar: true),
             new("SIGVIGLiberado", "SIGVIG Liberado", tipoColuna: TipoColunaGrid.CheckBox, centralizar: true),
             new("SIGVIGSelecionado", "SIGVIG Selecionado", tipoColuna: TipoColunaGrid.CheckBox, centralizar: true),
             new("ResultadoLab", "Resultado Lab", tipoColuna: TipoColunaGrid.CheckBox, centralizar: true),
@@ -236,7 +258,7 @@ namespace Trabalho
             new("Amostra", "Amostra", tipoColuna: TipoColunaGrid.CheckBox, centralizar: true),
             new("Desovado", "Desovado", tipoColuna: TipoColunaGrid.CheckBox, centralizar: true),
             new("Redestinacao", "Redestinação", tipoColuna: TipoColunaGrid.CheckBox, centralizar: true),
-            new("Numerario", "Numerário", tipoColuna: TipoColunaGrid.CheckBox, centralizar: true),
+            new("Numerario", "Numerário", minimumWidth:50, tipoColuna: TipoColunaGrid.CheckBox, centralizar: true),
             new("SigVig", "SIGVIG (Processo)", tipoColuna: TipoColunaGrid.CheckBox, centralizar: true),
             new("PossuiEmbarque", "Possui Embarque", tipoColuna: TipoColunaGrid.CheckBox, centralizar: true),
             new("VencimentoFreeTime", "Venc. Free Time", formato: "dd/MM/yyyy"),
@@ -277,6 +299,7 @@ namespace Trabalho
         {
             new("Ref_USA", "Ref. USA", autoSizeMode: DataGridViewAutoSizeColumnMode.AllCells),
             new("Importador", "Importador", minimumWidth: 200),
+            new("Exportador", "Exportador", minimumWidth: 200),
             new("NumeroLI", "Número LI"),
             new("Produto", "Produto", minimumWidth: 200),
             new("Container", "Container"),

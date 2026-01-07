@@ -24,9 +24,9 @@ namespace Trabalho
         {
             components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(frmSantos));
-            DataGridViewCellStyle dataGridViewCellStyle7 = new DataGridViewCellStyle();
-            DataGridViewCellStyle dataGridViewCellStyle8 = new DataGridViewCellStyle();
-            DataGridViewCellStyle dataGridViewCellStyle9 = new DataGridViewCellStyle();
+            DataGridViewCellStyle dataGridViewCellStyle1 = new DataGridViewCellStyle();
+            DataGridViewCellStyle dataGridViewCellStyle2 = new DataGridViewCellStyle();
+            DataGridViewCellStyle dataGridViewCellStyle3 = new DataGridViewCellStyle();
             BsProcesso = new BindingSource(components);
             TSMenuItajai = new ToolStrip();
             BtnAdicionar = new ToolStripButton();
@@ -36,6 +36,7 @@ namespace Trabalho
             BtnRemover = new ToolStripButton();
             toolStripSeparator3 = new ToolStripSeparator();
             BtnExportar = new ToolStripButton();
+            BtnDownloadTabela = new ToolStripButton();
             BtnAjuda = new ToolStripButton();
             BtnCancelar = new ToolStripButton();
             BtnPesquisar = new ToolStripButton();
@@ -44,7 +45,6 @@ namespace Trabalho
             TxtPesquisar = new ToolStripTextBox();
             DGVSantos = new DataGridView();
             panel1 = new Panel();
-            BtnDownloadTabela = new ToolStripButton();
             ((System.ComponentModel.ISupportInitialize)BsProcesso).BeginInit();
             TSMenuItajai.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)DGVSantos).BeginInit();
@@ -119,6 +119,17 @@ namespace Trabalho
             BtnExportar.Text = "Exportar";
             BtnExportar.Click += BtnExportar_Click;
             // 
+            // BtnDownloadTabela
+            // 
+            BtnDownloadTabela.Alignment = ToolStripItemAlignment.Right;
+            BtnDownloadTabela.DisplayStyle = ToolStripItemDisplayStyle.Image;
+            BtnDownloadTabela.Image = Properties.Resources.Download;
+            BtnDownloadTabela.ImageTransparentColor = Color.Magenta;
+            BtnDownloadTabela.Name = "BtnDownloadTabela";
+            BtnDownloadTabela.Size = new Size(23, 37);
+            BtnDownloadTabela.Text = "toolStripButton2";
+            BtnDownloadTabela.Click += BtnDownloadTabela_Click;
+            // 
             // BtnAjuda
             // 
             BtnAjuda.Alignment = ToolStripItemAlignment.Right;
@@ -182,33 +193,33 @@ namespace Trabalho
             DGVSantos.AllowUserToAddRows = false;
             DGVSantos.AllowUserToDeleteRows = false;
             DGVSantos.AllowUserToResizeRows = false;
-            dataGridViewCellStyle7.BackColor = Color.WhiteSmoke;
-            DGVSantos.AlternatingRowsDefaultCellStyle = dataGridViewCellStyle7;
+            dataGridViewCellStyle1.BackColor = Color.WhiteSmoke;
+            DGVSantos.AlternatingRowsDefaultCellStyle = dataGridViewCellStyle1;
             DGVSantos.BackgroundColor = Color.White;
-            dataGridViewCellStyle8.Alignment = DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle8.BackColor = Color.DarkGray;
-            dataGridViewCellStyle8.Font = new Font("Segoe UI", 9.75F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            dataGridViewCellStyle8.ForeColor = Color.White;
-            dataGridViewCellStyle8.SelectionBackColor = SystemColors.Highlight;
-            dataGridViewCellStyle8.SelectionForeColor = SystemColors.HighlightText;
-            dataGridViewCellStyle8.WrapMode = DataGridViewTriState.True;
-            DGVSantos.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle8;
+            dataGridViewCellStyle2.Alignment = DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle2.BackColor = Color.DarkGray;
+            dataGridViewCellStyle2.Font = new Font("Segoe UI", 9.75F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            dataGridViewCellStyle2.ForeColor = Color.White;
+            dataGridViewCellStyle2.SelectionBackColor = SystemColors.Highlight;
+            dataGridViewCellStyle2.SelectionForeColor = SystemColors.HighlightText;
+            dataGridViewCellStyle2.WrapMode = DataGridViewTriState.True;
+            DGVSantos.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle2;
             DGVSantos.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            dataGridViewCellStyle9.Alignment = DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle9.BackColor = Color.White;
-            dataGridViewCellStyle9.Font = new Font("Segoe UI", 9.75F, FontStyle.Regular, GraphicsUnit.Point, 0);
-            dataGridViewCellStyle9.ForeColor = Color.Black;
-            dataGridViewCellStyle9.SelectionBackColor = Color.LightBlue;
-            dataGridViewCellStyle9.SelectionForeColor = Color.Black;
-            dataGridViewCellStyle9.WrapMode = DataGridViewTriState.False;
-            DGVSantos.DefaultCellStyle = dataGridViewCellStyle9;
+            dataGridViewCellStyle3.Alignment = DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle3.BackColor = Color.White;
+            dataGridViewCellStyle3.Font = new Font("Segoe UI", 9.75F, FontStyle.Regular, GraphicsUnit.Point, 0);
+            dataGridViewCellStyle3.ForeColor = Color.Black;
+            dataGridViewCellStyle3.SelectionBackColor = Color.LightBlue;
+            dataGridViewCellStyle3.SelectionForeColor = Color.Black;
+            dataGridViewCellStyle3.WrapMode = DataGridViewTriState.False;
+            DGVSantos.DefaultCellStyle = dataGridViewCellStyle3;
             DGVSantos.Dock = DockStyle.Fill;
             DGVSantos.EnableHeadersVisualStyles = false;
             DGVSantos.Location = new Point(0, 0);
-            DGVSantos.MultiSelect = false;
             DGVSantos.Name = "DGVSantos";
             DGVSantos.ReadOnly = true;
             DGVSantos.RowHeadersVisible = false;
+            DGVSantos.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
             DGVSantos.Size = new Size(800, 409);
             DGVSantos.TabIndex = 2;
             DGVSantos.CellDoubleClick += DGVSantos_CellDoubleClick;
@@ -223,17 +234,6 @@ namespace Trabalho
             panel1.Name = "panel1";
             panel1.Size = new Size(800, 409);
             panel1.TabIndex = 4;
-            // 
-            // BtnDownloadTabela
-            // 
-            BtnDownloadTabela.Alignment = ToolStripItemAlignment.Right;
-            BtnDownloadTabela.DisplayStyle = ToolStripItemDisplayStyle.Image;
-            BtnDownloadTabela.Image = Properties.Resources.Download;
-            BtnDownloadTabela.ImageTransparentColor = Color.Magenta;
-            BtnDownloadTabela.Name = "BtnDownloadTabela";
-            BtnDownloadTabela.Size = new Size(23, 37);
-            BtnDownloadTabela.Text = "toolStripButton2";
-            BtnDownloadTabela.Click += BtnDownloadTabela_Click;
             // 
             // frmSantos
             // 

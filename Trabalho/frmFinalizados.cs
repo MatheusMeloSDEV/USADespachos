@@ -1,13 +1,7 @@
-﻿using CLUSA;
-using System;
-using System.Collections.Generic;
+﻿using CLUSA.Models;
+using CLUSA.Repositories;
 using System.ComponentModel;
 using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
 
 namespace Trabalho
 {
@@ -68,14 +62,13 @@ namespace Trabalho
         {
             try
             {
-                var registros = await _repositorio.ListarPrincipalOtimizadoAsync();
-                var registrosFinalizados = registros
-                    .Where(p => p.Status == "Finalizado")
-                    .OrderBy(p => p.DataDeAtracacao == null ? 1 : 0)
+                var registros = await _repositorio.ListarFinalizadosAsync();
+                var registrosOrdenados = registros
+                    .OrderBy(p => p.DataDeAtracacao == null ? 1 : 0) // Nulos para o final (ou início, conforme sua lógica)
                     .ThenBy(p => p.DataDeAtracacao ?? DateTime.MaxValue)
                     .ToList();
 
-                BsProcesso.DataSource = registrosFinalizados;
+                BsProcesso.DataSource = registrosOrdenados;
                 DGVFinalizados.DataSource = BsProcesso;
                 BsProcesso.ResetBindings(false);
             }

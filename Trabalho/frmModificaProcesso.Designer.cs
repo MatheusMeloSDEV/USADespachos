@@ -184,7 +184,7 @@
             // 
             // BsModificaProcesso
             // 
-            BsModificaProcesso.DataSource = typeof(CLUSA.Processo);
+            BsModificaProcesso.DataSource = typeof(CLUSA.Models.Processo);
             // 
             // label10
             // 

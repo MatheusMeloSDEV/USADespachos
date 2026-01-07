@@ -43,7 +43,7 @@
             // 
             // BsModificaAdmin
             // 
-            BsModificaAdmin.DataSource = typeof(CLUSA.Users);
+            BsModificaAdmin.DataSource = typeof(CLUSA.Models.Users);
             // 
             // btnEnviar
             // 

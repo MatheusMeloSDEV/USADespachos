@@ -1,20 +1,17 @@
 ﻿using CLUSA;
-using System;
-using System.Collections.Generic;
+using CLUSA.Repositories;
+using CLUSA.Services;
 using System.ComponentModel;
 using System.Data;
 using System.Diagnostics;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
+using CLUSA.Models;
 
 namespace Trabalho
 {
     public partial class FrmItajaí : Form
     {
         private readonly RepositorioProcesso _repositorio;
+        private readonly RepositorioLog _repoLog;
         private DataGridViewColumn? _colunaOrdenada;
         private ListSortDirection _direcaoOrdenacao;
         private List<Processo> _listaOriginal = new();
@@ -28,6 +25,7 @@ namespace Trabalho
             InitializeComponent();
             _repositorio = new RepositorioProcesso();
             _repositorioUsers = new RepositorioUsers();
+            _repoLog = new RepositorioLog();
             _logado = logado;
         }
         private async void FrmItajaí_Shown(object? sender, EventArgs e)
@@ -43,6 +41,7 @@ namespace Trabalho
                     return;
                 }
                 GridColumnManager.RegistrarCatalogosPadrao();
+                GridColumnManager.ConfigurarFormatacaoListas(DGVItajai);
 
                 _usuarioLogado.PreferenciasGrids ??= new Dictionary<string, List<string>>();
                 _usuarioLogado.PreferenciasGrids.TryGetValue("DGVItajai", out var colunasVisiveis);
@@ -357,8 +356,81 @@ namespace Trabalho
             return (ano, numero);
         }
 
+        private void BtnDownloadTabela_Click(object sender, EventArgs e)
+        {
+            // 1. Validação básica
+            if (DGVItajai.Rows.Count == 0)
+            {
+                MessageBox.Show("Não há dados na tabela para exportar.", "Aviso", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
 
-        // Substitua seu método de clique no cabeçalho por este
+            // 2. Lógica de seleção (Pergunta ao usuário se exporta tudo ou só a seleção)
+            bool apenasSelecionadas = false;
+            if (DGVItajai.SelectedRows.Count > 0)
+            {
+                var resp = MessageBox.Show(
+                    $"Você tem {DGVItajai.SelectedRows.Count} linhas selecionadas.\nDeseja exportar APENAS a seleção?\n\n(Não = Exportar tudo)",
+                    "Opções de Exportação",
+                    MessageBoxButtons.YesNoCancel,
+                    MessageBoxIcon.Question);
+
+                if (resp == DialogResult.Cancel) return;
+                apenasSelecionadas = (resp == DialogResult.Yes);
+            }
+
+            // 3. Configura o Arquivo
+            using var sfd = new SaveFileDialog();
+            sfd.Filter = "Arquivo PDF (*.pdf)|*.pdf";
+            sfd.FileName = $"Relatorio_Itakjai_{DateTime.Now:yyyyMMdd_HHmm}.pdf";
+
+            if (sfd.ShowDialog() != DialogResult.OK) return;
+
+            // 4. Executa a exportação usando o Serviço
+            try
+            {
+                Cursor.Current = Cursors.WaitCursor; // Feedback visual simples
+
+                // Chama a classe estática que criamos
+                PdfExportService.ExportarGridParaPdf(
+                    DGVItajai,
+                    sfd.FileName,
+                    "Relatório de Processos - Itajaí",
+                    apenasSelecionadas
+                );
+
+                Cursor.Current = Cursors.Default;
+
+                // 5. Log e Sucesso
+                int qtdExportada = apenasSelecionadas ? DGVItajai.SelectedRows.Count : DGVItajai.Rows.Count;
+
+                // Dispara o log sem travar a UI
+                _ = Task.Run(() => _repoLog.RegistrarLogAsync(
+                    "Exportação",
+                    "Relatório PDF da tabela Itajaí gerado",
+                    $"Usuário: {_logado.Usuario} | Registros: {qtdExportada}"
+                ));
+
+                if (MessageBox.Show("PDF gerado com sucesso! Deseja abrir agora?", "Sucesso",
+                    MessageBoxButtons.YesNo, MessageBoxIcon.Information) == DialogResult.Yes)
+                {
+                    var p = new ProcessStartInfo(sfd.FileName) { UseShellExecute = true };
+                    Process.Start(p);
+                }
+            }
+            catch (IOException)
+            {
+                Cursor.Current = Cursors.Default;
+                MessageBox.Show("O arquivo está aberto em outro programa. Feche-o e tente novamente.",
+                    "Arquivo em Uso", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            }
+            catch (Exception ex)
+            {
+                Cursor.Current = Cursors.Default;
+                MessageBox.Show($"Erro ao gerar PDF: {ex.Message}", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
         private void DGV_ColumnHeaderMouseClick(object? sender, DataGridViewCellMouseEventArgs e)
         {
             if (sender is not DataGridView dgv) return;

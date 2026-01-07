@@ -42,6 +42,7 @@
             BtnExcluir = new ToolStripButton();
             toolStripSeparator4 = new ToolStripSeparator();
             BtnExportar = new ToolStripButton();
+            BtnDownloadTabela = new ToolStripButton();
             BtnAjuda = new ToolStripButton();
             BtnCancelar = new ToolStripButton();
             BtnPesquisar = new ToolStripButton();
@@ -89,7 +90,7 @@
             DGVItajai.Name = "DGVItajai";
             DGVItajai.ReadOnly = true;
             DGVItajai.RowHeadersVisible = false;
-            DGVItajai.RowTemplate.Height = 25;
+            DGVItajai.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
             DGVItajai.Size = new Size(800, 408);
             DGVItajai.TabIndex = 0;
             DGVItajai.CellDoubleClick += DGVItajai_CellDoubleClick;
@@ -98,7 +99,7 @@
             // TSMenuItajai
             // 
             TSMenuItajai.AutoSize = false;
-            TSMenuItajai.Items.AddRange(new ToolStripItem[] { BtnAdicionar, toolStripSeparator2, BtnEditar, toolStripSeparator3, BtnExcluir, toolStripSeparator4, BtnExportar, BtnAjuda, BtnCancelar, BtnPesquisar, toolStripSeparator1, CmbPesquisar, TxtPesquisar });
+            TSMenuItajai.Items.AddRange(new ToolStripItem[] { BtnAdicionar, toolStripSeparator2, BtnEditar, toolStripSeparator3, BtnExcluir, toolStripSeparator4, BtnExportar, BtnDownloadTabela, BtnAjuda, BtnCancelar, BtnPesquisar, toolStripSeparator1, CmbPesquisar, TxtPesquisar });
             TSMenuItajai.Location = new Point(0, 0);
             TSMenuItajai.Name = "TSMenuItajai";
             TSMenuItajai.Size = new Size(800, 40);
@@ -163,6 +164,18 @@
             BtnExportar.Text = "Exportar";
             BtnExportar.Click += BtnExportar_Click;
             // 
+            // BtnDownloadTabela
+            // 
+            BtnDownloadTabela.Alignment = ToolStripItemAlignment.Right;
+            BtnDownloadTabela.AutoSize = false;
+            BtnDownloadTabela.DisplayStyle = ToolStripItemDisplayStyle.Image;
+            BtnDownloadTabela.Image = Properties.Resources.Download;
+            BtnDownloadTabela.ImageTransparentColor = Color.Magenta;
+            BtnDownloadTabela.Name = "BtnDownloadTabela";
+            BtnDownloadTabela.Size = new Size(25, 37);
+            BtnDownloadTabela.Text = "toolStripButton1";
+            BtnDownloadTabela.Click += BtnDownloadTabela_Click;
+            // 
             // BtnAjuda
             // 
             BtnAjuda.Alignment = ToolStripItemAlignment.Right;
@@ -170,7 +183,6 @@
             BtnAjuda.Font = new Font("Segoe UI", 13F, FontStyle.Bold);
             BtnAjuda.Image = (Image)resources.GetObject("BtnAjuda.Image");
             BtnAjuda.ImageTransparentColor = Color.Magenta;
-            BtnAjuda.Margin = new Padding(0, 1, 7, 2);
             BtnAjuda.Name = "BtnAjuda";
             BtnAjuda.Size = new Size(24, 37);
             BtnAjuda.Text = "?";
@@ -270,5 +282,6 @@
         private ToolStripButton BtnAjuda;
         private ToolStripButton BtnExcluir;
         private ToolStripSeparator toolStripSeparator4;
+        private ToolStripButton BtnDownloadTabela;
     }
 }

@@ -1,0 +1,16 @@
+﻿using System;
+
+namespace CLUSA.Models
+{
+    public class LpcoInfo
+    {
+        public string NomeOrgao { get; set; } = string.Empty;
+        public string LPCO { get; set; } = string.Empty;
+        public DateTime? DataRegistroLPCO { get; set; }
+        public DateTime? DataDeferimentoLPCO { get; set; }
+        public string ParametrizacaoLPCO { get; set; } = string.Empty;
+        public bool EmExigencia { get; set; } = false;
+        public string MotivoExigencia { get; set; } = string.Empty;
+        public string StatusLPCO { get; set; } = string.Empty;
+    }
+}
