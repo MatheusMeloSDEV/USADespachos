@@ -363,3 +363,4 @@ MigrationBackup/
 FodyWeavers.xsd
 /CLUSA/ConfigDatabase.cs
 /CLUSA/EmailService.cs
+/CLUSA/Repositories/ConfigDatabase.cs
