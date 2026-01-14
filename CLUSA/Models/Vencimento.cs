@@ -32,6 +32,14 @@ namespace CLUSA.Models
         [BsonIgnoreIfNull]
         public DateTime? DataVencimentoEcac { get; set; }
 
+        [BsonElement("data_azeite")]
+        [BsonIgnoreIfNull] 
+        public DateTime? DataVencimentoAzeite { get; set; }
+
+        [BsonElement("data_vinho")]
+        [BsonIgnoreIfNull] 
+        public DateTime? DataVencimentoVinho { get; set; }
+
         [BsonElement("data_sigvig")]
         [BsonIgnoreIfNull]
         public DateTime? DataVencimentoSigvig { get; set; }

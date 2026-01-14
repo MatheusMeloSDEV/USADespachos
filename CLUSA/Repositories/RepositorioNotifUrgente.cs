@@ -13,9 +13,10 @@ namespace CLUSA.Repositories
     {
         private readonly IMongoCollection<NotifUrgente> _colecao;
 
-        public RepositorioNotifUrgente(IMongoDatabase database)
+        public RepositorioNotifUrgente(IMongoDatabase? database = null)
         {
-            _colecao = database.GetCollection<NotifUrgente>("NotifUrgente");
+            var db = database ?? ConfigDatabase.GetDatabase();
+            _colecao = db.GetCollection<NotifUrgente>("NotifUrgente");
         }
 
         public async Task InsertAsync(NotifUrgente notif)

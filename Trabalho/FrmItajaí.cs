@@ -16,6 +16,7 @@ namespace Trabalho
         private ListSortDirection _direcaoOrdenacao;
         private List<Processo> _listaOriginal = new();
 
+        private FrmLoadingOverlay? _overlay;
         private readonly Logado _logado;
         private readonly RepositorioUsers _repositorioUsers;
         private Users? _usuarioLogado;
@@ -241,58 +242,27 @@ namespace Trabalho
             {
                 string importador = form.SelectedImporter;
 
-                // 1) Cria sem using
-                var progressForm = new ProgressForm();
-                progressForm.Show(this);       // exibe modeless, com o próprio Form como owner
-
-
-                await Task.Run(() =>
+                try
                 {
-                    string pdfPath = "";
-                    string? mensagemErro = null;
+                    MostrarLoading("Gerando documentos...");
 
-                    try
+                    var service = new CLUSA.Services.FollowUpService();
+
+                    // Isso vai gerar o Excel E o PDF na pasta configurada
+                    string pdfPath = await service.GerarRelatoriosAsync(importador);
+
+                    EsconderLoading();
+
+                    if (MessageBox.Show("Relatórios gerados! Deseja abrir o PDF?", "Sucesso", MessageBoxButtons.YesNo) == DialogResult.Yes)
                     {
-                        pdfPath = PythonRunner.ExecutarExportador(importador).Trim();
+                        Process.Start(new ProcessStartInfo(pdfPath) { UseShellExecute = true });
                     }
-                    catch (Exception ex)
-                    {
-                        mensagemErro = $"Erro durante exportação: {ex.Message}";
-                    }
-
-                    Invoke(new Action(() =>
-                    {
-                        progressForm.Close();
-                        progressForm.Dispose();
-
-                        if (mensagemErro != null)
-                        {
-                            MessageBox.Show(mensagemErro, "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                            return;
-                        }
-
-                        var resp = MessageBox.Show(
-                            "Exportação concluída. Deseja abrir o PDF?",
-                            "Resultado",
-                            MessageBoxButtons.YesNo,
-                            MessageBoxIcon.Question
-                        );
-
-                        if (resp == DialogResult.Yes && File.Exists(pdfPath))
-                        {
-                            try
-                            {
-                                // Abre o PDF com o aplicativo padrão, usando o Explorer
-                                Process.Start("explorer.exe", pdfPath);
-                            }
-                            catch (Exception ex)
-                            {
-                                MessageBox.Show($"Erro ao tentar abrir o PDF: {ex.Message}", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                            }
-                        }
-
-                    }));
-                });
+                }
+                catch (Exception ex)
+                {
+                    EsconderLoading();
+                    MessageBox.Show($"Erro: {ex.Message}");
+                }
             }
         }
 
@@ -513,6 +483,25 @@ namespace Trabalho
                 this.WindowState = FormWindowState.Normal;
             if (this.WindowState == FormWindowState.Normal)
                 this.WindowState = FormWindowState.Maximized;
+        }
+        private void MostrarLoading(string mensagem)
+        {
+            if (_overlay != null) return;
+            _overlay = new FrmLoadingOverlay { Opacity = 0.60 };
+            _overlay.lblLoading.Text = mensagem;
+            var rect = this.RectangleToScreen(this.ClientRectangle);
+            _overlay.StartPosition = FormStartPosition.Manual;
+            _overlay.Location = rect.Location;
+            _overlay.Size = rect.Size;
+            _overlay.Show(this);
+            _overlay.BringToFront();
+        }
+
+        private void EsconderLoading()
+        {
+            _overlay?.Close();
+            _overlay?.Dispose();
+            _overlay = null;
         }
     }
 }

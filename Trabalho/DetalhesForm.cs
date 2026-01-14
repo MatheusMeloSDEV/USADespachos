@@ -2,6 +2,7 @@
 using CLUSA.Interfaces;
 using CLUSA.Models;
 using CLUSA.Repositories;
+using CLUSA.Services;
 using System.Diagnostics;
 
 namespace Trabalho
@@ -13,12 +14,9 @@ namespace Trabalho
     }
     public partial class DetalhesForm : Form
     {
-        // Propriedades genéricas para guardar os dados e repositórios
         private IEntidadeBase? _documentoAtual;
         private readonly RepositorioFatura _repoFatura;
         private readonly RepositorioRecibo _repoRecibo;
-
-        // Propriedades para identificar o documento
         private readonly string _referencia;
         private readonly string _importador;
         private readonly TipoDocumentoFinanceiro _tipoDocumento;
@@ -33,31 +31,21 @@ namespace Trabalho
             _repoFatura = new RepositorioFatura();
             _repoRecibo = new RepositorioRecibo();
 
-            // Desabilita os botões até os dados serem carregados
             btnEditar.Enabled = false;
             btnExportar.Enabled = false;
-
-            // Define o título da janela
             this.Text = $"Detalhes do {_tipoDocumento}";
-
-            lblInfo.Text = $"Número de Referência: {_referencia}\n" +
-                           $"Nome do Importador: {_importador}";
-
+            lblInfo.Text = $"Número de Referência: {_referencia}\nNome do Importador: {_importador}";
         }
+
         private async void DetalhesForm_Load(object? sender, EventArgs e)
         {
             try
             {
                 if (_tipoDocumento == TipoDocumentoFinanceiro.Fatura)
-                {
                     _documentoAtual = await _repoFatura.ObterPorRefUSAAsync(_referencia);
-                }
                 else
-                {
                     _documentoAtual = await _repoRecibo.ObterPorRefUSAAsync(_referencia);
-                }
 
-                // Se o documento foi encontrado, habilita os botões
                 if (_documentoAtual != null)
                 {
                     btnEditar.Enabled = true;
@@ -66,77 +54,74 @@ namespace Trabalho
                 else
                 {
                     MessageBox.Show($"{_tipoDocumento} não encontrado.", "Aviso", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                    // Desabilita os botões se o documento não for encontrado
-                    btnEditar.Enabled = false;
-                    btnExportar.Enabled = false;
+                    this.Close();
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Ocorreu um erro ao carregar os dados: {ex.Message}", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show($"Erro ao carregar: {ex.Message}", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
-        private void btnExportar_Click(object? sender, EventArgs e)
+
+        // --- MÉTODO ATUALIZADO AQUI ---
+        private async void btnExportar_Click(object? sender, EventArgs e)
         {
             if (_documentoAtual == null) return;
 
+            // 1. Configura UI
             var progressForm = new ProgressForm();
             progressForm.Show(this);
             btnExportar.Enabled = false;
             btnEditar.Enabled = false;
 
-            Task.Run(() =>
+            try
             {
                 string pdfPath = "";
-                string? mensagemErro = null;
 
-                try
+                // 2. Executa a exportação (Em Task.Run para manter o GIF de loading rodando liso)
+                await Task.Run(async () =>
                 {
                     if (_tipoDocumento == TipoDocumentoFinanceiro.Fatura)
                     {
-                        pdfPath = PythonRunner.ExecutarFaturamento(_referencia, _importador).Trim();
+                        var service = new FaturamentoService();
+                        // O C# busca o importador e dados internamente, só precisa da referência
+                        pdfPath = await service.GerarFaturamentoAsync(_referencia);
                     }
-                    else // É um Recibo
+                    else // Recibo
                     {
-                        pdfPath = PythonRunner.ExecutarRecibo(_referencia, _importador).Trim();
+                        var service = new ReciboService();
+                        pdfPath = await service.GerarReciboAsync(_referencia);
                     }
-                }
-                catch (Exception ex)
+                });
+
+                // 3. Sucesso (Volta pra UI thread automaticamente por causa do await)
+                progressForm.Close();
+
+                var resp = MessageBox.Show("Exportação concluída. Deseja abrir o PDF?", "Resultado", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+
+                if (resp == DialogResult.Yes && !string.IsNullOrEmpty(pdfPath) && File.Exists(pdfPath))
                 {
-                    mensagemErro = $"Erro durante exportação: {ex.Message}";
+                    Process.Start(new ProcessStartInfo { FileName = pdfPath, UseShellExecute = true });
                 }
 
-                Invoke(new Action(() =>
-                {
-                    progressForm.Close();
+                this.Close();
+            }
+            catch (Exception ex)
+            {
+                // 4. Erro
+                progressForm.Close();
+                MessageBox.Show($"Erro durante exportação: {ex.Message}", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
 
-                    if (mensagemErro != null)
-                    {
-                        MessageBox.Show(mensagemErro, "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                        this.Close(); // Fecha em caso de erro
-                        return;
-                    }
-
-                    var resp = MessageBox.Show("Exportação concluída. Deseja abrir o PDF?", "Resultado", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
-
-                    if (resp == DialogResult.Yes && !string.IsNullOrEmpty(pdfPath) && File.Exists(pdfPath))
-                    {
-                        Process.Start(new ProcessStartInfo { FileName = pdfPath, UseShellExecute = true });
-                    }
-                    this.Close();
-                }));
-            });
+                // Reabilita botões caso queira tentar de novo (ou fecha o form se preferir)
+                btnExportar.Enabled = true;
+                btnEditar.Enabled = true;
+            }
         }
 
         private void btnEditar_Click(object? sender, EventArgs e)
         {
-            if (_documentoAtual == null)
-            {
-                MessageBox.Show("Nenhum documento carregado para edição.", "Aviso");
-                return;
-            }
+            if (_documentoAtual == null) return;
 
-            // Lógica para abrir o formulário de edição correto
             if (_documentoAtual is Fatura fatura)
             {
                 using var frmEdicao = new frmModificaFatura(fatura);

@@ -45,6 +45,12 @@
             label3 = new Label();
             label4 = new Label();
             label5 = new Label();
+            label6 = new Label();
+            label7 = new Label();
+            cbVinho = new CheckBox();
+            dtpVinho = new DateTimePicker();
+            cbAzeite = new CheckBox();
+            dtpAzeite = new DateTimePicker();
             SuspendLayout();
             // 
             // btnEnviar
@@ -142,7 +148,7 @@
             // 
             // chkLecom
             // 
-            chkLecom.Location = new Point(126, 149);
+            chkLecom.Location = new Point(126, 203);
             chkLecom.Name = "chkLecom";
             chkLecom.Size = new Size(14, 23);
             chkLecom.TabIndex = 18;
@@ -151,7 +157,7 @@
             // dtpLecom
             // 
             dtpLecom.Format = DateTimePickerFormat.Short;
-            dtpLecom.Location = new Point(146, 149);
+            dtpLecom.Location = new Point(146, 203);
             dtpLecom.Name = "dtpLecom";
             dtpLecom.Size = new Size(177, 23);
             dtpLecom.TabIndex = 17;
@@ -177,7 +183,7 @@
             // label4
             // 
             label4.AutoSize = true;
-            label4.Location = new Point(178, 131);
+            label4.Location = new Point(178, 185);
             label4.Name = "label4";
             label4.Size = new Size(113, 15);
             label4.TabIndex = 21;
@@ -192,11 +198,67 @@
             label5.TabIndex = 22;
             label5.Text = "Vencimento ECAC";
             // 
+            // label6
+            // 
+            label6.AutoSize = true;
+            label6.Location = new Point(63, 134);
+            label6.Name = "label6";
+            label6.Size = new Size(105, 15);
+            label6.TabIndex = 28;
+            label6.Text = "Vencimento Azeite";
+            // 
+            // label7
+            // 
+            label7.AutoSize = true;
+            label7.Location = new Point(300, 134);
+            label7.Name = "label7";
+            label7.Size = new Size(104, 15);
+            label7.TabIndex = 27;
+            label7.Text = "Vencimento Vinho";
+            // 
+            // cbVinho
+            // 
+            cbVinho.Location = new Point(248, 152);
+            cbVinho.Name = "cbVinho";
+            cbVinho.Size = new Size(14, 23);
+            cbVinho.TabIndex = 26;
+            cbVinho.UseVisualStyleBackColor = true;
+            // 
+            // dtpVinho
+            // 
+            dtpVinho.Format = DateTimePickerFormat.Short;
+            dtpVinho.Location = new Point(268, 152);
+            dtpVinho.Name = "dtpVinho";
+            dtpVinho.Size = new Size(177, 23);
+            dtpVinho.TabIndex = 25;
+            // 
+            // cbAzeite
+            // 
+            cbAzeite.Location = new Point(22, 152);
+            cbAzeite.Name = "cbAzeite";
+            cbAzeite.Size = new Size(14, 23);
+            cbAzeite.TabIndex = 24;
+            cbAzeite.UseVisualStyleBackColor = true;
+            // 
+            // dtpAzeite
+            // 
+            dtpAzeite.Format = DateTimePickerFormat.Short;
+            dtpAzeite.Location = new Point(42, 152);
+            dtpAzeite.Name = "dtpAzeite";
+            dtpAzeite.Size = new Size(177, 23);
+            dtpAzeite.TabIndex = 23;
+            // 
             // FrmModificaVencimentos
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(469, 184);
+            ClientSize = new Size(469, 247);
+            Controls.Add(label6);
+            Controls.Add(label7);
+            Controls.Add(cbVinho);
+            Controls.Add(dtpVinho);
+            Controls.Add(cbAzeite);
+            Controls.Add(dtpAzeite);
             Controls.Add(label5);
             Controls.Add(label4);
             Controls.Add(label3);
@@ -238,5 +300,11 @@
         private Label label3;
         private Label label4;
         private Label label5;
+        private Label label6;
+        private Label label7;
+        private CheckBox cbVinho;
+        private DateTimePicker dtpVinho;
+        private CheckBox cbAzeite;
+        private DateTimePicker dtpAzeite;
     }
 }

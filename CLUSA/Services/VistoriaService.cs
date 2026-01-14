@@ -35,17 +35,20 @@ namespace CLUSA.Services
         {
             var listaLog = new List<string>();
 
-            // 1. Carregar APENAS processos ATIVOS (Isso já filtra 90% do lixo)
+            // 1. Carregar APENAS processos ATIVOS
             var processosAtivos = await _repoProcesso.ListarProcessosAtivosParaStatusAsync();
 
             if (!processosAtivos.Any()) return listaLog;
 
-            // Cria dicionário para acesso rápido O(1)
-            var processosDict = processosAtivos.ToDictionary(p => p.Ref_USA);
+            // BLINDAGEM 1: Evita crash se houver Ref_USA duplicada na tabela de Processos
+            var processosDict = processosAtivos
+                .Where(p => !string.IsNullOrEmpty(p.Ref_USA))
+                .GroupBy(p => p.Ref_USA)
+                .ToDictionary(g => g.Key, g => g.First());
+
             var listaRefUsas = processosDict.Keys.ToList();
 
-            // 2. Carregar LIs e Vistorias APENAS desses processos ativos (Evita Full Scan)
-            // Executa em paralelo
+            // 2. Carregar LIs e Vistorias
             var taskLIs = _repoOrgaoAnuente.GetByListaRefUsaAsync(listaRefUsas);
             var taskVistorias = _repoVistorias.GetByListaRefUsaAsync(listaRefUsas);
 
@@ -54,15 +57,13 @@ namespace CLUSA.Services
             var lisAtivas = taskLIs.Result;
             var vistoriasDb = taskVistorias.Result;
 
-            // Indexar vistorias existentes por LPCO
+            // BLINDAGEM 2: Evita crash de chave duplicada (erro que você teve anteriormente)
             var vistoriasDict = vistoriasDb
                 .Where(v => !string.IsNullOrEmpty(v.LPCO))
-                .ToDictionary(v => v.LPCO);
+                .GroupBy(v => v.LPCO)
+                .ToDictionary(g => g.Key, g => g.First());
 
-            // Preparar Bulk Operations para o Mongo (Muito mais rápido que salvar 1 por 1)
             var bulkOps = new List<WriteModel<Vistoria>>();
-
-            // Rastrear LPCOs processados para saber quais excluir depois
             var lpcosProcessados = new HashSet<string>();
 
             // 3. Processamento em Memória
@@ -76,12 +77,17 @@ namespace CLUSA.Services
                 {
                     if (string.IsNullOrEmpty(lpcoInfo.LPCO)) continue;
 
+                    // Evita processar o mesmo LPCO duas vezes na mesma execução
+                    if (lpcosProcessados.Contains(lpcoInfo.LPCO)) continue;
+
                     var (deveTerVistoria, statusSugerido) = AnalisarLpco(lpcoInfo);
 
                     if (deveTerVistoria)
                     {
                         lpcosProcessados.Add(lpcoInfo.LPCO);
 
+                        // Cria o objeto com o Status Sugerido (Base)
+                        // Esse status só será usado se for uma INSERÇÃO (Novo registro)
                         var novaVistoria = new Vistoria
                         {
                             LI = orgaoAnuente.Numero?.ToString() ?? "",
@@ -95,33 +101,40 @@ namespace CLUSA.Services
                             Terminal = processoPai?.Terminal ?? string.Empty,
                             DataRegistroLPCO = lpcoInfo.DataRegistroLPCO,
                             Previsao = processoPai?.DataDeAtracacao,
-                            Status = statusSugerido
+                            Status = statusSugerido // Status inicial padrão
                         };
 
                         if (vistoriasDict.TryGetValue(lpcoInfo.LPCO, out var vistoriaDb))
                         {
-                            // --- Lógica de Atualização ---
-                            bool mudouParametrizacao = vistoriaDb.ParametrizacaoLPCO != novaVistoria.ParametrizacaoLPCO;
+                            // --- CENÁRIO: JÁ EXISTE NO BANCO ---
 
-                            // Mantém o ID e Status antigo se não mudou parametrização
+                            // 1. Mantém o ID original
                             novaVistoria.Id = vistoriaDb.Id;
-                            if (!mudouParametrizacao) novaVistoria.Status = vistoriaDb.Status;
-                            novaVistoria.Notas = vistoriaDb.Notas; // Mantém notas do usuário
 
-                            // Só atualiza se algo mudou
-                            if (mudouParametrizacao ||
-                                vistoriaDb.Terminal != novaVistoria.Terminal ||
+                            // 2. AQUI ESTÁ A PROTEÇÃO:
+                            // Ignoramos o 'statusSugerido' e forçamos o status que já está no banco.
+                            // Assim, a sincronização nunca altera o andamento da vistoria.
+                            novaVistoria.Status = vistoriaDb.Status;
+
+                            // 3. Mantém as notas do usuário
+                            novaVistoria.Notas = vistoriaDb.Notas;
+
+                            // 4. Só atualizamos se houver mudança em dados periféricos (Terminal, Previsão, etc)
+                            // ou se a parametrização mudou (o que pode ser importante).
+                            if (vistoriaDb.Terminal != novaVistoria.Terminal ||
                                 vistoriaDb.Previsao != novaVistoria.Previsao ||
+                                vistoriaDb.ParametrizacaoLPCO != novaVistoria.ParametrizacaoLPCO ||
                                 vistoriaDb.DataRegistroLPCO != novaVistoria.DataRegistroLPCO)
                             {
                                 var filter = Builders<Vistoria>.Filter.Eq(x => x.Id, vistoriaDb.Id);
                                 bulkOps.Add(new ReplaceOneModel<Vistoria>(filter, novaVistoria));
-                                listaLog.Add($"Atualizado: {lpcoInfo.LPCO}");
+                                listaLog.Add($"Atualizado (Dados): {lpcoInfo.LPCO}");
                             }
                         }
                         else
                         {
-                            // --- Lógica de Inserção ---
+                            // --- CENÁRIO: NOVO REGISTRO ---
+                            // Aqui usamos o statusSugerido (Base) definido na criação do objeto
                             bulkOps.Add(new InsertOneModel<Vistoria>(novaVistoria));
                             listaLog.Add($"Novo: {lpcoInfo.LPCO}");
                         }
@@ -130,10 +143,8 @@ namespace CLUSA.Services
             }
 
             // 4. Identificar Vistorias para Remover (De processos ativos que não precisam mais de vistoria)
-            // CUIDADO: Não remover vistorias de processos finalizados que não carregamos na etapa 1
-            foreach (var vistoriaDb in vistoriasDb)
+            foreach (var vistoriaDb in vistoriasDict.Values)
             {
-                // Se a vistoria existe no DB (para um ref ativo), mas não foi processada no loop acima (regra retornou false), delete.
                 if (!lpcosProcessados.Contains(vistoriaDb.LPCO))
                 {
                     var filter = Builders<Vistoria>.Filter.Eq(x => x.Id, vistoriaDb.Id);
@@ -150,12 +161,6 @@ namespace CLUSA.Services
 
             return listaLog;
         }
-
-
-        /// <summary>
-        /// Analisa um LPCO e determina se ele deve gerar uma vistoria.
-        /// CORREÇÃO: Tipo do parâmetro alterado de LPCO para LpcoInfo
-        /// </summary>
         /// <summary>
         /// Analisa um LPCO e determina se ele deve gerar uma vistoria.
         /// </summary>
@@ -164,23 +169,20 @@ namespace CLUSA.Services
             var nomeOrgao = (lpco.NomeOrgao ?? "").ToUpperInvariant();
             var motivo = (lpco.MotivoExigencia ?? "").ToUpperInvariant();
             var parametrizacao = (lpco.ParametrizacaoLPCO ?? "").ToUpperInvariant();
-
-            // CORREÇÃO: Usamos lpco.StatusLPCO agora, pois StatusLI não existe mais no pai
             var statusLpcoNormalizado = (lpco.StatusLPCO ?? "").ToUpperInvariant();
 
             // 1. Regra Global: Se Deferido ou Cancelado, nunca gera vistoria
-            if (motivo == "DEFERIDO" || motivo == "CANCELADA") return (false, StatusVistoria.AguardandoChegadaParaAgendar);
+            if (motivo == "DEFERIDO" || motivo == "CANCELADA")
+                return (false, StatusVistoria.AguardandoChegadaParaAgendar);
 
             // 2. REGRA ANVISA
             if (nomeOrgao.Contains("ANVISA"))
             {
-                // Verifica o status no LPCO
                 if ((string.IsNullOrEmpty(parametrizacao) || parametrizacao == "DOCUMENTAL")
                     && statusLpcoNormalizado == "ENTRADA CONCLUÍDA")
                 {
                     return (true, StatusVistoria.ProcessoDadoEntrada);
                 }
-
                 return (false, StatusVistoria.AguardandoChegadaParaAgendar);
             }
 
@@ -192,7 +194,6 @@ namespace CLUSA.Services
                     return (true, StatusVistoria.AguardandoChegadaParaAgendar);
                 }
 
-                // Verifica o status no LPCO
                 if (string.IsNullOrEmpty(parametrizacao) && statusLpcoNormalizado == "ENTRADA CONCLUÍDA")
                 {
                     return (true, StatusVistoria.ProcessoDadoEntrada);

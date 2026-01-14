@@ -15,8 +15,10 @@ namespace Trabalho
         private readonly RepositorioNotificacao _notificacaoRepo;
         private readonly RepositorioNotifUrgente _repoNotificacoesUrgentes;
         private readonly RepositorioUsers _repositorioUsers;
+        private readonly RepositorioLog _repositorioLog;
         private readonly NotificacaoService _NotificacaoService;
 
+        private bool _atualizandoInterface = false; // <--- ADICIONE ISSO
         private readonly Logado _logadoUsuario;
         private readonly Dictionary<Type, Form> _forms = new();
         private bool _logoutPeloMenu = false;
@@ -38,6 +40,7 @@ namespace Trabalho
             _notificacaoRepo = new RepositorioNotificacao(database);
             _repoNotificacoesUrgentes = new RepositorioNotifUrgente(database);
             _NotificacaoService = new NotificacaoService(database);
+            _repositorioLog = new RepositorioLog();
 
             // Configuração do Timer de Sincronização
             _notificacaoTimer = new System.Windows.Forms.Timer();
@@ -49,8 +52,6 @@ namespace Trabalho
                 pictureBox1.Image = SetImageOpacity(pictureBox1.Image, 0.2f);
             }
             panel1.Visible = true; pictureBox1.Visible = true;
-
-            this.Shown += FrmPrincipal_Shown;
         }
 
         #endregion
@@ -59,15 +60,26 @@ namespace Trabalho
 
         private async void FrmPrincipal_Shown(object? sender, EventArgs e)
         {
+            await PopularTableLayoutUrgentes(); // Garante a primeira carga
             await CarregarDadosProcessos();
             _notificacaoTimer.Start();
+
+            // Só começa a escutar o Alt+Tab DEPOIS que o formulário já abriu completamente
+            this.Activated -= FrmPrincipal_Activated; // Garante que não duplica inscritos
+            this.Activated += FrmPrincipal_Activated;
+        }
+
+        // Crie este método separado para ficar organizado
+        private async void FrmPrincipal_Activated(object? sender, EventArgs e)
+        {
+            await PopularTableLayoutUrgentes();
         }
 
         private async void FrmPrincipal_Load(object sender, EventArgs e)
         {
             this.Icon = Icon.ExtractAssociatedIcon(Application.ExecutablePath);
             GridColumnManager.RegistrarCatalogosPadrao();
-            await PopularTableLayoutUrgentes();
+            
         }
 
         private void FrmPrincipal_FormClosing(object sender, FormClosingEventArgs e)
@@ -374,82 +386,113 @@ namespace Trabalho
                 await PopularTableLayoutUrgentes();
             }
         }
-
         private async Task PopularTableLayoutUrgentes()
         {
-            TLNotifUrgentes.Controls.Clear();
-            TLNotifUrgentes.RowCount = 0;
-            TLNotifUrgentes.ColumnCount = 1;
-            TLNotifUrgentes.RowStyles.Clear();
+            if (_atualizandoInterface) return;
+            _atualizandoInterface = true;
 
-            var todosUsuarios = await _repositorioUsers.FindAllAsync();
-            var lookupNome = todosUsuarios.ToDictionary(u => u.Id, u => u.Username);
+            TLNotifUrgentes.SuspendLayout();
 
-            var minhas = await _repoNotificacoesUrgentes.GetByUsuarioOrigemAsync(_logadoUsuario.Id);
-            var recebidas = await _repoNotificacoesUrgentes.GetByUsuarioDestinoAsync(_logadoUsuario.Id);
-
-            var todas = minhas.Concat(recebidas)
-                .GroupBy(n => n.Id)
-                .Select(g => g.First())
-                .Where(n => !n.Done)
-                .OrderBy(n => n.DataEnvio)
-                .ToList();
-
-            for (int i = 0; i < todas.Count; i++)
+            try
             {
-                var n = todas[i];
-
-                string nomeDestino = lookupNome.TryGetValue(n.UsuarioDestinoId, out var nomeDest) ? nomeDest : n.UsuarioDestinoId.ToString();
-                string nomeOrigem = lookupNome.TryGetValue(n.UsuarioOrigemId, out var nomeOrig) ? nomeOrig : n.UsuarioOrigemId.ToString();
-
-                var notifControl = new NotificacaoUrgente
+                // 1. Limpeza
+                while (TLNotifUrgentes.Controls.Count > 0)
                 {
-                    Usuario = n.UsuarioOrigemId == _logadoUsuario.Id
-                        ? $"Enviada para: {nomeDestino}"
-                        : $"De: {nomeOrigem}",
-                    Mensagem = n.Mensagem,
-                    MensagemReadOnly = true,
-                    BotaoEditarVisible = n.UsuarioOrigemId == _logadoUsuario.Id
-                };
+                    var c = TLNotifUrgentes.Controls[0];
+                    TLNotifUrgentes.Controls.RemoveAt(0);
+                    c.Dispose();
+                }
 
-                notifControl.BtnExcluir.Visible = n.UsuarioOrigemId == _logadoUsuario.Id;
-                notifControl.ExcluirClick += async (s, e) =>
+                TLNotifUrgentes.RowStyles.Clear();
+                TLNotifUrgentes.RowCount = 0;
+
+                // 2. Busca e Unifica Dados
+                var todasMinhas = await _repoNotificacoesUrgentes.GetByUsuarioOrigemAsync(_logadoUsuario.Id);
+                var todasRecebidas = await _repoNotificacoesUrgentes.GetByUsuarioDestinoAsync(_logadoUsuario.Id);
+
+                var users = await _repositorioUsers.FindAllAsync();
+                var userDict = users.ToDictionary(u => u.Id, u => u.Username);
+
+                var listaUnica = todasMinhas.Concat(todasRecebidas)
+                                            .GroupBy(n => n.Id)
+                                            .Select(g => g.First())
+                                            .Where(n => !n.Done)
+                                            .OrderByDescending(n => n.DataEnvio)
+                                            .ToList();
+
+                // 3. Adiciona os Itens
+                foreach (var n in listaUnica)
                 {
-                    var confirma = MessageBox.Show("Tem certeza que deseja excluir esta notificação?", "Confirmação", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
-                    if (confirma == DialogResult.Yes)
+                    string nomeOrigem = userDict.TryGetValue(n.UsuarioOrigemId, out var uO) ? uO : "...";
+                    string nomeDestino = userDict.TryGetValue(n.UsuarioDestinoId, out var uD) ? uD : "...";
+
+                    var item = new NotificacaoUrgente
                     {
-                        await _repoNotificacoesUrgentes.DeleteAsync(n.Id);
-                        await PopularTableLayoutUrgentes();
-                    }
-                };
+                        Dock = DockStyle.Fill,
+                        Usuario = (n.UsuarioOrigemId == _logadoUsuario.Id) ? $"Para: {nomeDestino}" : $"De: {nomeOrigem}",
+                        Mensagem = n.Mensagem,
+                        MensagemReadOnly = true,
+                        BotaoEditarVisible = (n.UsuarioOrigemId == _logadoUsuario.Id)
+                    };
 
-                notifControl.DoneClick += async (s, e) =>
-                {
-                    n.Done = true;
-                    await _repoNotificacoesUrgentes.UpdateAsync(n);
-                    await PopularTableLayoutUrgentes();
-                };
+                    // Configurações visuais
+                    item.BtnExcluir.Visible = (n.UsuarioOrigemId == _logadoUsuario.Id);
 
-                notifControl.EditClick += async (s, e) =>
-                {
-                    notifControl.MensagemReadOnly = false;
-                    notifControl.FocusMensagem();
-                };
+                    // Evento EXCLUIR (Lixeira) - Mantive igual, apenas deleta
+                    item.ExcluirClick += async (s, e) => {
+                        if (MessageBox.Show("Deseja realmente excluir esta notificação?", "Confirmação", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
+                        {
+                            await _repoNotificacoesUrgentes.DeleteAsync(n.Id);
+                            _atualizandoInterface = false;
+                            await PopularTableLayoutUrgentes();
+                        }
+                    };
 
-                notifControl.MensagemEditada += async (s, novaMensagem) =>
-                {
-                    n.Mensagem = novaMensagem;
-                    await _repoNotificacoesUrgentes.UpdateAsync(n);
-                    notifControl.MensagemReadOnly = true;
-                    MessageBox.Show("Mensagem atualizada com sucesso!", "Sucesso", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                    await PopularTableLayoutUrgentes();
-                };
+                    // --- AQUI ESTÁ A ALTERAÇÃO SOLICITADA (Botão Check/Done) ---
+                    item.DoneClick += async (s, e) => {
+                        try
+                        {
+                            // 1. Registra o Log
+                            await _repositorioLog.RegistrarLogAsync(
+                                "Conclusão",
+                                $"Notificação finalizada por {_logadoUsuario.Usuario}",
+                                $"Mensagem: {n.Mensagem} | De: {nomeOrigem} | Para: {nomeDestino}"
+                            );
 
-                TLNotifUrgentes.RowStyles.Add(new RowStyle(SizeType.Absolute, notifControl.Height));
-                TLNotifUrgentes.Controls.Add(notifControl, 0, i);
+                            // 2. Deleta do Banco de Dados (ao invés de dar Update n.Done=true)
+                            await _repoNotificacoesUrgentes.DeleteAsync(n.Id);
+
+                            // 3. Feedback Visual e Atualização
+                            MessageBox.Show("Notificação concluída e arquivada.", "Sucesso", MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+                            _atualizandoInterface = false; // Destrava
+                            await PopularTableLayoutUrgentes(); // Recarrega a lista
+                        }
+                        catch (Exception ex)
+                        {
+                            MessageBox.Show($"Erro ao concluir: {ex.Message}");
+                            _atualizandoInterface = false;
+                        }
+                    };
+                    // -----------------------------------------------------------
+
+                    item.EditClick += (s, e) => { item.MensagemReadOnly = false; item.FocusMensagem(); };
+                    item.MensagemEditada += async (s, txt) => {
+                        n.Mensagem = txt; await _repoNotificacoesUrgentes.UpdateAsync(n);
+                        item.MensagemReadOnly = true; MessageBox.Show("Atualizado!");
+                    };
+
+                    TLNotifUrgentes.RowCount++;
+                    TLNotifUrgentes.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+                    TLNotifUrgentes.Controls.Add(item, 0, TLNotifUrgentes.RowCount - 1);
+                }
+            }
+            finally
+            {
+                TLNotifUrgentes.ResumeLayout(true);
+                _atualizandoInterface = false;
             }
         }
-
         private void lblEmAndamento_Click(object sender, EventArgs e)
         {
 

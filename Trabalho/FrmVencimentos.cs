@@ -67,6 +67,12 @@ namespace Trabalho
                 if (EstaNaJanela(item.DataVencimentoLecom, dataMinima, dataMaxima))
                     avisos += $"- LECOM vence em {item.DataVencimentoLecom:dd/MM/yyyy}\n";
 
+                if (EstaNaJanela(item.DataVencimentoAzeite, dataMinima, dataMaxima))
+                    avisos += $"- AZEITE vence em {item.DataVencimentoAzeite:dd/MM/yyyy}\n";
+
+                if (EstaNaJanela(item.DataVencimentoVinho, dataMinima, dataMaxima))
+                    avisos += $"- VINHO vence em {item.DataVencimentoVinho:dd/MM/yyyy}\n";
+
                 // 3. SE TIVER ALGO VENCENDO NESTE PERÍODO, ENVIA
                 if (!string.IsNullOrEmpty(avisos))
                 {
@@ -135,6 +141,9 @@ namespace Trabalho
                     ECAC = x.DataVencimentoEcac.HasValue ? x.DataVencimentoEcac.Value.ToShortDateString() : "-",
                     SIGVIG = x.DataVencimentoSigvig.HasValue ? x.DataVencimentoSigvig.Value.ToShortDateString() : "-",
                     LECOM = x.DataVencimentoLecom.HasValue ? x.DataVencimentoLecom.Value.ToShortDateString() : "-",
+                    Azeite = x.DataVencimentoAzeite.HasValue ? x.DataVencimentoAzeite.Value.ToShortDateString() : "-",
+                    Vinho = x.DataVencimentoVinho.HasValue ? x.DataVencimentoVinho.Value.ToShortDateString() : "-",
+
 
                     // --- NOVA COLUNA DE CNPJs ---
                     // Verifica se a lista existe. Se sim, junta com ", ". Se não, põe um traço.

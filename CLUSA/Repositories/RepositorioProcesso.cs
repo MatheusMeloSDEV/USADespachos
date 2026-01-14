@@ -292,20 +292,97 @@ namespace CLUSA.Repositories
 
         private async Task SincronizarVistorias(Processo processo)
         {
-            // Se tiver muitas vistorias, aplicar lógica de Bulk aqui também.
-            // Mantendo lógica original mas garantindo assincronismo correto.
-            var vistoriasNoBanco = await _repositorioVistorias.GetByRefUsaAsync(processo.Ref_USA);
-            foreach (var vistoria in vistoriasNoBanco)
+            var db = ConfigDatabase.GetDatabase();
+            var repoVistoria = new RepositorioVistorias(db);
+
+            // Blindagem de Memória
+            var lpcosJaProcessadosNestaExecucao = new HashSet<string>();
+
+            if (processo.LI != null && processo.LI.Any())
             {
-                vistoria.Importador = processo.Importador;
-                vistoria.Container = processo.Container;
-                vistoria.Conhecimento = processo.Conhecimento;
-                vistoria.Ref_USA = processo.Ref_USA;
-                vistoria.Produto = processo.Produto;
-                vistoria.Terminal = processo.Terminal;
-                vistoria.Previsao = processo.DataDeAtracacao;
-                await _repositorioVistorias.UpsertAsync(vistoria);
+                foreach (var li in processo.LI)
+                {
+                    if (li.LPCO != null && li.LPCO.Any())
+                    {
+                        foreach (var itemLpco in li.LPCO)
+                        {
+                            if (string.IsNullOrWhiteSpace(itemLpco.LPCO)) continue;
+
+                            if (lpcosJaProcessadosNestaExecucao.Contains(itemLpco.LPCO)) continue;
+                            lpcosJaProcessadosNestaExecucao.Add(itemLpco.LPCO);
+
+                            // Usa a lógica de análise (pode ser método privado ou serviço injetado)
+                            if (AnalisarSePrecisaVistoria(itemLpco))
+                            {
+                                // --- AQUI COMEÇA A CORREÇÃO ---
+
+                                // 1. Busca se já existe no banco para preservar o Status
+                                var filtroExistente = Builders<Vistoria>.Filter.Eq(v => v.LPCO, itemLpco.LPCO);
+                                var vistoriaExistente = await repoVistoria.GetByLPCOAsync(itemLpco.LPCO); // Supondo que exista esse método, ou use Find direto
+
+                                StatusVistoria statusFinal;
+
+                                if (vistoriaExistente != null)
+                                {
+                                    // SE JÁ EXISTE: Mantém o status que está lá!
+                                    statusFinal = vistoriaExistente.Status;
+                                }
+                                else
+                                {
+                                    // SE É NOVO: Define o status inicial (Base)
+                                    statusFinal = StatusVistoria.ProcessoDadoEntrada;
+                                }
+
+                                var vistoria = new Vistoria
+                                {
+                                    // Se já existe, usa o ID existente para o Upsert funcionar como Update
+                                    Id = vistoriaExistente?.Id ?? MongoDB.Bson.ObjectId.Empty,
+
+                                    Ref_USA = processo.Ref_USA,
+                                    LPCO = itemLpco.LPCO,
+                                    LI = li.Numero,
+                                    ParametrizacaoLPCO = itemLpco.ParametrizacaoLPCO,
+                                    DataRegistroLPCO = itemLpco.DataRegistroLPCO,
+                                    Produto = processo.Produto,
+                                    Container = processo.Container,
+                                    Conhecimento = processo.Conhecimento,
+                                    Importador = processo.Importador,
+                                    Terminal = processo.Terminal,
+                                    Previsao = processo.DataDeAtracacao,
+
+                                    // Usa o status que decidimos acima
+                                    Status = statusFinal,
+
+                                    // Preserva notas se existirem
+                                    Notas = vistoriaExistente?.Notas
+                                };
+
+                                await repoVistoria.UpsertAsync(vistoria);
+                            }
+                        }
+                    }
+                }
             }
+        }
+
+        // Método auxiliar simples para decidir se gera vistoria (ajuste conforme sua regra real)
+        private bool AnalisarSePrecisaVistoria(LpcoInfo lpco)
+        {
+            if (string.IsNullOrEmpty(lpco.ParametrizacaoLPCO)) return false;
+
+            var param = lpco.ParametrizacaoLPCO.ToUpper();
+            var orgao = (lpco.NomeOrgao ?? "").ToUpper();
+
+            // Exemplo de regra:
+            if (orgao.Contains("MAPA"))
+            {
+                if (param.Contains("FÍSICA") || param.Contains("COLETA")) return true;
+            }
+
+            // Se já estiver deferido ou cancelado, geralmente não cria vistoria
+            if (lpco.MotivoExigencia == "DEFERIDO" || lpco.MotivoExigencia == "CANCELADA") return false;
+
+            return false;
         }
         #endregion
     }

@@ -32,18 +32,28 @@ namespace Trabalho
         // Método auxiliar para ativar/desativar o calendário quando clica no check
         private void ConfigurarEventosDosChecks()
         {
+            // Antigos
             chkRadar.CheckedChanged += (s, e) => dtpRadar.Enabled = chkRadar.Checked;
             chkProcuracao.CheckedChanged += (s, e) => dtpProcuracao.Enabled = chkProcuracao.Checked;
             chkEcac.CheckedChanged += (s, e) => dtpEcac.Enabled = chkEcac.Checked;
             chkSigvig.CheckedChanged += (s, e) => dtpSigvig.Enabled = chkSigvig.Checked;
             chkLecom.CheckedChanged += (s, e) => dtpLecom.Enabled = chkLecom.Checked;
 
-            // Inicia desabilitados (opcional, depende de como vc deixou no designer)
+            // --- NOVOS (Azeite e Vinho) ---
+            // Assumindo que cbAzeite e cbVinho são os CheckBoxes novos
+            cbAzeite.CheckedChanged += (s, e) => dtpAzeite.Enabled = cbAzeite.Checked;
+            cbVinho.CheckedChanged += (s, e) => dtpVinho.Enabled = cbVinho.Checked;
+
+            // Inicia desabilitados ou habilitados conforme o designer
             dtpRadar.Enabled = chkRadar.Checked;
             dtpProcuracao.Enabled = chkProcuracao.Checked;
             dtpEcac.Enabled = chkEcac.Checked;
             dtpSigvig.Enabled = chkSigvig.Checked;
             dtpLecom.Enabled = chkLecom.Checked;
+
+            // --- NOVOS ---
+            dtpAzeite.Enabled = cbAzeite.Checked;
+            dtpVinho.Enabled = cbVinho.Checked;
         }
 
         // Lógica de LOAD (Carregar do Banco para a Tela)
@@ -62,6 +72,10 @@ namespace Trabalho
                     PreencherCampo(v.DataVencimentoEcac, chkEcac, dtpEcac);
                     PreencherCampo(v.DataVencimentoSigvig, chkSigvig, dtpSigvig);
                     PreencherCampo(v.DataVencimentoLecom, chkLecom, dtpLecom);
+
+                    // --- NOVOS ---
+                    PreencherCampo(v.DataVencimentoAzeite, cbAzeite, dtpAzeite);
+                    PreencherCampo(v.DataVencimentoVinho, cbVinho, dtpVinho);
                 }
             }
             catch (Exception ex) { MessageBox.Show("Erro: " + ex.Message); }
@@ -100,6 +114,11 @@ namespace Trabalho
                         DataVencimentoSigvig = chkSigvig.Checked ? dtpSigvig.Value : (DateTime?)null,
                         DataVencimentoLecom = chkLecom.Checked ? dtpLecom.Value : (DateTime?)null,
 
+                        // --- NOVOS ---
+                        DataVencimentoAzeite = cbAzeite.Checked ? dtpAzeite.Value : (DateTime?)null,
+                        DataVencimentoVinho = cbVinho.Checked ? dtpVinho.Value : (DateTime?)null,
+                        // -------------
+
                         DataUltimaNotificacao = null
                     };
 
@@ -110,6 +129,11 @@ namespace Trabalho
                     }
                     else
                     {
+                        // Se for edição, precisamos manter a data da ultima notificação ou resetar?
+                        // Normalmente mantemos o que estava no banco se quisermos evitar spam, 
+                        // ou resetamos se quisermos que a mudança de data force um novo email.
+                        // A lógica atual reseta para null (força novo email em breve).
+
                         await _repoVencimento.AtualizarAsync(vencimento);
                         await _repoLog.RegistrarLogAsync("Edição", $"Vencimento de {vencimento.Importador} foi alterado.", $"ID: {_idEdicao}");
                     }
@@ -122,7 +146,6 @@ namespace Trabalho
             else { MessageBox.Show("Selecione um importador."); }
         }
 
-        // ... (Mantenha o método CarregarComboBox igual)
         private void CarregarComboBox()
         {
             var dadosBrutos = DadosEstaticos.ObterListaCNPJs();

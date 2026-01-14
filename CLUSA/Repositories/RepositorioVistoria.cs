@@ -37,11 +37,35 @@ namespace CLUSA.Repositories
 
         public async Task UpsertAsync(Vistoria vistoria)
         {
-            if (vistoria.Id == ObjectId.Empty) vistoria.Id = ObjectId.GenerateNewId();
+            if (string.IsNullOrWhiteSpace(vistoria.LPCO)) return;
 
-            var filter = Builders<Vistoria>.Filter.Eq(v => v.LPCO, vistoria.LPCO);
+            // 1. BLINDAGEM: Busca se já existe este LPCO no banco antes de qualquer coisa
+            var filtroExistente = Builders<Vistoria>.Filter.Eq(v => v.LPCO, vistoria.LPCO);
 
-            await _colecao.ReplaceOneAsync(filter, vistoria, new ReplaceOptions { IsUpsert = true });
+            // Projeta apenas o ID para ser rápido (não traz o objeto todo)
+            var vistoriaExistente = await _colecao.Find(filtroExistente)
+                                                  .Project(v => new { v.Id })
+                                                  .FirstOrDefaultAsync();
+
+            if (vistoriaExistente != null)
+            {
+                // SE JÁ EXISTE: Forçamos o objeto novo a usar o ID antigo.
+                // Isso garante que o ReplaceOne vai atualizar o registro correto e não criar duplicata.
+                vistoria.Id = vistoriaExistente.Id;
+            }
+            else
+            {
+                // SE NÃO EXISTE: Só agora geramos um ID novo
+                if (vistoria.Id == ObjectId.Empty)
+                {
+                    vistoria.Id = ObjectId.GenerateNewId();
+                }
+            }
+
+            // 2. Agora fazemos o Replace/Upsert seguro pelo ID (que é único e imutável)
+            var filtroId = Builders<Vistoria>.Filter.Eq(v => v.Id, vistoria.Id);
+
+            await _colecao.ReplaceOneAsync(filtroId, vistoria, new ReplaceOptions { IsUpsert = true });
         }
 
         public async Task<List<Vistoria>> GetByRefUsaAsync(string refUsa)

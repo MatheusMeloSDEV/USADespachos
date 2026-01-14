@@ -1,13 +1,13 @@
-﻿using CLUSA;
+﻿using CLUSA.Helpers;
+using CLUSA.Models;
+using CLUSA.Repositories;
+using CLUSA.Services;
 using MongoDB.Bson;
 using MongoDB.Driver;
+using Newtonsoft.Json;
 using System.Data;
 using System.Diagnostics;
 using System.Reflection;
-using Newtonsoft.Json;
-using CLUSA.Repositories;
-using CLUSA.Helpers;
-using CLUSA.Models;
 
 namespace Trabalho
 {
@@ -24,6 +24,7 @@ namespace Trabalho
         public bool Visualização { get; set; } = false;
         public OrigemProcesso Origem { get; set; }
         private readonly RepositorioProcesso _repositorio;
+        private readonly RepositorioNotifUrgente _repoNotifUrgente;
         private readonly RepositorioNotificacao _notificacaoRepo;
         private readonly RepositorioLog _logRepo;
         private bool _dadosForamAlterados = false;
@@ -33,6 +34,7 @@ namespace Trabalho
             InitializeComponent();
             _repositorio = new RepositorioProcesso();
             _notificacaoRepo = new RepositorioNotificacao();
+            _repoNotifUrgente = new RepositorioNotifUrgente();
             _logRepo = new RepositorioLog();
         }
 
@@ -386,6 +388,8 @@ namespace Trabalho
 
                 SalvarDadosDosControles();
 
+                await VerificarMudancaOriginaisAsync();
+
                 if (Modo == "Adicionar")
                 {
                     await _repositorio.CreateAsync(processo);
@@ -441,6 +445,38 @@ namespace Trabalho
             {
                 await _logRepo.RegistrarLogAsync("Erro", $"Falha ao salvar processo {processo.Ref_USA}", ex.Message);
                 MessageBox.Show($"Erro ao salvar o processo: {ex.Message}", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+        private async Task VerificarMudancaOriginaisAsync()
+        {
+            // Lógica: Se antes era NULL e agora TEM VALOR
+            bool estavaVazio = !_processoOriginal.DataRecebOriginais.HasValue;
+            bool agoraTemValor = processo.DataRecebOriginais.HasValue;
+
+            if (estavaVazio && agoraTemValor)
+            {
+                var novaNotificacao = new NotifUrgente
+                {
+                    Id = ObjectId.GenerateNewId(),
+                    // TODO: Substituir pelo ID do usuário logado na sessão atual
+                    UsuarioOrigemId = new ObjectId("69162b44257801e12e9e3dfe"),
+
+                    // TODO: Substituir pelo ID do usuário que deve receber (ex: Gerente ou setor financeiro)
+                    UsuarioDestinoId = new ObjectId("68b86f90ab6f33bd01680922"),
+
+                    Mensagem = $"PROTOCOLAR CSI ORIGINAL NO MAPA - Processo {processo.Ref_USA} recebidos em {processo.DataRecebOriginais.Value:dd/MM/yyyy}!",
+                    DataEnvio = DateTime.Now,
+                    Done = false
+                };
+
+                await _repoNotifUrgente.InsertAsync(novaNotificacao);
+
+                MessageBox.Show(
+            $"Notificação de URGÊNCIA gerada com sucesso!\n\nO sistema detectou a chegada de originais e notificou o setor responsável.",
+            "Alerta Automático",
+            MessageBoxButtons.OK,
+            MessageBoxIcon.Exclamation
+        );
             }
         }
         private async Task SincronizarOrgaoAnuenteAsync()
@@ -770,40 +806,46 @@ namespace Trabalho
             _dadosForamAlterados = true;
             this.Text += "*";
         }
-        private void btnRelatorio_Click(object? sender, EventArgs e)
+        private async void btnRelatorio_Click(object? sender, EventArgs e)
         {
+            // 1. Pega a referência
             string referencia = TXTnr.Text;
+
+            if (string.IsNullOrWhiteSpace(referencia))
+            {
+                MessageBox.Show("Por favor, digite a referência.", "Aviso", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            // 2. Mostra o Loading
             var progressForm = new ProgressForm();
             progressForm.Show(this);
 
-            Task.Run(() =>
+            try
             {
-                string? pdfPath = null;
-                string? mensagemErro = null;
-                try
-                {
-                    pdfPath = PythonRunner.ExecutarRelatorio(referencia).Trim();
-                }
-                catch (Exception ex)
-                {
-                    mensagemErro = $"Erro durante exportação: {ex.Message}";
-                }
+                // 3. Instancia e chama o serviço (Rodamos em Task.Run para garantir que a UI não trave nada)
+                var service = new RelatorioService();
 
-                Invoke(new Action(() =>
+                // AQUI ESTÁ A MUDANÇA: Chamamos o C# em vez do PythonRunner
+                string pdfPath = await Task.Run(() => service.GerarRelatorioAsync(referencia));
+
+                // 4. Fecha o Loading (Já estamos na Thread UI graças ao await, não precisa de Invoke)
+                progressForm.Close();
+
+                // 5. Pergunta se quer abrir
+                var resp = MessageBox.Show("Relatório gerado com sucesso!\nDeseja abrir o PDF?",
+                    "Concluído", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+
+                if (resp == DialogResult.Yes && !string.IsNullOrEmpty(pdfPath) && File.Exists(pdfPath))
                 {
-                    progressForm.Close();
-                    if (mensagemErro != null)
-                    {
-                        MessageBox.Show(mensagemErro, "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                        return;
-                    }
-                    var resp = MessageBox.Show("Exportação concluída. Deseja abrir o PDF?", "Resultado", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
-                    if (resp == DialogResult.Yes && !string.IsNullOrEmpty(pdfPath) && File.Exists(pdfPath))
-                    {
-                        Process.Start(new ProcessStartInfo { FileName = pdfPath, UseShellExecute = true });
-                    }
-                }));
-            });
+                    Process.Start(new ProcessStartInfo { FileName = pdfPath, UseShellExecute = true });
+                }
+            }
+            catch (Exception ex)
+            {
+                progressForm.Close();
+                MessageBox.Show($"Erro ao gerar relatório: {ex.Message}", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
         private void checkedListBox2_ItemCheck(object? sender, ItemCheckEventArgs e)
         {
