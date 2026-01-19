@@ -296,12 +296,12 @@ namespace Trabalho
             if (dgv.Rows.Count == 0)
             {
                 dgv.Height = 0;
-                dgv.Visible = false; // Opcional: esconder completamente quando vazio
+                dgv.Visible = false;
                 return;
             }
 
             // Se tiver linhas, calcular altura necessária
-            dgv.Visible = true; // Opcional: mostrar quando tiver dados
+            dgv.Visible = true;
             int alturaTotal = dgv.ColumnHeadersHeight;
 
             foreach (DataGridViewRow row in dgv.Rows)
@@ -309,6 +309,15 @@ namespace Trabalho
                 if (row.Visible)
                     alturaTotal += row.Height;
             }
+
+            // --- NOVO: Aumenta um pouco mais se for o grid específico ---
+            if (dgv == DGVProcessosDadoEntrada)
+            {
+                // Adiciona 30 pixels extras (ajuste esse valor conforme seu gosto)
+                // Isso ajuda caso apareça uma barra de rolagem horizontal ou apenas para dar destaque
+                alturaTotal += 10;
+            }
+            // -----------------------------------------------------------
 
             dgv.Height = alturaTotal;
         }

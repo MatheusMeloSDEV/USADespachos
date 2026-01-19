@@ -53,11 +53,11 @@
             btnDesceParaAguardando = new PictureBox();
             BtnSobeAgendada = new PictureBox();
             BtnSobeSolicitado = new PictureBox();
+            BtnCancelada = new PictureBox();
             _timer = new System.Windows.Forms.Timer(components);
             toolStrip1 = new ToolStrip();
             BtnRecarrega = new ToolStripButton();
             panel1 = new Panel();
-            BtnCancelada = new PictureBox();
             TableVistorias.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)DGVProcessosDadoEntrada).BeginInit();
             ((System.ComponentModel.ISupportInitialize)BtnDefere).BeginInit();
@@ -75,9 +75,9 @@
             ((System.ComponentModel.ISupportInitialize)btnDesceParaAguardando).BeginInit();
             ((System.ComponentModel.ISupportInitialize)BtnSobeAgendada).BeginInit();
             ((System.ComponentModel.ISupportInitialize)BtnSobeSolicitado).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)BtnCancelada).BeginInit();
             toolStrip1.SuspendLayout();
             panel1.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)BtnCancelada).BeginInit();
             SuspendLayout();
             // 
             // TableVistorias
@@ -141,7 +141,7 @@
             TableVistorias.SetColumnSpan(DGVProcessosDadoEntrada, 4);
             DGVProcessosDadoEntrada.Location = new Point(3, 810);
             DGVProcessosDadoEntrada.Name = "DGVProcessosDadoEntrada";
-            DGVProcessosDadoEntrada.RowTemplate.Height = 25;
+            DGVProcessosDadoEntrada.ScrollBars = ScrollBars.None;
             DGVProcessosDadoEntrada.Size = new Size(1112, 139);
             DGVProcessosDadoEntrada.TabIndex = 29;
             // 
@@ -180,7 +180,6 @@
             TableVistorias.SetColumnSpan(DGVLaudo, 4);
             DGVLaudo.Location = new Point(3, 60);
             DGVLaudo.Name = "DGVLaudo";
-            DGVLaudo.RowTemplate.Height = 25;
             DGVLaudo.ScrollBars = ScrollBars.None;
             DGVLaudo.Size = new Size(1112, 51);
             DGVLaudo.TabIndex = 24;
@@ -221,7 +220,6 @@
             TableVistorias.SetColumnSpan(DGVAguardandoChegAgendVistoria, 4);
             DGVAguardandoChegAgendVistoria.Location = new Point(3, 551);
             DGVAguardandoChegAgendVistoria.Name = "DGVAguardandoChegAgendVistoria";
-            DGVAguardandoChegAgendVistoria.RowTemplate.Height = 25;
             DGVAguardandoChegAgendVistoria.ScrollBars = ScrollBars.None;
             DGVAguardandoChegAgendVistoria.Size = new Size(1112, 223);
             DGVAguardandoChegAgendVistoria.TabIndex = 1;
@@ -234,7 +232,6 @@
             TableVistorias.SetColumnSpan(DGVSolicitadoDataVistoria, 4);
             DGVSolicitadoDataVistoria.Location = new Point(3, 321);
             DGVSolicitadoDataVistoria.Name = "DGVSolicitadoDataVistoria";
-            DGVSolicitadoDataVistoria.RowTemplate.Height = 25;
             DGVSolicitadoDataVistoria.ScrollBars = ScrollBars.None;
             DGVSolicitadoDataVistoria.Size = new Size(1112, 194);
             DGVSolicitadoDataVistoria.TabIndex = 0;
@@ -275,7 +272,6 @@
             TableVistorias.SetColumnSpan(DGVVistoriaAgendada, 4);
             DGVVistoriaAgendada.Location = new Point(3, 234);
             DGVVistoriaAgendada.Name = "DGVVistoriaAgendada";
-            DGVVistoriaAgendada.RowTemplate.Height = 25;
             DGVVistoriaAgendada.ScrollBars = ScrollBars.None;
             DGVVistoriaAgendada.Size = new Size(1112, 51);
             DGVVistoriaAgendada.TabIndex = 2;
@@ -288,7 +284,6 @@
             TableVistorias.SetColumnSpan(DGVAguardandoDef, 4);
             DGVAguardandoDef.Location = new Point(3, 147);
             DGVAguardandoDef.Name = "DGVAguardandoDef";
-            DGVAguardandoDef.RowTemplate.Height = 25;
             DGVAguardandoDef.ScrollBars = ScrollBars.None;
             DGVAguardandoDef.Size = new Size(1112, 51);
             DGVAguardandoDef.TabIndex = 3;
@@ -423,6 +418,18 @@
             BtnSobeSolicitado.TabStop = false;
             BtnSobeSolicitado.Click += BtnSobeSolicitado_Click;
             // 
+            // BtnCancelada
+            // 
+            BtnCancelada.Dock = DockStyle.Fill;
+            BtnCancelada.Image = (Image)resources.GetObject("BtnCancelada.Image");
+            BtnCancelada.Location = new Point(1091, 780);
+            BtnCancelada.Name = "BtnCancelada";
+            BtnCancelada.Size = new Size(24, 24);
+            BtnCancelada.SizeMode = PictureBoxSizeMode.StretchImage;
+            BtnCancelada.TabIndex = 30;
+            BtnCancelada.TabStop = false;
+            BtnCancelada.Click += BtnCancelada_Click;
+            // 
             // toolStrip1
             // 
             toolStrip1.Items.AddRange(new ToolStripItem[] { BtnRecarrega });
@@ -450,18 +457,6 @@
             panel1.Name = "panel1";
             panel1.Size = new Size(1118, 952);
             panel1.TabIndex = 2;
-            // 
-            // BtnCancelada
-            // 
-            BtnCancelada.Dock = DockStyle.Fill;
-            BtnCancelada.Image = (Image)resources.GetObject("BtnCancelada.Image");
-            BtnCancelada.Location = new Point(1091, 780);
-            BtnCancelada.Name = "BtnCancelada";
-            BtnCancelada.Size = new Size(24, 24);
-            BtnCancelada.SizeMode = PictureBoxSizeMode.StretchImage;
-            BtnCancelada.TabIndex = 30;
-            BtnCancelada.TabStop = false;
-            BtnCancelada.Click += BtnCancelada_Click;
             // 
             // FrmVistorias
             // 
@@ -494,11 +489,11 @@
             ((System.ComponentModel.ISupportInitialize)btnDesceParaAguardando).EndInit();
             ((System.ComponentModel.ISupportInitialize)BtnSobeAgendada).EndInit();
             ((System.ComponentModel.ISupportInitialize)BtnSobeSolicitado).EndInit();
+            ((System.ComponentModel.ISupportInitialize)BtnCancelada).EndInit();
             toolStrip1.ResumeLayout(false);
             toolStrip1.PerformLayout();
             panel1.ResumeLayout(false);
             panel1.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)BtnCancelada).EndInit();
             ResumeLayout(false);
             PerformLayout();
         }
