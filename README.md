@@ -151,11 +151,5 @@ Trabalho/
 ## 📄 Licença
 
 Este projeto está licenciado sob a Licença MIT - veja o arquivo [LICENSE](LICENSE) para detalhes.
-
-## 🙏 Agradecimentos
-
-- FIAP (Faculdade de Informática e Administração Paulista)
-- TechChallenge community
-
 ---
 
