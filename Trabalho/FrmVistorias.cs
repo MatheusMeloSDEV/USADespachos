@@ -437,8 +437,7 @@ namespace Trabalho
             var query = lista.Where(v => v.Status == status);
 
             return query
-                .OrderBy(v => v.Previsao ?? DateTime.MaxValue) 
-                .ThenByDescending(v => v.DataRegistroLPCO)    
+                .OrderBy(v => v.DataRegistroLPCO ?? DateTime.MaxValue) 
                 .ToList();
         }
         #region "Lógica de Movimentação de Vistorias"
