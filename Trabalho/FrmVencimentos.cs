@@ -73,22 +73,24 @@ namespace Trabalho
                 if (EstaNaJanela(item.DataVencimentoVinho, dataMinima, dataMaxima))
                     avisos += $"- VINHO vence em {item.DataVencimentoVinho:dd/MM/yyyy}\n";
 
-                // 3. SE TIVER ALGO VENCENDO NESTE PERÍODO, ENVIA
                 if (!string.IsNullOrEmpty(avisos))
                 {
                     string textoCnpjs = (item.Cnpjs != null && item.Cnpjs.Count > 0)
-                                ? string.Join(", ", item.Cnpjs)
-                                : "Nenhum CNPJ registado";
+                                        ? string.Join(", ", item.Cnpjs)
+                                        : "Nenhum CNPJ registado";
 
                     string assunto = $"[ALERTA] Vencimentos Próximos: {item.Importador}";
-                    
-                    string corpo = $"O cliente {item.Importador} tem documentos a vencer em breve.\n\n" +
-                           $"CNPJs Vinculados: {textoCnpjs}\n\n" +
-                           $"Itens a vencer:\n{avisos}\n" +
-                           $"Por favor, verifique no sistema.";
 
-                    // Envia o e-mail
-                    await EmailService.EnviarEmailAsync(assunto, corpo);
+                    // Dica: Use <br> se quiser garantir quebra de linha no HTML do email
+                    string corpo = $"O cliente <b>{item.Importador}</b> tem documentos a vencer em breve.<br><br>" +
+                                   $"CNPJs Vinculados: {textoCnpjs}<br><br>" +
+                                   $"Itens a vencer:<br>{avisos.Replace("\n", "<br>")}<br>" +
+                                   $"Por favor, verifique no sistema.";
+
+                    // --- AQUI A MUDANÇA ---
+                    // Usa o novo método que aceita só texto com a conta corporativa
+                    await EmailService.EnviarFollowUpTextoAsync(assunto, corpo);
+                    // ----------------------
 
                     await _repoLog.RegistrarLogAsync("Notificação", $"E-mail automático enviado para {item.Importador}", "Enviado pelo sistema Anti-Spam");
 
@@ -98,7 +100,6 @@ namespace Trabalho
                     emailsEnviados++;
                 }
             }
-
             if (emailsEnviados > 0)
             {
                 MessageBox.Show($"{emailsEnviados} notificação(ões) enviada(s).", "Notificação Automática");

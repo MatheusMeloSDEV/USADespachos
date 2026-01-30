@@ -436,14 +436,9 @@ namespace Trabalho
         {
             var query = lista.Where(v => v.Status == status);
 
-            if (status == StatusVistoria.ProcessoDadoEntrada)
-            {
-                return query
-                    .OrderByDescending(v => v.DataRegistroLPCO ?? DateTime.MinValue)
-                    .ToList();
-            }
             return query
-                .OrderBy(v => v.Previsao ?? DateTime.MaxValue)
+                .OrderBy(v => v.Previsao ?? DateTime.MaxValue) 
+                .ThenByDescending(v => v.DataRegistroLPCO)    
                 .ToList();
         }
         #region "Lógica de Movimentação de Vistorias"

@@ -12,7 +12,9 @@
 		<PackageReference Include="ClosedXML" Version="0.105.0" />
 		<PackageReference Include="EPPlus" Version="8.4.0" />
 		<PackageReference Include="itext" Version="9.4.0" />
+		<PackageReference Include="MailKit" Version="4.14.1" />
 		<PackageReference Include="Microsoft.Office.Interop.Excel" Version="16.0.18925.20022" />
+		<PackageReference Include="Microsoft.Playwright" Version="1.57.0" />
 		<PackageReference Include="MongoDB.Bson" Version="3.5.2" />
 		<PackageReference Include="MongoDB.Driver" Version="3.5.2" />
 		<PackageReference Include="Newtonsoft.Json" Version="13.0.4" />

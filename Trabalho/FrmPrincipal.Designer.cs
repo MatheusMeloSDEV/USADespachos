@@ -252,12 +252,13 @@
             // panel2
             // 
             panel2.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left;
+            panel2.AutoScroll = true;
             panel2.BorderStyle = BorderStyle.FixedSingle;
             panel2.Controls.Add(TLNotifUrgentes);
             panel2.Controls.Add(toolStrip1);
             panel2.Location = new Point(22, 61);
             panel2.Name = "panel2";
-            panel2.Size = new Size(450, 590);
+            panel2.Size = new Size(466, 590);
             panel2.TabIndex = 4;
             // 
             // TLNotifUrgentes
@@ -280,7 +281,7 @@
             toolStrip1.Items.AddRange(new ToolStripItem[] { toolStripLabel1, BtnAddNotifUrg });
             toolStrip1.Location = new Point(0, 0);
             toolStrip1.Name = "toolStrip1";
-            toolStrip1.Size = new Size(448, 25);
+            toolStrip1.Size = new Size(464, 25);
             toolStrip1.TabIndex = 0;
             toolStrip1.Text = "toolStrip1";
             // 

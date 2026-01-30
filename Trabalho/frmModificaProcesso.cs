@@ -367,6 +367,8 @@ namespace Trabalho
         {
             try
             {
+                string logDetalhado = "";
+
                 if (Modo == "Adicionar" && !string.IsNullOrWhiteSpace(TXTnr.Text))
                 {
                     bool refUsaExiste = await _repositorio.VerificarRefUsaExisteAsync(TXTnr.Text);
@@ -409,7 +411,7 @@ namespace Trabalho
                 {
                     // --- AQUI ESTÁ A MUDANÇA ---
                     // Gera o relatório completo de tudo que mudou automaticamente
-                    string logDetalhado = GerarLogCompletoDeAlteracoes();
+                    logDetalhado = GerarLogCompletoDeAlteracoes();
 
                     await _repositorio.UpdateAsync(processo);
 
@@ -439,7 +441,57 @@ namespace Trabalho
 
                 _dadosForamAlterados = false;
                 this.Text = this.Text.Replace("*", "");
-                MessageBox.Show("Processo salvo com sucesso!", "Sucesso", MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+                MessageBox.Show("Salvo com sucesso!", "Sucesso", MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+                //bool historicoMudou = logDetalhado.Contains("HistoricoDoProcesso");
+
+                //// Se for um novo processo (Modo Adicionar), consideramos que "mudou" (criou)
+                //if (Modo == "Adicionar") historicoMudou = true;
+
+                //// 2. Chama o Diálogo Personalizado
+                //using (var frmSucesso = new FrmDialogoSucesso(historicoMudou))
+                //{
+                //    frmSucesso.ShowDialog(this);
+
+                //    if (frmSucesso.EnviarEmail)
+                //    {
+                //        try
+                //        {
+                //            // 1. Assunto
+                //            string assunto = $"Atualização processo SRref: {processo.SR}";
+
+                //            // 2. Corpo vazio (conforme solicitado)
+                //            string corpo = "";
+
+                //            // 3. Gera o PDF em Memória
+                //            var followUpService = new CLUSA.Services.FollowUpService();
+
+                //            // Define o nome do importador (ou usa "Cliente" se estiver vazio)
+                //            string nomeImportador = !string.IsNullOrEmpty(processo.Importador) ? processo.Importador : "Cliente";
+
+                //            // Gera os bytes do PDF
+                //            byte[] pdfBytes = await followUpService.GerarPdfBytesAsync(nomeImportador);
+
+                //            // Define o nome do arquivo
+                //            string nomeArquivoAnexo = $"FollowUp_{nomeImportador.Replace(" ", "_")}.pdf";
+
+                //            // 4. Envia
+                //            await CLUSA.Services.EmailService.EnviarFollowUpAsync(
+                //                assunto,
+                //                corpo,
+                //                pdfBytes,
+                //                nomeArquivoAnexo
+                //            );
+
+                //            MessageBox.Show("E-mail enviado com o PDF anexo!", "Sucesso", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                //        }
+                //        catch (Exception exEmail)
+                //        {
+                //            MessageBox.Show($"Erro ao enviar e-mail: {exEmail.Message}", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                //        }
+                //    }
+                //}
             }
             catch (Exception ex)
             {

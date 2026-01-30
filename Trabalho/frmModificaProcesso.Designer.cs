@@ -117,6 +117,10 @@
             CbResultadoLaboratorial = new CheckBox();
             CbPresencaCarga = new CheckBox();
             groupBox6 = new GroupBox();
+            comboBox4 = new ComboBox();
+            comboBox3 = new ComboBox();
+            comboBox2 = new ComboBox();
+            cbTipo = new ComboBox();
             groupBox7 = new GroupBox();
             flowLayoutPanel1 = new FlowLayoutPanel();
             groupBox8 = new GroupBox();
@@ -570,11 +574,11 @@
             // TXTstatusdoprocesso
             // 
             TXTstatusdoprocesso.DataBindings.Add(new Binding("Text", BsModificaProcesso, "HistoricoDoProcesso", true));
-            TXTstatusdoprocesso.Dock = DockStyle.Fill;
-            TXTstatusdoprocesso.Location = new Point(3, 21);
+            TXTstatusdoprocesso.Dock = DockStyle.Bottom;
+            TXTstatusdoprocesso.Location = new Point(3, 75);
             TXTstatusdoprocesso.Multiline = true;
             TXTstatusdoprocesso.Name = "TXTstatusdoprocesso";
-            TXTstatusdoprocesso.Size = new Size(331, 285);
+            TXTstatusdoprocesso.Size = new Size(331, 231);
             TXTstatusdoprocesso.TabIndex = 25;
             // 
             // TXTpendencia
@@ -1152,6 +1156,10 @@
             // 
             groupBox6.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left;
             groupBox6.AutoSizeMode = AutoSizeMode.GrowAndShrink;
+            groupBox6.Controls.Add(comboBox4);
+            groupBox6.Controls.Add(comboBox3);
+            groupBox6.Controls.Add(comboBox2);
+            groupBox6.Controls.Add(cbTipo);
             groupBox6.Controls.Add(TXTstatusdoprocesso);
             groupBox6.Font = new Font("Segoe UI", 10F);
             groupBox6.Location = new Point(14, 182);
@@ -1160,6 +1168,59 @@
             groupBox6.TabIndex = 808;
             groupBox6.TabStop = false;
             groupBox6.Text = "Histórico do Processo";
+            // 
+            // comboBox4
+            // 
+            comboBox4.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            comboBox4.AutoCompleteMode = AutoCompleteMode.Suggest;
+            comboBox4.DataBindings.Add(new Binding("Text", BsModificaProcesso, "Status", true));
+            comboBox4.Enabled = false;
+            comboBox4.FormattingEnabled = true;
+            comboBox4.Items.AddRange(new object[] { "", "Aguardando embarque", "Aguardando atracação", "Aguardando presença de carga", "Aguardando Correção CE", "Aguardando a TCA Definitivo", "Aguardando SIGVIG", "Providenciando LI", "Providenciando Protocolo de LPCO", "Aguardando documentos finais para LPCO", "Aguardando parametrização LI/LPCO", "Aguardando inspeção/coleta LI/LPCO", "Aguardando deferimento LI/LPCO", "Aguardando registro DI/DUIMP", "Aguardando parametrização DI/DUIMP", "Aguardando desembaraço", "Aguardando Etiquetagem", "", "Aguardando emissão de CII", "Aguardando análise MAPA e/ou ANVISA", "Aguardando Desova", "Aguardando análise RF", "Aguardando inspeção DI/DUIMP", "Aguardando Nota/Transportadora", "Aguardando desbloqueio Siscomex Carga", "Aguardando minuta devolução container vazio", "Aguardando resultado laboratório ", "Finalizado" });
+            comboBox4.Location = new Point(172, 46);
+            comboBox4.Name = "comboBox4";
+            comboBox4.Size = new Size(159, 25);
+            comboBox4.TabIndex = 807;
+            // 
+            // comboBox3
+            // 
+            comboBox3.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            comboBox3.AutoCompleteMode = AutoCompleteMode.Suggest;
+            comboBox3.DataBindings.Add(new Binding("Text", BsModificaProcesso, "Status", true));
+            comboBox3.Enabled = false;
+            comboBox3.FormattingEnabled = true;
+            comboBox3.Items.AddRange(new object[] { "", "Aguardando embarque", "Aguardando atracação", "Aguardando presença de carga", "Aguardando Correção CE", "Aguardando a TCA Definitivo", "Aguardando SIGVIG", "Providenciando LI", "Providenciando Protocolo de LPCO", "Aguardando documentos finais para LPCO", "Aguardando parametrização LI/LPCO", "Aguardando inspeção/coleta LI/LPCO", "Aguardando deferimento LI/LPCO", "Aguardando registro DI/DUIMP", "Aguardando parametrização DI/DUIMP", "Aguardando desembaraço", "Aguardando Etiquetagem", "", "Aguardando emissão de CII", "Aguardando análise MAPA e/ou ANVISA", "Aguardando Desova", "Aguardando análise RF", "Aguardando inspeção DI/DUIMP", "Aguardando Nota/Transportadora", "Aguardando desbloqueio Siscomex Carga", "Aguardando minuta devolução container vazio", "Aguardando resultado laboratório ", "Finalizado" });
+            comboBox3.Location = new Point(172, 19);
+            comboBox3.Name = "comboBox3";
+            comboBox3.Size = new Size(159, 25);
+            comboBox3.TabIndex = 806;
+            // 
+            // comboBox2
+            // 
+            comboBox2.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            comboBox2.AutoCompleteMode = AutoCompleteMode.Suggest;
+            comboBox2.DataBindings.Add(new Binding("Text", BsModificaProcesso, "Status", true));
+            comboBox2.Enabled = false;
+            comboBox2.FormattingEnabled = true;
+            comboBox2.Items.AddRange(new object[] { "", "Aguardando embarque", "Aguardando atracação", "Aguardando presença de carga", "Aguardando Correção CE", "Aguardando a TCA Definitivo", "Aguardando SIGVIG", "Providenciando LI", "Providenciando Protocolo de LPCO", "Aguardando documentos finais para LPCO", "Aguardando parametrização LI/LPCO", "Aguardando inspeção/coleta LI/LPCO", "Aguardando deferimento LI/LPCO", "Aguardando registro DI/DUIMP", "Aguardando parametrização DI/DUIMP", "Aguardando desembaraço", "Aguardando Etiquetagem", "", "Aguardando emissão de CII", "Aguardando análise MAPA e/ou ANVISA", "Aguardando Desova", "Aguardando análise RF", "Aguardando inspeção DI/DUIMP", "Aguardando Nota/Transportadora", "Aguardando desbloqueio Siscomex Carga", "Aguardando minuta devolução container vazio", "Aguardando resultado laboratório ", "Finalizado" });
+            comboBox2.Location = new Point(3, 46);
+            comboBox2.Name = "comboBox2";
+            comboBox2.Size = new Size(159, 25);
+            comboBox2.TabIndex = 805;
+            // 
+            // cbTipo
+            // 
+            cbTipo.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            cbTipo.AutoCompleteMode = AutoCompleteMode.Suggest;
+            cbTipo.DataBindings.Add(new Binding("Text", BsModificaProcesso, "Status", true));
+            cbTipo.Enabled = false;
+            cbTipo.FormattingEnabled = true;
+            cbTipo.Items.AddRange(new object[] { "", "Aguardando embarque", "Aguardando atracação", "Aguardando presença de carga", "Aguardando Correção CE", "Aguardando a TCA Definitivo", "Aguardando SIGVIG", "Providenciando LI", "Providenciando Protocolo de LPCO", "Aguardando documentos finais para LPCO", "Aguardando parametrização LI/LPCO", "Aguardando inspeção/coleta LI/LPCO", "Aguardando deferimento LI/LPCO", "Aguardando registro DI/DUIMP", "Aguardando parametrização DI/DUIMP", "Aguardando desembaraço", "Aguardando Etiquetagem", "", "Aguardando emissão de CII", "Aguardando análise MAPA e/ou ANVISA", "Aguardando Desova", "Aguardando análise RF", "Aguardando inspeção DI/DUIMP", "Aguardando Nota/Transportadora", "Aguardando desbloqueio Siscomex Carga", "Aguardando minuta devolução container vazio", "Aguardando resultado laboratório ", "Finalizado" });
+            cbTipo.Location = new Point(3, 19);
+            cbTipo.Name = "cbTipo";
+            cbTipo.Size = new Size(159, 25);
+            cbTipo.TabIndex = 804;
+            cbTipo.Text = "Tipo";
             // 
             // groupBox7
             // 
@@ -1476,5 +1537,9 @@
         private Label label28;
         private TextBox textBox1;
         private Label label29;
+        private ComboBox comboBox4;
+        private ComboBox comboBox3;
+        private ComboBox comboBox2;
+        private ComboBox cbTipo;
     }
 }

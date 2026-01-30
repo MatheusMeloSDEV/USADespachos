@@ -239,10 +239,10 @@ namespace Trabalho
         }
         private async void BtnExportar_Click(object sender, EventArgs e)
         {
-            // Obtém a lista de importadores únicos do repositório
+            // 1. Obtém a lista de importadores
             var importadores = await _repositorio.ObterValoresUnicosAsync("Importador");
 
-            // Exibe um formulário para seleção do importador
+            // 2. Exibe o formulário de seleção
             using var form = new ImporterSelectionForm(importadores);
             if (form.ShowDialog() == DialogResult.OK)
             {
@@ -254,20 +254,23 @@ namespace Trabalho
 
                     var service = new CLUSA.Services.FollowUpService();
 
-                    // Isso vai gerar o Excel E o PDF na pasta configurada
-                    string pdfPath = await service.GerarRelatoriosAsync(importador);
+                    string pdfPath = await service.GerarArquivosEmDiscoAsync(importador);
 
                     EsconderLoading();
 
-                    if (MessageBox.Show("Relatórios gerados! Deseja abrir o PDF?", "Sucesso", MessageBoxButtons.YesNo) == DialogResult.Yes)
+                    if (MessageBox.Show("Relatórios gerados com sucesso!\n\nDeseja abrir o PDF agora?",
+                                        "Sucesso",
+                                        MessageBoxButtons.YesNo,
+                                        MessageBoxIcon.Question) == DialogResult.Yes)
                     {
-                        Process.Start(new ProcessStartInfo(pdfPath) { UseShellExecute = true });
+                        // Abre o PDF gerado
+                        System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(pdfPath) { UseShellExecute = true });
                     }
                 }
                 catch (Exception ex)
                 {
                     EsconderLoading();
-                    MessageBox.Show($"Erro: {ex.Message}");
+                    MessageBox.Show($"Erro ao gerar documentos: {ex.Message}", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
             }
         }
