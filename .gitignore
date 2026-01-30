@@ -364,3 +364,5 @@ FodyWeavers.xsd
 /CLUSA/ConfigDatabase.cs
 /CLUSA/EmailService.cs
 /CLUSA/Repositories/ConfigDatabase.cs
+/CLUSA/Services/EmailService.cs
+/CLUSA.Tests/Tests.csproj
