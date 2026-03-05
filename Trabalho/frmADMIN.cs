@@ -78,28 +78,46 @@ namespace Trabalho
                 if (dgvLogs.Columns["Id"] != null) dgvLogs.Columns["Id"].Visible = false;
                 if (dgvLogs.Columns["_id"] != null) dgvLogs.Columns["_id"].Visible = false;
 
-                // 2. Formata Data
+                // Variável auxiliar para controlar a ordem exata das colunas da esquerda para a direita
+                int indexOrdem = 0;
+
+                // 2. Formata Data (Posição 0)
                 if (dgvLogs.Columns["DataHora"] != null)
                 {
                     dgvLogs.Columns["DataHora"].HeaderText = "Data/Hora";
                     dgvLogs.Columns["DataHora"].DefaultCellStyle.Format = "dd/MM/yyyy HH:mm:ss";
                     dgvLogs.Columns["DataHora"].Width = 140;
+                    dgvLogs.Columns["DataHora"].DisplayIndex = indexOrdem++;
                 }
 
-                // 3. Ajusta Larguras
+                // 3. Formata Autor (Posição 1 - Logo após a Data)
+                if (dgvLogs.Columns["Autor"] != null)
+                {
+                    dgvLogs.Columns["Autor"].HeaderText = "Usuário";
+                    dgvLogs.Columns["Autor"].Width = 100;
+                    dgvLogs.Columns["Autor"].DisplayIndex = indexOrdem++;
+                }
+
+                // 4. Formata Ação (Posição 2)
                 if (dgvLogs.Columns["TipoAcao"] != null)
                 {
                     dgvLogs.Columns["TipoAcao"].HeaderText = "Ação";
-                    dgvLogs.Columns["TipoAcao"].Width = 60;
+                    dgvLogs.Columns["TipoAcao"].Width = 70; // Aumentado um pouquinho para caber "Exclusão"
+                    dgvLogs.Columns["TipoAcao"].DisplayIndex = indexOrdem++;
                 }
 
+                // 5. Ajusta Mensagem (Posição 3)
                 if (dgvLogs.Columns["Mensagem"] != null)
                 {
-                    dgvLogs.Columns["Mensagem"].Width = 250; // Preenche o resto
+                    dgvLogs.Columns["Mensagem"].Width = 250;
+                    dgvLogs.Columns["Mensagem"].DisplayIndex = indexOrdem++;
                 }
+
+                // 6. Ajusta Detalhes (Posição 4)
                 if (dgvLogs.Columns["Detalhes"] != null)
                 {
                     dgvLogs.Columns["Detalhes"].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill; // Preenche o resto
+                    dgvLogs.Columns["Detalhes"].DisplayIndex = indexOrdem++;
                 }
             }
             catch (Exception ex)
@@ -121,7 +139,7 @@ namespace Trabalho
                 {
                     await repositorio.CreateAsync(novoUsuario);
 
-                    await _logRepo.RegistrarLogAsync("Criação Usuário", $"Novo usuário '{novoUsuario.Username}' criado.", $"Admin: {usuarioLogadoNome}");
+                    await _logRepo.RegistrarLogAsync("Criação Usuário", usuarioLogadoNome, $"Novo usuário '{novoUsuario.Username}' criado.", $"Admin: {usuarioLogadoNome}");
 
                     await AtualizarGridUsuarios();
                     await AtualizarGridLogs(); // <--- Atualiza o log na tela
@@ -141,7 +159,7 @@ namespace Trabalho
                 {
                     await repositorio.DeleteAsync(usuarioParaExcluir);
 
-                    await _logRepo.RegistrarLogAsync("Exclusão Usuário", $"Usuário '{usuarioParaExcluir.Username}' excluído.", $"Admin: {usuarioLogadoNome}");
+                    await _logRepo.RegistrarLogAsync("Exclusão Usuário", usuarioLogadoNome, $"Usuário '{usuarioParaExcluir.Username}' excluído.", $"Admin: {usuarioLogadoNome}");
 
                     await AtualizarGridUsuarios();
                     await AtualizarGridLogs(); // <--- Atualiza o log na tela
@@ -162,7 +180,7 @@ namespace Trabalho
                 {
                     await repositorio.UpdateAsync(usuarioSelecionado);
 
-                    await _logRepo.RegistrarLogAsync("Edição Usuário", $"Usuário '{usuarioSelecionado.Username}' editado.", $"Admin: {usuarioLogadoNome}");
+                    await _logRepo.RegistrarLogAsync("Edição Usuário", usuarioLogadoNome, $"Usuário '{usuarioSelecionado.Username}' editado.", $"Admin: {usuarioLogadoNome}");
 
                     await AtualizarGridUsuarios();
                     await AtualizarGridLogs(); // <--- Atualiza o log na tela

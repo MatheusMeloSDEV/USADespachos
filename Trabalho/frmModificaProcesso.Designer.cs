@@ -100,7 +100,7 @@
             DTPdatadeatracacao = new DateTimePicker();
             DTPdatadeembarque = new DateTimePicker();
             groupBox1 = new GroupBox();
-            textBox1 = new TextBox();
+            txtLocalDeDesembaraco = new TextBox();
             label29 = new Label();
             txtCE = new TextBox();
             label28 = new Label();
@@ -875,9 +875,10 @@
             // 
             CbStatus.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             CbStatus.AutoCompleteMode = AutoCompleteMode.Suggest;
+            CbStatus.AutoCompleteSource = AutoCompleteSource.ListItems;
             CbStatus.DataBindings.Add(new Binding("Text", BsModificaProcesso, "Status", true));
             CbStatus.FormattingEnabled = true;
-            CbStatus.Items.AddRange(new object[] { "", "Aguardando embarque", "Aguardando atracação", "Aguardando presença de carga", "Aguardando Correção CE", "Aguardando a TCA Definitivo", "Aguardando SIGVIG", "Providenciando LI", "Providenciando Protocolo de LPCO", "Aguardando documentos finais para LPCO", "Aguardando parametrização LI/LPCO", "Aguardando inspeção/coleta LI/LPCO", "Aguardando deferimento LI/LPCO", "Aguardando registro DI/DUIMP", "Aguardando parametrização DI/DUIMP", "Aguardando desembaraço", "Aguardando Etiquetagem", "", "Aguardando emissão de CII", "Aguardando análise MAPA e/ou ANVISA", "Aguardando Desova", "Aguardando análise RF", "Aguardando inspeção DI/DUIMP", "Aguardando Nota/Transportadora", "Aguardando desbloqueio Siscomex Carga", "Aguardando minuta devolução container vazio", "Aguardando resultado laboratório ", "Finalizado" });
+            CbStatus.Items.AddRange(new object[] { "", "Aguardando embarque", "Aguardando atracação", "Aguardando presença de carga", "Aguardando Correção CE", "Aguardando a TCA Definitivo", "Aguardando SIGVIG", "Aguardando avarias", "Providenciando LI", "Providenciando Protocolo de LPCO", "Aguardando documentos finais para LPCO", "Aguardando parametrização LI/LPCO", "Aguardando inspeção/coleta LI/LPCO", "Aguardando deferimento LI/LPCO", "Aguardando registro DI/DUIMP", "Aguardando parametrização DI/DUIMP", "Aguardando desembaraço", "Aguardando Etiquetagem", "Aguardando data de Carregamento", "Aguardando emissão de CII", "Aguardando análise MAPA e/ou ANVISA", "Aguardando Desova", "Aguardando análise RF", "Aguardando inspeção DI/DUIMP", "Aguardando Nota/Transportadora", "Aguardando desbloqueio Siscomex Carga", "Aguardando Liberação Sefaz", "Aguardando minuta devolução container vazio", "Aguardando resultado laboratório ", "Finalizado" });
             CbStatus.Location = new Point(10, 36);
             CbStatus.Name = "CbStatus";
             CbStatus.Size = new Size(200, 23);
@@ -931,7 +932,7 @@
             // 
             groupBox1.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left;
             groupBox1.AutoSizeMode = AutoSizeMode.GrowAndShrink;
-            groupBox1.Controls.Add(textBox1);
+            groupBox1.Controls.Add(txtLocalDeDesembaraco);
             groupBox1.Controls.Add(label29);
             groupBox1.Controls.Add(txtCE);
             groupBox1.Controls.Add(label28);
@@ -970,15 +971,15 @@
             groupBox1.TabStop = false;
             groupBox1.Text = "Informações Gerais";
             // 
-            // textBox1
+            // txtLocalDeDesembaraco
             // 
-            textBox1.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
-            textBox1.Cursor = Cursors.IBeam;
-            textBox1.DataBindings.Add(new Binding("Text", BsModificaProcesso, "LocalDeDesembaraco", true));
-            textBox1.Location = new Point(1005, 58);
-            textBox1.Name = "textBox1";
-            textBox1.Size = new Size(86, 23);
-            textBox1.TabIndex = 812;
+            txtLocalDeDesembaraco.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            txtLocalDeDesembaraco.Cursor = Cursors.IBeam;
+            txtLocalDeDesembaraco.DataBindings.Add(new Binding("Text", BsModificaProcesso, "LocalDeDesembaraco", true));
+            txtLocalDeDesembaraco.Location = new Point(1005, 58);
+            txtLocalDeDesembaraco.Name = "txtLocalDeDesembaraco";
+            txtLocalDeDesembaraco.Size = new Size(86, 23);
+            txtLocalDeDesembaraco.TabIndex = 812;
             // 
             // label29
             // 
@@ -1015,6 +1016,8 @@
             // TxtContainer
             // 
             TxtContainer.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            TxtContainer.AutoCompleteCustomSource.AddRange(new string[] { "Carga Solta" });
+            TxtContainer.AutoCompleteMode = AutoCompleteMode.Suggest;
             TxtContainer.Cursor = Cursors.IBeam;
             TxtContainer.DataBindings.Add(new Binding("Text", BsModificaProcesso, "Container", true));
             TxtContainer.Location = new Point(650, 95);
@@ -1535,7 +1538,7 @@
         private CheckBox CbSigVig;
         private TextBox txtCE;
         private Label label28;
-        private TextBox textBox1;
+        private TextBox txtLocalDeDesembaraco;
         private Label label29;
         private ComboBox comboBox4;
         private ComboBox comboBox3;

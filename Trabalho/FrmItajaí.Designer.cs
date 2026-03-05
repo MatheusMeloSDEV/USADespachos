@@ -29,11 +29,10 @@
         private void InitializeComponent()
         {
             components = new System.ComponentModel.Container();
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FrmItajaí));
             DataGridViewCellStyle dataGridViewCellStyle1 = new DataGridViewCellStyle();
             DataGridViewCellStyle dataGridViewCellStyle2 = new DataGridViewCellStyle();
             DataGridViewCellStyle dataGridViewCellStyle3 = new DataGridViewCellStyle();
-            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FrmItajaí));
-            DGVItajai = new DataGridView();
             TSMenuItajai = new ToolStrip();
             BtnAdicionar = new ToolStripButton();
             toolStripSeparator2 = new ToolStripSeparator();
@@ -51,50 +50,19 @@
             TxtPesquisar = new ToolStripTextBox();
             BsProcesso = new BindingSource(components);
             panel1 = new Panel();
-            ((System.ComponentModel.ISupportInitialize)DGVItajai).BeginInit();
+            panel2 = new Panel();
+            tableLayoutPanel1 = new TableLayoutPanel();
+            DGVItajai = new DataGridView();
+            lblQtd = new Label();
+            btnForward = new Button();
+            btnPrevious = new Button();
             TSMenuItajai.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)BsProcesso).BeginInit();
             panel1.SuspendLayout();
+            panel2.SuspendLayout();
+            tableLayoutPanel1.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)DGVItajai).BeginInit();
             SuspendLayout();
-            // 
-            // DGVItajai
-            // 
-            DGVItajai.AllowUserToAddRows = false;
-            DGVItajai.AllowUserToDeleteRows = false;
-            DGVItajai.AllowUserToResizeColumns = false;
-            DGVItajai.AllowUserToResizeRows = false;
-            dataGridViewCellStyle1.BackColor = Color.WhiteSmoke;
-            DGVItajai.AlternatingRowsDefaultCellStyle = dataGridViewCellStyle1;
-            DGVItajai.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
-            DGVItajai.BackgroundColor = Color.White;
-            dataGridViewCellStyle2.Alignment = DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle2.BackColor = Color.DarkGray;
-            dataGridViewCellStyle2.Font = new Font("Segoe UI", 9.75F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            dataGridViewCellStyle2.ForeColor = Color.White;
-            dataGridViewCellStyle2.SelectionBackColor = SystemColors.Highlight;
-            dataGridViewCellStyle2.SelectionForeColor = SystemColors.HighlightText;
-            dataGridViewCellStyle2.WrapMode = DataGridViewTriState.True;
-            DGVItajai.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle2;
-            DGVItajai.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            dataGridViewCellStyle3.Alignment = DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle3.BackColor = Color.White;
-            dataGridViewCellStyle3.Font = new Font("Segoe UI", 9.75F, FontStyle.Regular, GraphicsUnit.Point, 0);
-            dataGridViewCellStyle3.ForeColor = Color.Black;
-            dataGridViewCellStyle3.SelectionBackColor = Color.LightBlue;
-            dataGridViewCellStyle3.SelectionForeColor = Color.Black;
-            dataGridViewCellStyle3.WrapMode = DataGridViewTriState.False;
-            DGVItajai.DefaultCellStyle = dataGridViewCellStyle3;
-            DGVItajai.Dock = DockStyle.Fill;
-            DGVItajai.EnableHeadersVisualStyles = false;
-            DGVItajai.Location = new Point(0, 0);
-            DGVItajai.Name = "DGVItajai";
-            DGVItajai.ReadOnly = true;
-            DGVItajai.RowHeadersVisible = false;
-            DGVItajai.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
-            DGVItajai.Size = new Size(800, 408);
-            DGVItajai.TabIndex = 0;
-            DGVItajai.CellDoubleClick += DGVItajai_CellDoubleClick;
-            DGVItajai.ColumnHeaderMouseClick += DGV_ColumnHeaderMouseClick;
             // 
             // TSMenuItajai
             // 
@@ -236,11 +204,114 @@
             // panel1
             // 
             panel1.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
-            panel1.Controls.Add(DGVItajai);
+            panel1.Controls.Add(panel2);
             panel1.Location = new Point(0, 43);
             panel1.Name = "panel1";
             panel1.Size = new Size(800, 408);
             panel1.TabIndex = 2;
+            // 
+            // panel2
+            // 
+            panel2.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            panel2.AutoSizeMode = AutoSizeMode.GrowAndShrink;
+            panel2.Controls.Add(tableLayoutPanel1);
+            panel2.Location = new Point(0, 0);
+            panel2.Name = "panel2";
+            panel2.Size = new Size(800, 409);
+            panel2.TabIndex = 5;
+            // 
+            // tableLayoutPanel1
+            // 
+            tableLayoutPanel1.ColumnCount = 4;
+            tableLayoutPanel1.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
+            tableLayoutPanel1.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 25F));
+            tableLayoutPanel1.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 25F));
+            tableLayoutPanel1.ColumnStyles.Add(new ColumnStyle());
+            tableLayoutPanel1.Controls.Add(DGVItajai, 0, 0);
+            tableLayoutPanel1.Controls.Add(lblQtd, 3, 1);
+            tableLayoutPanel1.Controls.Add(btnForward, 2, 1);
+            tableLayoutPanel1.Controls.Add(btnPrevious, 1, 1);
+            tableLayoutPanel1.Dock = DockStyle.Fill;
+            tableLayoutPanel1.Location = new Point(0, 0);
+            tableLayoutPanel1.Name = "tableLayoutPanel1";
+            tableLayoutPanel1.RowCount = 2;
+            tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
+            tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Absolute, 25F));
+            tableLayoutPanel1.Size = new Size(800, 409);
+            tableLayoutPanel1.TabIndex = 3;
+            // 
+            // DGVItajai
+            // 
+            DGVItajai.AllowUserToAddRows = false;
+            DGVItajai.AllowUserToDeleteRows = false;
+            DGVItajai.AllowUserToResizeRows = false;
+            dataGridViewCellStyle1.BackColor = Color.WhiteSmoke;
+            DGVItajai.AlternatingRowsDefaultCellStyle = dataGridViewCellStyle1;
+            DGVItajai.BackgroundColor = Color.White;
+            dataGridViewCellStyle2.Alignment = DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle2.BackColor = Color.DarkGray;
+            dataGridViewCellStyle2.Font = new Font("Segoe UI", 9.75F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            dataGridViewCellStyle2.ForeColor = Color.White;
+            dataGridViewCellStyle2.SelectionBackColor = SystemColors.Highlight;
+            dataGridViewCellStyle2.SelectionForeColor = SystemColors.HighlightText;
+            dataGridViewCellStyle2.WrapMode = DataGridViewTriState.True;
+            DGVItajai.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle2;
+            DGVItajai.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            tableLayoutPanel1.SetColumnSpan(DGVItajai, 4);
+            dataGridViewCellStyle3.Alignment = DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle3.BackColor = Color.White;
+            dataGridViewCellStyle3.Font = new Font("Segoe UI", 9.75F, FontStyle.Regular, GraphicsUnit.Point, 0);
+            dataGridViewCellStyle3.ForeColor = Color.Black;
+            dataGridViewCellStyle3.SelectionBackColor = Color.LightBlue;
+            dataGridViewCellStyle3.SelectionForeColor = Color.Black;
+            dataGridViewCellStyle3.WrapMode = DataGridViewTriState.False;
+            DGVItajai.DefaultCellStyle = dataGridViewCellStyle3;
+            DGVItajai.Dock = DockStyle.Fill;
+            DGVItajai.EnableHeadersVisualStyles = false;
+            DGVItajai.Location = new Point(3, 3);
+            DGVItajai.Name = "DGVItajai";
+            DGVItajai.ReadOnly = true;
+            DGVItajai.RowHeadersVisible = false;
+            DGVItajai.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
+            DGVItajai.Size = new Size(794, 378);
+            DGVItajai.TabIndex = 2;
+            DGVItajai.ColumnHeaderMouseClick += DGV_ColumnHeaderMouseClick;
+            // 
+            // lblQtd
+            // 
+            lblQtd.AutoSize = true;
+            lblQtd.Dock = DockStyle.Fill;
+            lblQtd.Location = new Point(732, 384);
+            lblQtd.Name = "lblQtd";
+            lblQtd.Size = new Size(65, 25);
+            lblQtd.TabIndex = 3;
+            lblQtd.Text = "1 - 50 / 500";
+            lblQtd.TextAlign = ContentAlignment.MiddleCenter;
+            // 
+            // btnForward
+            // 
+            btnForward.Dock = DockStyle.Fill;
+            btnForward.FlatAppearance.BorderSize = 0;
+            btnForward.FlatStyle = FlatStyle.Flat;
+            btnForward.Location = new Point(704, 384);
+            btnForward.Margin = new Padding(0);
+            btnForward.Name = "btnForward";
+            btnForward.Size = new Size(25, 25);
+            btnForward.TabIndex = 5;
+            btnForward.Text = ">";
+            btnForward.UseVisualStyleBackColor = true;
+            // 
+            // btnPrevious
+            // 
+            btnPrevious.FlatAppearance.BorderSize = 0;
+            btnPrevious.FlatStyle = FlatStyle.Flat;
+            btnPrevious.Location = new Point(679, 384);
+            btnPrevious.Margin = new Padding(0);
+            btnPrevious.Name = "btnPrevious";
+            btnPrevious.Size = new Size(21, 25);
+            btnPrevious.TabIndex = 6;
+            btnPrevious.Text = "<";
+            btnPrevious.UseVisualStyleBackColor = true;
             // 
             // FrmItajaí
             // 
@@ -255,17 +326,18 @@
             WindowState = FormWindowState.Maximized;
             Shown += FrmItajaí_Shown;
             KeyDown += FrmProcesso_KeyDown;
-            ((System.ComponentModel.ISupportInitialize)DGVItajai).EndInit();
             TSMenuItajai.ResumeLayout(false);
             TSMenuItajai.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)BsProcesso).EndInit();
             panel1.ResumeLayout(false);
+            panel2.ResumeLayout(false);
+            tableLayoutPanel1.ResumeLayout(false);
+            tableLayoutPanel1.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)DGVItajai).EndInit();
             ResumeLayout(false);
         }
 
         #endregion
-
-        private DataGridView DGVItajai;
         private ToolStrip TSMenuItajai;
         private ToolStripButton BtnAdicionar;
         private ToolStripButton BtnEditar;
@@ -283,5 +355,11 @@
         private ToolStripButton BtnExcluir;
         private ToolStripSeparator toolStripSeparator4;
         private ToolStripButton BtnDownloadTabela;
+        private Panel panel2;
+        private TableLayoutPanel tableLayoutPanel1;
+        private DataGridView DGVItajai;
+        private Label lblQtd;
+        private Button btnForward;
+        private Button btnPrevious;
     }
 }

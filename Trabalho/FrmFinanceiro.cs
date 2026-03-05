@@ -45,23 +45,6 @@ namespace Trabalho
                 new DataGridViewTextBoxColumn { DataPropertyName = "Saldo", HeaderText = "Saldo", FillWeight = 50, DefaultCellStyle = new DataGridViewCellStyle { Format = "C2" } },
                 new DataGridViewTextBoxColumn { DataPropertyName = "TipoFinalizacao", HeaderText = "Tipo", FillWeight = 40 }
             });
-
-            // --- Configuração da Grade de Recibos ---
-            DGVRecibo.DataSource = _bsRecibos;
-            DGVRecibo.AutoGenerateColumns = false;
-            DGVRecibo.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
-            DGVRecibo.RowHeadersVisible = false;
-            DGVRecibo.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
-            DGVRecibo.AllowUserToAddRows = false;
-            DGVRecibo.ReadOnly = true;
-
-            DGVRecibo.Columns.Clear();
-            DGVRecibo.Columns.AddRange(new DataGridViewColumn[]
-            {
-                new DataGridViewTextBoxColumn { DataPropertyName = "Ref_USA", HeaderText = "Ref. USA", FillWeight = 40 },
-                new DataGridViewTextBoxColumn { DataPropertyName = "Importador", HeaderText = "Importador", FillWeight = 100 },
-                new DataGridViewTextBoxColumn { DataPropertyName = "Total", HeaderText = "Total", FillWeight = 50, DefaultCellStyle = new DataGridViewCellStyle { Format = "C2" } }
-            });
         }
 
         /// <summary>

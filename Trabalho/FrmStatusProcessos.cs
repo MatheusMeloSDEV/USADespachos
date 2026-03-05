@@ -359,7 +359,8 @@ namespace Trabalho
 
                     await repo.UpdateAsync(processoAlterado);
 
-                    await _repoLog.RegistrarLogAsync("Edição", $"CheckBox {DGVSelecionado.Columns[e.ColumnIndex].DataPropertyName} de {processoAlterado.Ref_USA} foi alterado. " +
+                    await _repoLog.RegistrarLogAsync("Edição", _logado.Usuario,
+                                                               $"CheckBox {DGVSelecionado.Columns[e.ColumnIndex].DataPropertyName} de {processoAlterado.Ref_USA} foi alterado. " +
                                                                $"(Agora: Capa: {processoAlterado.CapaOK} / Numerário: {processoAlterado.Numerario})", $"ID: {processoAlterado.Id}");
                 }
                 catch (Exception ex)
@@ -447,7 +448,7 @@ namespace Trabalho
                 int qtdRegistros = apenasSelecionadas ? DGVSelecionado.SelectedRows.Count : DGVSelecionado.Rows.Count; // Aproximado para log
 
                 _ = Task.Run(() => _repoLog.RegistrarLogAsync(
-                    "Exportação",
+                    "Exportação", _logado.Usuario,
                     $"PDF gerado: {nomeBloco}",
                     $"Registros exportados: {qtdRegistros}"
                 ));

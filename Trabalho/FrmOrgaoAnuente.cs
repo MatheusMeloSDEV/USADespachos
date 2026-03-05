@@ -289,7 +289,7 @@ namespace Trabalho
                     return;
                 }
 
-                using (var frm = new FrmModificaOrgaoAnuente(_repositorioOrgaoAnuente, _repositorioProcesso))
+                using (var frm = new FrmModificaOrgaoAnuente(_repositorioOrgaoAnuente, _repositorioProcesso) { _logadoNome = _logado.Usuario })
                 {
                     frm.OrgaoAnuente = orgaoParaEditar;
                     frm.Processo = processo;
@@ -300,7 +300,7 @@ namespace Trabalho
                     if (frm.ShowDialog() == DialogResult.OK)
                     {
                         await _logRepo.RegistrarLogAsync(
-                            "Edição",
+                            "Edição", _logado.Usuario,
                             $"Órgão Anuente (LI {orgaoParaEditar.Numero}) do processo {orgaoParaEditar.Ref_USA} foi atualizado",
                             $"Usuário: {_logado.Usuario}"
                         );
@@ -310,7 +310,7 @@ namespace Trabalho
             }
             catch (Exception ex)
             {
-                await _logRepo.RegistrarLogAsync("Erro", "Falha ao abrir edição de Órgão Anuente", ex.Message);
+                await _logRepo.RegistrarLogAsync("Erro", _logado.Usuario, "Falha ao abrir edição de Órgão Anuente", ex.Message);
                 MessageBox.Show($"Erro ao editar o órgão anuente: {ex.Message}", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }

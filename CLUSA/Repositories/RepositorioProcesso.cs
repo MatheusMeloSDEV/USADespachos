@@ -32,6 +32,103 @@ namespace CLUSA.Repositories
         #endregion
 
         #region Métodos CRUD Otimizados
+
+        /// <summary>
+        /// Retorna uma página de processos ativos e o total de registros para controle da UI.
+        /// </summary>
+        public async Task<(List<Processo> itens, long total)> ListarPrincipalPaginadoAsync(
+            string origemFormulario, // <-- Alterado de 'sufixoExcluir' para 'origemFormulario' ("Santos" ou "Itajai")
+            int pagina,
+            int tamanhoPagina,
+            string campoOrdenacao = "Id",
+            bool ascendente = true)
+        {
+            var builder = Builders<Processo>.Filter;
+
+            // 1. Filtro base: Não trazer finalizados
+            var filtroStatus = builder.Ne(p => p.Status, "Finalizado");
+
+            // 2. Filtro de Origem: Decide se inclui ITJ (Itajaí) ou exclui ITJ (Santos)
+            FilterDefinition<Processo> filtroOrigem;
+            if (origemFormulario == "Itajai")
+            {
+                // Para Itajaí: INCLUI tudo que termina com ITJ
+                filtroOrigem = builder.Regex(p => p.Ref_USA, new BsonRegularExpression("ITJ$", "i"));
+            }
+            else
+            {
+                // Para Santos: EXCLUI tudo que termina com ITJ
+                filtroOrigem = builder.Not(builder.Regex(p => p.Ref_USA, new BsonRegularExpression("ITJ$", "i")));
+            }
+
+            var filtroFinal = builder.And(filtroStatus, filtroOrigem);
+
+            // --- LÓGICA ESPECIAL PARA REF_USA (Ordenação na Memória) ---
+            if (campoOrdenacao == "Ref_USA")
+            {
+                // Como são apenas os processos ativos (não finalizados), a lista é pequena e super rápida
+                var todosAtivos = await _colecao.Find(filtroFinal).ToListAsync();
+                long totalAtivos = todosAtivos.Count;
+
+                // Aplica a sua lógica exata de extrair Ano e Número
+                var ordenados = ascendente
+                    ? todosAtivos
+                        .OrderBy(p => string.IsNullOrWhiteSpace(p.Ref_USA) ? 1 : 0)
+                        .ThenBy(p => ExtrairAnoNumeroRepo(p.Ref_USA))
+                        .ToList()
+                    : todosAtivos
+                        .OrderBy(p => string.IsNullOrWhiteSpace(p.Ref_USA) ? 1 : 0)
+                        .ThenByDescending(p => ExtrairAnoNumeroRepo(p.Ref_USA))
+                        .ToList();
+
+                // Faz a paginação (fatia de 50) em cima da lista já ordenada
+                var itensPaginados = ordenados.Skip((pagina - 1) * tamanhoPagina).Take(tamanhoPagina).ToList();
+
+                return (itensPaginados, totalAtivos);
+            }
+
+            // --- LÓGICA PADRÃO PARA AS OUTRAS COLUNAS (Ordenação no MongoDB) ---
+            var total = await _colecao.CountDocumentsAsync(filtroFinal);
+
+            var sort = ascendente
+                ? Builders<Processo>.Sort.Ascending(campoOrdenacao)
+                : Builders<Processo>.Sort.Descending(campoOrdenacao);
+
+            var itens = await _colecao.Find(filtroFinal)
+                .Sort(sort)
+                .Skip((pagina - 1) * tamanhoPagina)
+                .Limit(tamanhoPagina)
+                .ToListAsync();
+
+            return (itens, total);
+        }
+
+        // O método ExtrairAnoNumeroRepo continua exatamente igual!
+        private (int ano, int numero) ExtrairAnoNumeroRepo(string refUsa)
+        {
+            if (string.IsNullOrWhiteSpace(refUsa)) return (0, 0);
+
+            string refLimpa = refUsa.Split(' ').FirstOrDefault() ?? refUsa;
+            var partes = refLimpa.Split('/');
+            int numero = 0, ano = 0;
+
+            if (partes.Length == 2)
+            {
+                int.TryParse(partes[0], out numero);
+                int.TryParse(partes[1], out ano);
+            }
+            return (ano, numero);
+        }
+        public async Task UpdateParcialAsync(ObjectId id, List<UpdateDefinition<Processo>> updates)
+        {
+            if (updates == null || updates.Count == 0) return;
+
+            var filtro = Builders<Processo>.Filter.Eq(p => p.Id, id);
+            var updateCombinado = Builders<Processo>.Update.Combine(updates);
+
+            // Atualiza APENAS os campos enviados
+            await _colecao.UpdateOneAsync(filtro, updateCombinado);
+        }
         /// <summary>
         /// OTIMIZAÇÃO: Atualiza o status do LPCO direto no banco sem trazer o processo inteiro para a memória.
         /// Evita tráfego de rede desnecessário e previne conflitos de concorrência.

@@ -1,4 +1,5 @@
-﻿using CLUSA.Repositories;
+﻿using CLUSA.Models;
+using CLUSA.Repositories;
 using MongoDB.Bson;
 using System.Data;
 
@@ -8,6 +9,7 @@ namespace Trabalho
     public partial class frmConfiguracoes : Form
     {
         private readonly ObjectId _usuarioId;
+        public string _logadoNome;
         private Dictionary<string, List<string>> _preferenciasLocais;
         private readonly RepositorioLog _logRepo;
         private string _gridAtual;
@@ -288,7 +290,7 @@ namespace Trabalho
                 // --- LOG DE RESET ---
                 // Também exige mudança para 'async void'
                 await _logRepo.RegistrarLogAsync(
-                    "Configuração",
+                    "Configuração", _logadoNome,
                     $"Restaurou padrão original do grid: {nomeGridAmigavel}",
                     "Ação de Reset manual"
                 );
@@ -321,7 +323,7 @@ namespace Trabalho
             try
             {
                 await _logRepo.RegistrarLogAsync(
-                    "Configuração",
+                    "Configuração", _logadoNome,
                     "Preferências de colunas alteradas pelo usuário",
                     detalhesLog
                 );

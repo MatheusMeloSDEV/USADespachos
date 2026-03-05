@@ -8,6 +8,7 @@ namespace Trabalho
     {
         private readonly RepositorioVencimento _repoVencimento;
         private readonly RepositorioLog _repoLog;
+        public string _logadoNome;
         public FrmVencimentos()
         {
             InitializeComponent();
@@ -92,7 +93,7 @@ namespace Trabalho
                     await EmailService.EnviarFollowUpTextoAsync(assunto, corpo);
                     // ----------------------
 
-                    await _repoLog.RegistrarLogAsync("Notificação", $"E-mail automático enviado para {item.Importador}", "Enviado pelo sistema Anti-Spam");
+                    await _repoLog.RegistrarLogAsync("Notificação", _logadoNome, $"E-mail automático enviado para {item.Importador}", "Enviado pelo sistema Anti-Spam");
 
                     item.DataUltimaNotificacao = hoje;
                     await _repoVencimento.AtualizarAsync(item);
@@ -179,7 +180,7 @@ namespace Trabalho
         private async void btnAdicionar_Click(object sender, EventArgs e)
         {
             // Abre o formulário de modificação como um diálogo (modal)
-            FrmModificaVencimentos frm = new FrmModificaVencimentos();
+            FrmModificaVencimentos frm = new FrmModificaVencimentos() { _logadoNome = _logadoNome };
 
             // O Form.ShowDialog pausa este código até o outro fechar
             frm.ShowDialog();
@@ -198,7 +199,7 @@ namespace Trabalho
 
                 // 3. Cria o formulário PASSANDO O ID
                 // Isso ativa o modo de edição dentro do FrmModificaVencimentos
-                FrmModificaVencimentos frm = new FrmModificaVencimentos(idSelecionado);
+                FrmModificaVencimentos frm = new FrmModificaVencimentos(idSelecionado) { _logadoNome = _logadoNome };
 
                 // 4. Abre a janela e espera ela fechar
                 frm.ShowDialog();
@@ -233,7 +234,7 @@ namespace Trabalho
                     try
                     {
                         await _repoVencimento.ExcluirAsync(idParaRemover);
-                        await _repoLog.RegistrarLogAsync("Exclusão", $"O usuário removeu o vencimento de {nomeImportador}", $"ID Removido: {idParaRemover}");
+                        await _repoLog.RegistrarLogAsync("Exclusão", _logadoNome, $"O usuário removeu o vencimento de {nomeImportador}", $"ID Removido: {idParaRemover}");
                         await AtualizarGrid(); // Recarrega a tabela
                         MessageBox.Show("Removido com sucesso.");
                     }

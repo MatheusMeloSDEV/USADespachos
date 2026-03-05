@@ -9,6 +9,7 @@ namespace Trabalho
         private readonly RepositorioVencimento _repoVencimento;
         private readonly RepositorioLog _repoLog;
         private string _idEdicao = null;
+        public string _logadoNome;
 
         public class ImportadorOpcao { public string Nome { get; set; } public List<string> Cnpjs { get; set; } }
 
@@ -125,7 +126,7 @@ namespace Trabalho
                     if (string.IsNullOrEmpty(_idEdicao))
                     {
                         await _repoVencimento.AdicionarAsync(vencimento);
-                        await _repoLog.RegistrarLogAsync("Criação", $"Novo vencimento criado para {vencimento.Importador}");
+                        await _repoLog.RegistrarLogAsync("Criação", _logadoNome, $"Novo vencimento criado para {vencimento.Importador}");
                     }
                     else
                     {
@@ -135,7 +136,7 @@ namespace Trabalho
                         // A lógica atual reseta para null (força novo email em breve).
 
                         await _repoVencimento.AtualizarAsync(vencimento);
-                        await _repoLog.RegistrarLogAsync("Edição", $"Vencimento de {vencimento.Importador} foi alterado.", $"ID: {_idEdicao}");
+                        await _repoLog.RegistrarLogAsync("Edição", _logadoNome, $"Vencimento de {vencimento.Importador} foi alterado.", $"ID: {_idEdicao}");
                     }
 
                     MessageBox.Show("Salvo com sucesso!");

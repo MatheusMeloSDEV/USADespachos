@@ -18,11 +18,13 @@ namespace Trabalho
     }
     public partial class FrmModificaProcesso : Form
     {
+        public Logado _logado;
         public Processo processo { get; set; } = null!;
         private Processo _processoOriginal = null!;
         public string Modo { get; set; } = "Adicionar";
         public bool Visualização { get; set; } = false;
         public OrigemProcesso Origem { get; set; }
+        private FrmLoadingOverlay? _overlay;
         private readonly RepositorioProcesso _repositorio;
         private readonly RepositorioNotifUrgente _repoNotifUrgente;
         private readonly RepositorioNotificacao _notificacaoRepo;
@@ -65,7 +67,12 @@ namespace Trabalho
                     TXTnr.Mask = "0000/00";
                     break;
             }
+            MostrarLoading($"Carregando Dados...");
             CarregarDadosNosControles();
+            EsconderLoading();
+            MostrarLoading($"Carregando Sugestões...");
+            _ = Task.Run(() => ConfigurarAutoCompletarAsync());
+            EsconderLoading();
             ConfigurarFormularioPeloModo();
             AnexarEventoDeAlteracao(this);
             AtualizarEstadoBotoesLI();
@@ -396,7 +403,7 @@ namespace Trabalho
                 {
                     await _repositorio.CreateAsync(processo);
 
-                    await _logRepo.RegistrarLogAsync("Criação", $"Novo processo: {processo.Ref_USA}");
+                    await _logRepo.RegistrarLogAsync("Criação", _logado.Usuario, $"Novo processo: {processo.Ref_USA}");
 
                     var settings = new Newtonsoft.Json.JsonSerializerSettings();
                     settings.Converters.Add(new ObjectIdConverter());
@@ -407,29 +414,31 @@ namespace Trabalho
                     TXTnr.Enabled = false;
 
                 }
-                else
+                else // MODO EDIÇÃO
                 {
-                    // --- AQUI ESTÁ A MUDANÇA ---
-                    // Gera o relatório completo de tudo que mudou automaticamente
                     logDetalhado = GerarLogCompletoDeAlteracoes();
 
-                    await _repositorio.UpdateAsync(processo);
+                    // GERA A LISTA DE CAMPOS QUE REALMENTE MUDARAM
+                    var atualizacoes = GerarAtualizacoesParciaisParaBanco();
 
-                    // Grava no banco apenas se houve alteração
-                    if (logDetalhado != "Sem alterações detectadas.")
+                    if (atualizacoes.Count > 0)
                     {
+                        // Salva NO BANCO apenas as partes alteradas!
+                        await _repositorio.UpdateParcialAsync(processo.Id, atualizacoes);
+
+                        // Grava no log do sistema
                         await _logRepo.RegistrarLogAsync(
-                            "Edição",
+                            "Edição", _logado.Usuario,
                             $"Atualização em {processo.Ref_USA}",
-                            logDetalhado // Vai salvar: "Importador: A -> B; Data: 10/10 -> 11/10..."
+                            logDetalhado
                         );
                     }
 
+                    // Atualiza a cópia original local
                     var settings = new Newtonsoft.Json.JsonSerializerSettings();
-                    settings.Converters.Add(new ObjectIdConverter()); // Importante para não travar!
-
+                    settings.Converters.Add(new ObjectIdConverter());
                     var json = Newtonsoft.Json.JsonConvert.SerializeObject(processo, settings);
-                    _processoOriginal = Newtonsoft.Json.JsonConvert.DeserializeObject<Processo>(json, settings);
+                    _processoOriginal = Newtonsoft.Json.JsonConvert.DeserializeObject<Processo>(json, settings) ?? new Processo();
                 }
 
                 await SincronizarOrgaoAnuenteAsync();
@@ -495,9 +504,59 @@ namespace Trabalho
             }
             catch (Exception ex)
             {
-                await _logRepo.RegistrarLogAsync("Erro", $"Falha ao salvar processo {processo.Ref_USA}", ex.Message);
+                await _logRepo.RegistrarLogAsync("Erro", _logado.Usuario, $"Falha ao salvar processo {processo.Ref_USA}", ex.Message);
                 MessageBox.Show($"Erro ao salvar o processo: {ex.Message}", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
+        }
+        private async Task ConfigurarAutoCompletarAsync()
+        {
+            // Mapeie aqui os seus TextBoxes e o nome exato da coluna no MongoDB
+            // Substitua os nomes (ex: TXTimportador) pelos nomes reais dos seus controles
+            var mapeamento = new Dictionary<TextBox, string>
+            {
+                { TXTimportador, "Importador" },
+                { TXTexportador, "Exportador" },
+                { TXTProduto, "Produto" },
+                { txtArmador, "Armador" },
+                { txtOrigem, "Origem" },
+                { txtTerminal, "Terminal" },
+                { txtVeiculo, "Veiculo"  },
+                { TXTportodedestino, "PortoDestino" },
+                { txtLocalDeDesembaraco, "LocalDeDesembaraco" }
+            };
+
+            foreach (var item in mapeamento)
+            {
+                try
+                {
+                    // Busca apenas os valores únicos daquela coluna no banco (Super rápido)
+                    var valores = await _repositorio.ObterValoresUnicosAsync(item.Value);
+
+                    var colecao = new AutoCompleteStringCollection();
+                    colecao.AddRange(valores.Where(v => !string.IsNullOrWhiteSpace(v)).ToArray());
+
+                    // Configura o TextBox na Thread da UI
+                    this.Invoke(() =>
+                    {
+                        item.Key.AutoCompleteMode = AutoCompleteMode.SuggestAppend;
+                        item.Key.AutoCompleteSource = AutoCompleteSource.CustomSource;
+                        item.Key.AutoCompleteCustomSource = colecao;
+                    });
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine($"Erro autocomplete {item.Value}: {ex.Message}");
+                }
+            }
+            this.Invoke(() =>
+            {
+                var colecaoContainer = new AutoCompleteStringCollection();
+                colecaoContainer.Add("Carga Solta");
+
+                TxtContainer.AutoCompleteMode = AutoCompleteMode.SuggestAppend;
+                TxtContainer.AutoCompleteSource = AutoCompleteSource.CustomSource;
+                TxtContainer.AutoCompleteCustomSource = colecaoContainer;
+            });
         }
         private async Task VerificarMudancaOriginaisAsync()
         {
@@ -530,6 +589,46 @@ namespace Trabalho
             MessageBoxIcon.Exclamation
         );
             }
+        }
+
+        private List<UpdateDefinition<Processo>> GerarAtualizacoesParciaisParaBanco()
+        {
+            var updates = new List<UpdateDefinition<Processo>>();
+            var builder = Builders<Processo>.Update;
+
+            // 1. Verifica propriedades simples via Reflection
+            var ignorar = new HashSet<string> { "Id", "_id", "LI", "Capa", "DocRecebidos", "OrgaosAnuentesString" };
+            PropertyInfo[] propriedades = _processoOriginal.GetType().GetProperties();
+
+            foreach (var prop in propriedades)
+            {
+                if (ignorar.Contains(prop.Name) || !prop.CanWrite) continue;
+
+                object? valorAntigo = prop.GetValue(_processoOriginal);
+                object? valorNovo = prop.GetValue(processo);
+
+                // Se o valor mudou, adiciona na lista de campos a serem atualizados
+                if (!Equals(valorAntigo, valorNovo))
+                {
+                    updates.Add(builder.Set(prop.Name, valorNovo));
+                }
+            }
+
+            // 2. Compara a Capa (Se mudou qualquer coisa nela, enviamos o objeto Capa atualizado)
+            bool capaMudou = CompararPropriedades(_processoOriginal.Capa, processo.Capa, new HashSet<string>()).Any();
+            if (capaMudou) updates.Add(builder.Set(p => p.Capa, processo.Capa));
+
+            // 3. Compara os Documentos Recebidos (Array)
+            string strAntigo = _processoOriginal.DocRecebidos == null ? "" : string.Join(",", _processoOriginal.DocRecebidos);
+            string strNovo = processo.DocRecebidos == null ? "" : string.Join(",", processo.DocRecebidos);
+            if (strAntigo != strNovo) updates.Add(builder.Set(p => p.DocRecebidos, processo.DocRecebidos));
+
+            // 4. Compara LIs (Se houver qualquer diferença nas LIs, atualiza o array todo)
+            var logsLi = new List<string>();
+            CompararListaLIs(logsLi);
+            if (logsLi.Any()) updates.Add(builder.Set(p => p.LI, processo.LI));
+
+            return updates;
         }
         private async Task SincronizarOrgaoAnuenteAsync()
         {
@@ -646,7 +745,7 @@ namespace Trabalho
             AtualizarEstadoBotoesLI();
 
             await _logRepo.RegistrarLogAsync(
-                "Exclusão",
+                "Exclusão", _logado.Usuario,
                 $"LI {numeroLi} removida do processo {processo.Ref_USA}",
                 $"Usuário removeu a aba da LI"
             );
@@ -945,6 +1044,26 @@ namespace Trabalho
         }
 
         #endregion
+
+        private void MostrarLoading(string mensagem)
+        {
+            if (_overlay != null) return;
+            _overlay = new FrmLoadingOverlay { Opacity = 0.60 };
+            _overlay.lblLoading.Text = mensagem;
+            var rect = this.RectangleToScreen(this.ClientRectangle);
+            _overlay.StartPosition = FormStartPosition.Manual;
+            _overlay.Location = rect.Location;
+            _overlay.Size = rect.Size;
+            _overlay.Show(this);
+            _overlay.BringToFront();
+        }
+
+        private void EsconderLoading()
+        {
+            _overlay?.Close();
+            _overlay?.Dispose();
+            _overlay = null;
+        }
 
     }
 }

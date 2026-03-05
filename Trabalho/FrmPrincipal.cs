@@ -79,7 +79,7 @@ namespace Trabalho
         {
             this.Icon = Icon.ExtractAssociatedIcon(Application.ExecutablePath);
             GridColumnManager.RegistrarCatalogosPadrao();
-            
+
         }
 
         private void FrmPrincipal_FormClosing(object sender, FormClosingEventArgs e)
@@ -331,7 +331,7 @@ namespace Trabalho
         private void MenuItemAdmin_Click(object? sender, EventArgs e)
         => ShowSingleFormOfType(() => new FrmAdmin());
         private void MenuItemVencimentos_Click(object sender, EventArgs e)
-        => ShowSingleFormOfType(() => new FrmVencimentos());
+        => ShowSingleFormOfType(() => new FrmVencimentos() { _logadoNome = _logadoUsuario.Usuario });
         private void MenuItemMaximize_Click(object? sender, EventArgs e) => this.WindowState = FormWindowState.Maximized;
         private void MenuItemMinimize_Click(object? sender, EventArgs e) => this.WindowState = FormWindowState.Minimized;
         private async void MenuItemConfiguracoes_Click(object sender, EventArgs e)
@@ -345,7 +345,7 @@ namespace Trabalho
                     MessageBoxButtons.OK, MessageBoxIcon.Error);
                     return;
                 }
-                using var frmConfig = new frmConfiguracoes(usuario.Id, usuario.PreferenciasGrids);
+                using var frmConfig = new frmConfiguracoes(usuario.Id, usuario.PreferenciasGrids) { _logadoNome = usuario.Username };
                 frmConfig.ShowDialog(this);
 
                 // Sempre recarrega preferências depois de fechar
@@ -439,7 +439,8 @@ namespace Trabalho
                     item.BtnExcluir.Visible = (n.UsuarioOrigemId == _logadoUsuario.Id);
 
                     // Evento EXCLUIR (Lixeira) - Mantive igual, apenas deleta
-                    item.ExcluirClick += async (s, e) => {
+                    item.ExcluirClick += async (s, e) =>
+                    {
                         if (MessageBox.Show("Deseja realmente excluir esta notificação?", "Confirmação", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
                         {
                             await _repoNotificacoesUrgentes.DeleteAsync(n.Id);
@@ -449,13 +450,14 @@ namespace Trabalho
                     };
 
                     // --- AQUI ESTÁ A ALTERAÇÃO SOLICITADA (Botão Check/Done) ---
-                    item.DoneClick += async (s, e) => {
+                    item.DoneClick += async (s, e) =>
+                    {
                         try
                         {
                             // 1. Registra o Log
                             await _repositorioLog.RegistrarLogAsync(
-                                "Conclusão",
-                                $"Notificação finalizada por {_logadoUsuario.Usuario}",
+                                "Conclusão", _logadoUsuario.Usuario,
+                                $"Notificação finalizada",
                                 $"Mensagem: {n.Mensagem} | De: {nomeOrigem} | Para: {nomeDestino}"
                             );
 
@@ -477,7 +479,8 @@ namespace Trabalho
                     // -----------------------------------------------------------
 
                     item.EditClick += (s, e) => { item.MensagemReadOnly = false; item.FocusMensagem(); };
-                    item.MensagemEditada += async (s, txt) => {
+                    item.MensagemEditada += async (s, txt) =>
+                    {
                         n.Mensagem = txt; await _repoNotificacoesUrgentes.UpdateAsync(n);
                         item.MensagemReadOnly = true; MessageBox.Show("Atualizado!");
                     };

@@ -9,6 +9,7 @@ namespace Trabalho
         public OrgaoAnuente OrgaoAnuente { get; set; }
         public Processo Processo { get; set; }
         private bool _dadosForamAlterados = false;
+        public string _logadoNome;
 
         private readonly RepositorioLog _logRepo; // <--- NOVO
         private OrgaoAnuente _orgaoOriginal;
@@ -418,7 +419,7 @@ namespace Trabalho
                     await _repositorioOrgaoAnuente.UpdateAsync(OrgaoAnuente);
 
                     await _logRepo.RegistrarLogAsync(
-                        "Edição Detalhada",
+                        "Edição Detalhada", _logadoNome,
                         $"LI {OrgaoAnuente.Numero} alterada",
                         $"Mudanças: {detalhesAlteracao}" 
                     );

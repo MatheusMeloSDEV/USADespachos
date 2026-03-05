@@ -45,10 +45,15 @@ namespace Trabalho
             TxtPesquisar = new ToolStripTextBox();
             DGVSantos = new DataGridView();
             panel1 = new Panel();
+            tableLayoutPanel1 = new TableLayoutPanel();
+            lblQtd = new Label();
+            btnForward = new Button();
+            btnPrevious = new Button();
             ((System.ComponentModel.ISupportInitialize)BsProcesso).BeginInit();
             TSMenuItajai.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)DGVSantos).BeginInit();
             panel1.SuspendLayout();
+            tableLayoutPanel1.SuspendLayout();
             SuspendLayout();
             // 
             // TSMenuItajai
@@ -205,6 +210,7 @@ namespace Trabalho
             dataGridViewCellStyle2.WrapMode = DataGridViewTriState.True;
             DGVSantos.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle2;
             DGVSantos.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            tableLayoutPanel1.SetColumnSpan(DGVSantos, 4);
             dataGridViewCellStyle3.Alignment = DataGridViewContentAlignment.MiddleLeft;
             dataGridViewCellStyle3.BackColor = Color.White;
             dataGridViewCellStyle3.Font = new Font("Segoe UI", 9.75F, FontStyle.Regular, GraphicsUnit.Point, 0);
@@ -215,12 +221,12 @@ namespace Trabalho
             DGVSantos.DefaultCellStyle = dataGridViewCellStyle3;
             DGVSantos.Dock = DockStyle.Fill;
             DGVSantos.EnableHeadersVisualStyles = false;
-            DGVSantos.Location = new Point(0, 0);
+            DGVSantos.Location = new Point(3, 3);
             DGVSantos.Name = "DGVSantos";
             DGVSantos.ReadOnly = true;
             DGVSantos.RowHeadersVisible = false;
             DGVSantos.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
-            DGVSantos.Size = new Size(800, 409);
+            DGVSantos.Size = new Size(794, 378);
             DGVSantos.TabIndex = 2;
             DGVSantos.CellDoubleClick += DGVSantos_CellDoubleClick;
             DGVSantos.ColumnHeaderMouseClick += DGV_ColumnHeaderMouseClick;
@@ -229,11 +235,69 @@ namespace Trabalho
             // 
             panel1.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             panel1.AutoSizeMode = AutoSizeMode.GrowAndShrink;
-            panel1.Controls.Add(DGVSantos);
+            panel1.Controls.Add(tableLayoutPanel1);
             panel1.Location = new Point(0, 43);
             panel1.Name = "panel1";
             panel1.Size = new Size(800, 409);
             panel1.TabIndex = 4;
+            // 
+            // tableLayoutPanel1
+            // 
+            tableLayoutPanel1.ColumnCount = 4;
+            tableLayoutPanel1.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
+            tableLayoutPanel1.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 25F));
+            tableLayoutPanel1.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 25F));
+            tableLayoutPanel1.ColumnStyles.Add(new ColumnStyle());
+            tableLayoutPanel1.Controls.Add(DGVSantos, 0, 0);
+            tableLayoutPanel1.Controls.Add(lblQtd, 3, 1);
+            tableLayoutPanel1.Controls.Add(btnForward, 2, 1);
+            tableLayoutPanel1.Controls.Add(btnPrevious, 1, 1);
+            tableLayoutPanel1.Dock = DockStyle.Fill;
+            tableLayoutPanel1.Location = new Point(0, 0);
+            tableLayoutPanel1.Name = "tableLayoutPanel1";
+            tableLayoutPanel1.RowCount = 2;
+            tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
+            tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Absolute, 25F));
+            tableLayoutPanel1.Size = new Size(800, 409);
+            tableLayoutPanel1.TabIndex = 3;
+            // 
+            // lblQtd
+            // 
+            lblQtd.AutoSize = true;
+            lblQtd.Dock = DockStyle.Fill;
+            lblQtd.Location = new Point(732, 384);
+            lblQtd.Name = "lblQtd";
+            lblQtd.Size = new Size(65, 25);
+            lblQtd.TabIndex = 3;
+            lblQtd.Text = "1 - 50 / 500";
+            lblQtd.TextAlign = ContentAlignment.MiddleCenter;
+            // 
+            // btnForward
+            // 
+            btnForward.Dock = DockStyle.Fill;
+            btnForward.FlatAppearance.BorderSize = 0;
+            btnForward.FlatStyle = FlatStyle.Flat;
+            btnForward.Location = new Point(704, 384);
+            btnForward.Margin = new Padding(0);
+            btnForward.Name = "btnForward";
+            btnForward.Size = new Size(25, 25);
+            btnForward.TabIndex = 5;
+            btnForward.Text = ">";
+            btnForward.UseVisualStyleBackColor = true;
+            btnForward.Click += BtnForward_Click;
+            // 
+            // btnPrevious
+            // 
+            btnPrevious.FlatAppearance.BorderSize = 0;
+            btnPrevious.FlatStyle = FlatStyle.Flat;
+            btnPrevious.Location = new Point(679, 384);
+            btnPrevious.Margin = new Padding(0);
+            btnPrevious.Name = "btnPrevious";
+            btnPrevious.Size = new Size(21, 25);
+            btnPrevious.TabIndex = 6;
+            btnPrevious.Text = "<";
+            btnPrevious.UseVisualStyleBackColor = true;
+            btnPrevious.Click += BtnPrevious_Click;
             // 
             // frmSantos
             // 
@@ -252,6 +316,8 @@ namespace Trabalho
             TSMenuItajai.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)DGVSantos).EndInit();
             panel1.ResumeLayout(false);
+            tableLayoutPanel1.ResumeLayout(false);
+            tableLayoutPanel1.PerformLayout();
             ResumeLayout(false);
 
         }
@@ -272,5 +338,9 @@ namespace Trabalho
         private Panel panel1;
         private ToolStripButton BtnAjuda;
         private ToolStripButton BtnDownloadTabela;
+        private TableLayoutPanel tableLayoutPanel1;
+        private Label lblQtd;
+        private Button btnForward;
+        private Button btnPrevious;
     }
 }

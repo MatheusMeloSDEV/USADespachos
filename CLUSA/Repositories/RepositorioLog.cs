@@ -24,11 +24,13 @@ namespace CLUSA.Repositories
                                     .Limit(quantidade)
                                     .ToListAsync();
         }
-        public async Task RegistrarLogAsync(string tipo, string mensagem, string detalhes = null)
+        // Adicionado o parâmetro 'autor'
+        public async Task RegistrarLogAsync(string tipo, string autor, string mensagem,  string detalhes = null)
         {
             var log = new Log
             {
                 TipoAcao = tipo,
+                Autor = autor, // Vincula o autor
                 Mensagem = mensagem,
                 Detalhes = detalhes
             };

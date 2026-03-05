@@ -1,11 +1,12 @@
 ﻿using CLUSA;
+using CLUSA.Models;
 using CLUSA.Repositories;
 using CLUSA.Services;
 using MongoDB.Driver;
+using Org.BouncyCastle.Crypto;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Reflection;
-using CLUSA.Models;
 
 namespace Trabalho
 {
@@ -23,6 +24,9 @@ namespace Trabalho
         private Users? _usuarioLogado;
         private readonly Logado _logado;
 
+        private int _paginaAtual = 1;
+        private const int _itensPorPagina = 50; // Quantidade por "fatiada"
+        private long _totalRegistros = 0;
         public frmSantos(Logado logado)
         {
             InitializeComponent();
@@ -72,32 +76,58 @@ namespace Trabalho
         {
             try
             {
-                DGVSantos.SuspendLayout(); // Pausa o desenho do Grid para ganhar velocidade
+                MostrarLoading($"Carregando página {_paginaAtual}...");
 
-                // --- BUSCA OTIMIZADA ---
-                // O filtro "Status != Finalizado" agora é feito no banco, economizando rede e memória.
-                var registros = await _repositorio.ListarPrincipalOtimizadoAsync("ITJ");
+                string campoBD = _colunaOrdenada?.DataPropertyName ?? "Id";
 
-                // Ordenação Inicial na Memória (Ref_USA vazios para o fim, depois data)
-                var registrosOrdenados = registros
-                    .OrderBy(p => p.DataDeAtracacao == null || p.DataDeAtracacao == DateTime.MinValue ? 1 : 0)
-                    .ThenBy(p => p.DataDeAtracacao ?? DateTime.MaxValue)
-                    .ToList();
+                // Proteção: Se a coluna for ignorada no Mongo (ex: OrgaosAnuentesString), não podemos ordenar por ela no BD
+                if (campoBD == "OrgaosAnuentesString" || string.IsNullOrWhiteSpace(campoBD))
+                {
+                    campoBD = "Id";
+                }
 
-                _listaOriginal = registrosOrdenados;
+                bool isAsc = (_direcaoOrdenacao == ListSortDirection.Descending);
 
-                BsProcesso.DataSource = registrosOrdenados;
+                // Busca no banco
+                var (itens, total) = await _repositorio.ListarPrincipalPaginadoAsync(
+                    "Santos",
+                    _paginaAtual,
+                    _itensPorPagina,
+                    campoBD,
+                    isAsc
+                );
+
+                _totalRegistros = total;
+                _listaOriginal = itens;
+
+                // Atualiza a Grid de forma limpa
+                BsProcesso.DataSource = _listaOriginal;
                 DGVSantos.DataSource = BsProcesso;
                 BsProcesso.ResetBindings(false);
+
+                AtualizarControlesPaginacao();
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Erro ao carregar os dados: {ex.Message}", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show($"Erro ao carregar dados: {ex.Message}", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
             finally
             {
-                DGVSantos.ResumeLayout(); // Libera o desenho do Grid
+                EsconderLoading();
             }
+        }
+
+        private void AtualizarControlesPaginacao()
+        {
+            int inicio = ((_paginaAtual - 1) * _itensPorPagina) + 1;
+            int fim = inicio + _listaOriginal.Count - 1;
+
+            // Ex: "Mostrando 1-50 de 697"
+            lblQtd.Text = $"{inicio}-{fim} de {_totalRegistros}";
+
+            // Desativa botões se não houver para onde ir
+            btnPrevious.Enabled = _paginaAtual > 1;
+            btnForward.Enabled = fim < _totalRegistros;
         }
 
         private void PopularComboBoxDePesquisa()
@@ -150,7 +180,7 @@ namespace Trabalho
         {
             var processo = new Processo();
             OrigemProcesso Santos = OrigemProcesso.Santos;
-            using var frm = new FrmModificaProcesso { processo = processo, Modo = "Adicionar", Origem = Santos };
+            using var frm = new FrmModificaProcesso { processo = processo, Modo = "Adicionar", Origem = Santos, _logado = _logado };
 
             if (frm.ShowDialog() == DialogResult.OK)
             {
@@ -176,7 +206,7 @@ namespace Trabalho
                 {
                     await _repositorio.DeleteAsync(processoSelecionado.Id.ToString());
                     await _logRepo.RegistrarLogAsync(
-                        "Exclusão",
+                        "Exclusão", _logado.Usuario,
                         $"Processo {processoSelecionado.Ref_USA} excluído via Grid Santos",
                         $"Usuário: {_logado.Usuario}"
                     );
@@ -202,31 +232,42 @@ namespace Trabalho
 
         private async void BtnPesquisar_Click(object sender, EventArgs e)
         {
-            if (CmbPesquisar.SelectedItem is not DisplayItem campoSelecionado)
-            {
-                MessageBox.Show("Selecione um campo.", "Aviso");
-                return;
-            }
+            if (CmbPesquisar.SelectedItem is not DisplayItem campoSelecionado) return;
 
             var pesquisa = TxtPesquisar.Text;
             if (string.IsNullOrWhiteSpace(pesquisa))
             {
-                BsProcesso.DataSource = _listaOriginal;
-                BsProcesso.ResetBindings(false);
+                _paginaAtual = 1; // Reseta para o modo normal
+                await CarregarDadosAsync();
                 return;
             }
 
             try
             {
+                MostrarLoading("Pesquisando...");
+
+                // Na pesquisa, como costuma retornar poucos itens, 
+                // podemos trazer direto ou paginar também. 
+                // Aqui está a versão simples com contagem:
                 var resultados = await _repositorio.PesquisarAsync(campoSelecionado.DataPropertyName, pesquisa);
+
                 BsProcesso.DataSource = resultados;
                 BsProcesso.ResetBindings(false);
 
-                if (!resultados.Any()) MessageBox.Show("Nenhum resultado.", "Info");
+                // Atualiza a label com o resultado da busca
+                lblQtd.Text = $"Encontrados: {resultados.Count}";
+
+                // Desativa paginação durante uma busca específica para não confundir o usuário
+                btnForward.Enabled = false;
+                btnPrevious.Enabled = false;
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Erro ao pesquisar: {ex.Message}", "Erro");
+                MessageBox.Show($"Erro: {ex.Message}");
+            }
+            finally
+            {
+                EsconderLoading();
             }
         }
         private async void DGVSantos_CellDoubleClick(object sender, DataGridViewCellEventArgs e)
@@ -309,108 +350,43 @@ namespace Trabalho
             }
             public override string ToString() => HeaderText;
         }
-        private bool IsValueEmpty(object? value)
-        {
-            if (value == null || value == DBNull.Value)
-            {
-                return true;
-            }
-            if (value is string str)
-            {
-                return string.IsNullOrWhiteSpace(str);
-            }
-            return false;
-        }
-        private (int ano, int numero) ExtrairAnoNumero(string refUsa)
-        {
-            if (string.IsNullOrWhiteSpace(refUsa)) return (0, 0);
-            string refLimpa = refUsa.Split(' ').FirstOrDefault() ?? refUsa;
-            var partes = refLimpa.Split('/');
-            int numero = 0, ano = 0;
-            if (partes.Length == 2)
-            {
-                int.TryParse(partes[0], out numero);
-                int.TryParse(partes[1], out ano);
-            }
-            return (ano, numero);
-        }
 
 
         // Substitua seu método de clique no cabeçalho por este
-        private void DGV_ColumnHeaderMouseClick(object? sender, DataGridViewCellMouseEventArgs e)
+        private async void DGV_ColumnHeaderMouseClick(object? sender, DataGridViewCellMouseEventArgs e)
         {
             if (sender is not DataGridView dgv) return;
             var novaColuna = dgv.Columns[e.ColumnIndex];
             if (novaColuna.SortMode == DataGridViewColumnSortMode.NotSortable) return;
-            if (BsProcesso.DataSource is not List<Processo> listaParaOrdenar) return;
 
-            // 1. Determina a Direção da Ordenação (mesma lógica de antes)
-            ListSortDirection direcao;
-            if (_colunaOrdenada == null || _colunaOrdenada.Name != novaColuna.Name)
+            // 1. Define a Direção (Inverte se clicar na mesma coluna)
+            if (_colunaOrdenada != null && _colunaOrdenada.Name == novaColuna.Name)
             {
-                direcao = ListSortDirection.Ascending;
-            }
-            else
-            {
-                direcao = (_direcaoOrdenacao == ListSortDirection.Ascending)
+                _direcaoOrdenacao = (_direcaoOrdenacao == ListSortDirection.Ascending)
                     ? ListSortDirection.Descending
                     : ListSortDirection.Ascending;
             }
-
-            _colunaOrdenada = novaColuna;
-            _direcaoOrdenacao = direcao;
-
-            IEnumerable<Processo> listaOrdenada;
-
-            // 2. Aplica a Lógica de Ordenação em Dois Níveis
-            if (novaColuna.DataPropertyName == "Ref_USA")
-            {
-                // --- LÓGICA ESPECIAL PARA REF_USA ---
-                var orderedByEmptiness = listaParaOrdenar
-                    // NÍVEL 1: Jogar Ref_USA vazias para o final
-                    .OrderBy(p => IsValueEmpty(p.Ref_USA) ? 1 : 0);
-
-                listaOrdenada = direcao == ListSortDirection.Ascending
-                    // NÍVEL 2: Ordenar as restantes pelo critério especial
-                    ? orderedByEmptiness.ThenBy(p => ExtrairAnoNumero(p.Ref_USA))
-                    : orderedByEmptiness.ThenByDescending(p => ExtrairAnoNumero(p.Ref_USA));
-            }
             else
             {
-                // --- LÓGICA GENÉRICA PARA OUTRAS COLUNAS ---
-                var propInfo = typeof(Processo).GetProperty(novaColuna.DataPropertyName);
-                if (propInfo == null) return;
-
-                var orderedByEmptiness = listaParaOrdenar
-                    // NÍVEL 1: Jogar valores vazios da coluna genérica para o final
-                    .OrderBy(p => IsValueEmpty(propInfo.GetValue(p)) ? 1 : 0);
-
-                // NÍVEL 2: Ordenar os valores restantes, com tratamento para datas
-                if (propInfo.PropertyType == typeof(DateTime) || propInfo.PropertyType == typeof(DateTime?))
-                {
-                    listaOrdenada = direcao == ListSortDirection.Ascending
-                        ? orderedByEmptiness.ThenBy(p => (DateTime?)propInfo.GetValue(p) ?? DateTime.MinValue)
-                        : orderedByEmptiness.ThenByDescending(p => (DateTime?)propInfo.GetValue(p) ?? DateTime.MinValue);
-                }
-                else
-                {
-                    listaOrdenada = direcao == ListSortDirection.Ascending
-                        ? orderedByEmptiness.ThenBy(p => propInfo.GetValue(p))
-                        : orderedByEmptiness.ThenByDescending(p => propInfo.GetValue(p));
-                }
+                _direcaoOrdenacao = ListSortDirection.Ascending;
             }
+            _colunaOrdenada = novaColuna;
 
-            // 3. Atualiza o DataGridView (mesma lógica de antes)
-            BsProcesso.DataSource = listaOrdenada.ToList();
-            BsProcesso.ResetBindings(false);
+            // 2. RESETAR PARA A PÁGINA 1 (O que você pediu)
+            _paginaAtual = 1;
 
-            // 4. Atualiza a Seta Visual (Glyph) no Cabeçalho (mesma lógica de antes)
-            foreach (DataGridViewColumn column in dgv.Columns)
+            // 3. ATUALIZAR AS SETAS VISUAIS (Glyphs)
+            foreach (DataGridViewColumn col in dgv.Columns)
             {
-                column.HeaderCell.SortGlyphDirection = (column.Name == novaColuna.Name)
-                    ? (direcao == ListSortDirection.Ascending ? SortOrder.Ascending : SortOrder.Descending)
-                    : SortOrder.None;
+                if (col.Name == novaColuna.Name)
+                    col.HeaderCell.SortGlyphDirection = (_direcaoOrdenacao == ListSortDirection.Ascending)
+                        ? SortOrder.Ascending : SortOrder.Descending;
+                else
+                    col.HeaderCell.SortGlyphDirection = SortOrder.None;
             }
+
+            // 4. RECARREGAR DO BANCO (Agora com a nova ordem e página 1)
+            await CarregarDadosAsync();
         }
 
         private void BtnAjuda_Click(object sender, EventArgs e)
@@ -471,7 +447,7 @@ namespace Trabalho
 
                 // Dispara o log sem travar a UI
                 _ = Task.Run(() => _logRepo.RegistrarLogAsync(
-                    "Exportação",
+                    "Exportação", _logado.Usuario,
                     "Relatório PDF da tabela Santos gerado",
                     $"Usuário: {_logado.Usuario} | Registros: {qtdExportada}"
                 ));
@@ -513,6 +489,20 @@ namespace Trabalho
             _overlay?.Close();
             _overlay?.Dispose();
             _overlay = null;
+        }
+        private async void BtnForward_Click(object sender, EventArgs e)
+        {
+            _paginaAtual++;
+            await CarregarDadosAsync();
+        }
+
+        private async void BtnPrevious_Click(object sender, EventArgs e)
+        {
+            if (_paginaAtual > 1)
+            {
+                _paginaAtual--;
+                await CarregarDadosAsync();
+            }
         }
     }
 }

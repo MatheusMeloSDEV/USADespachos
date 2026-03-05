@@ -272,7 +272,7 @@ namespace Trabalho
             if (processadas > 0)
             {
                 await _logRepo.RegistrarLogAsync(
-                    "Sincronização",
+                    "Sincronização", _logado.Usuario,
                     "Fila offline de vistorias processada com sucesso",
                     $"Itens sincronizados: {processadas} | Erros descartados: {errosDados}"
                 );
@@ -436,9 +436,20 @@ namespace Trabalho
         {
             var query = lista.Where(v => v.Status == status);
 
-            return query
-                .OrderBy(v => v.DataRegistroLPCO ?? DateTime.MaxValue) 
-                .ToList();
+            if (status == StatusVistoria.ProcessoDadoEntrada)
+            {
+                // Ordena por Data de Registro se for Processo Dado Entrada
+                return query
+                    .OrderBy(v => v.DataRegistroLPCO ?? DateTime.MaxValue)
+                    .ToList();
+            }
+            else
+            {
+                // Ordena por Previsão para todos os outros status
+                return query
+                    .OrderBy(v => v.Previsao ?? DateTime.MaxValue)
+                    .ToList();
+            }
         }
         #region "Lógica de Movimentação de Vistorias"
 
@@ -472,7 +483,7 @@ namespace Trabalho
             // --- 4. LOG DE MOVIMENTAÇÃO ---
             // Fire-and-forget seguro (não trava a UI)
             _ = _logRepo.RegistrarLogAsync(
-                "Movimentação Vistoria",
+                "Movimentação Vistoria", _logado.Usuario,
                 $"LPCO {vistoriaSelecionada.LPCO} movido para {novoStatus}",
                 $"Processo: {vistoriaSelecionada.Ref_USA} | De: {statusAntigo} -> Para: {novoStatus} | Usuário: {_logado.Usuario}"
             );
@@ -556,7 +567,7 @@ namespace Trabalho
                 bindingSource.Remove(vistoria);
 
                 await _logRepo.RegistrarLogAsync(
-                    "Finalização Vistoria",
+                    "Finalização Vistoria", _logado.Usuario,
                     $"Vistoria {acao} para LPCO {vistoria.LPCO}",
                     $"Processo: {vistoria.Ref_USA} | Status Final: {novoStatusMotivoExigencia} | Usuário: {_logado.Usuario}"
                 );
@@ -565,7 +576,7 @@ namespace Trabalho
             }
             catch (Exception ex)
             {
-                await _logRepo.RegistrarLogAsync("Erro Vistoria", $"Falha ao finalizar {vistoria.LPCO}", ex.Message);
+                await _logRepo.RegistrarLogAsync("Erro Vistoria", _logado.Usuario, $"Falha ao finalizar {vistoria.LPCO}", ex.Message);
                 MessageBox.Show($"Erro ao processar a solicitação: {ex.Message}", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
             finally
