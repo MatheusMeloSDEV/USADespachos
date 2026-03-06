@@ -73,15 +73,15 @@ namespace Trabalho
             {
                 MostrarLoading($"Carregando página {_paginaAtual}...");
 
-                string campoBD = _colunaOrdenada?.DataPropertyName ?? "Id";
+                string campoBD = _colunaOrdenada?.DataPropertyName ?? "DataDeAtracacao";
 
                 // Proteção: Se a coluna for ignorada no Mongo (ex: OrgaosAnuentesString), não podemos ordenar por ela no BD
                 if (campoBD == "OrgaosAnuentesString" || string.IsNullOrWhiteSpace(campoBD))
                 {
-                    campoBD = "Id";
+                    campoBD = "DataDeAtracacao";
                 }
 
-                bool isAsc = (_direcaoOrdenacao == ListSortDirection.Descending);
+                bool isAsc = (_direcaoOrdenacao == ListSortDirection.Ascending);
 
                 // Busca no banco
                 var (itens, total) = await _repositorio.ListarPrincipalPaginadoAsync(
@@ -167,7 +167,7 @@ namespace Trabalho
         {
             var processo = new Processo();
             OrigemProcesso Itajai = OrigemProcesso.Itajai;
-            using var frm = new FrmModificaProcesso { processo = processo, Modo = "Adicionar", Origem = Itajai };
+            using var frm = new FrmModificaProcesso { processo = processo, Modo = "Adicionar", Origem = Itajai, UsuarioLogado = _logado };
 
             if (frm.ShowDialog() == DialogResult.OK)
             {
@@ -220,7 +220,7 @@ namespace Trabalho
                 return;
             }
 
-            using var frm = new FrmModificaProcesso { processo = processoSelecionado, Modo = "Editar" };
+            using var frm = new FrmModificaProcesso { processo = processoSelecionado, Modo = "Editar", UsuarioLogado = _logado };
             frm.ShowDialog();
 
             await CarregarDadosAsync();
@@ -346,31 +346,6 @@ namespace Trabalho
             }
 
             public override string ToString() => HeaderText;
-        }
-        private bool IsValueEmpty(object? value)
-        {
-            if (value == null || value == DBNull.Value)
-            {
-                return true;
-            }
-            if (value is string str)
-            {
-                return string.IsNullOrWhiteSpace(str);
-            }
-            return false;
-        }
-        private (int ano, int numero) ExtrairAnoNumero(string refUsa)
-        {
-            if (string.IsNullOrWhiteSpace(refUsa)) return (0, 0);
-            string refLimpa = refUsa.Split(' ').FirstOrDefault() ?? refUsa;
-            var partes = refLimpa.Split('/');
-            int numero = 0, ano = 0;
-            if (partes.Length == 2)
-            {
-                int.TryParse(partes[0], out numero);
-                int.TryParse(partes[1], out ano);
-            }
-            return (ano, numero);
         }
 
         private void BtnDownloadTabela_Click(object sender, EventArgs e)

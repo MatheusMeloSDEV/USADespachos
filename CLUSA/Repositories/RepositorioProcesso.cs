@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using CLUSA.Models;
+using System;
 
 namespace CLUSA.Repositories
 {
@@ -33,14 +34,11 @@ namespace CLUSA.Repositories
 
         #region Métodos CRUD Otimizados
 
-        /// <summary>
-        /// Retorna uma página de processos ativos e o total de registros para controle da UI.
-        /// </summary>
         public async Task<(List<Processo> itens, long total)> ListarPrincipalPaginadoAsync(
-            string origemFormulario, // <-- Alterado de 'sufixoExcluir' para 'origemFormulario' ("Santos" ou "Itajai")
+            string origemFormulario, // "Santos" ou "Itajai"
             int pagina,
             int tamanhoPagina,
-            string campoOrdenacao = "Id",
+            string campoOrdenacao = "DataDeAtracacao",
             bool ascendente = true)
         {
             var builder = Builders<Processo>.Filter;
@@ -48,62 +46,81 @@ namespace CLUSA.Repositories
             // 1. Filtro base: Não trazer finalizados
             var filtroStatus = builder.Ne(p => p.Status, "Finalizado");
 
-            // 2. Filtro de Origem: Decide se inclui ITJ (Itajaí) ou exclui ITJ (Santos)
+            // 2. Filtro de Origem
             FilterDefinition<Processo> filtroOrigem;
             if (origemFormulario == "Itajai")
             {
-                // Para Itajaí: INCLUI tudo que termina com ITJ
                 filtroOrigem = builder.Regex(p => p.Ref_USA, new BsonRegularExpression("ITJ$", "i"));
             }
             else
             {
-                // Para Santos: EXCLUI tudo que termina com ITJ
                 filtroOrigem = builder.Not(builder.Regex(p => p.Ref_USA, new BsonRegularExpression("ITJ$", "i")));
             }
 
             var filtroFinal = builder.And(filtroStatus, filtroOrigem);
 
-            // --- LÓGICA ESPECIAL PARA REF_USA (Ordenação na Memória) ---
+            // --- SEPARAÇÃO DE LÓGICAS ---
             if (campoOrdenacao == "Ref_USA")
             {
-                // Como são apenas os processos ativos (não finalizados), a lista é pequena e super rápida
+                // 🔹 LÓGICA EM MEMÓRIA (Apenas para Ref_USA manter a regra de Ano/Número)
                 var todosAtivos = await _colecao.Find(filtroFinal).ToListAsync();
                 long totalAtivos = todosAtivos.Count;
 
-                // Aplica a sua lógica exata de extrair Ano e Número
                 var ordenados = ascendente
-                    ? todosAtivos
-                        .OrderBy(p => string.IsNullOrWhiteSpace(p.Ref_USA) ? 1 : 0)
-                        .ThenBy(p => ExtrairAnoNumeroRepo(p.Ref_USA))
-                        .ToList()
-                    : todosAtivos
-                        .OrderBy(p => string.IsNullOrWhiteSpace(p.Ref_USA) ? 1 : 0)
-                        .ThenByDescending(p => ExtrairAnoNumeroRepo(p.Ref_USA))
-                        .ToList();
+                    ? todosAtivos.OrderBy(p => string.IsNullOrWhiteSpace(p.Ref_USA) ? 1 : 0).ThenBy(p => ExtrairAnoNumeroRepo(p.Ref_USA))
+                    : todosAtivos.OrderBy(p => string.IsNullOrWhiteSpace(p.Ref_USA) ? 1 : 0).ThenByDescending(p => ExtrairAnoNumeroRepo(p.Ref_USA));
 
-                // Faz a paginação (fatia de 50) em cima da lista já ordenada
-                var itensPaginados = ordenados.Skip((pagina - 1) * tamanhoPagina).Take(tamanhoPagina).ToList();
-
-                return (itensPaginados, totalAtivos);
+                // Retorna a página da Ref_USA
+                var paginaRefUsa = ordenados.Skip((pagina - 1) * tamanhoPagina).Take(tamanhoPagina).ToList();
+                return (paginaRefUsa, totalAtivos);
             }
+            else
+            {
+                // 🔹 LÓGICA NATIVA MONGODB (Altíssima velocidade para todas as outras colunas)
+                var total = await _colecao.CountDocumentsAsync(filtroFinal);
 
-            // --- LÓGICA PADRÃO PARA AS OUTRAS COLUNAS (Ordenação no MongoDB) ---
-            var total = await _colecao.CountDocumentsAsync(filtroFinal);
+                // O nome do campo para o Mongo ler. Ex: "$Importador"
+                var sortField = $"${campoOrdenacao}";
 
-            var sort = ascendente
-                ? Builders<Processo>.Sort.Ascending(campoOrdenacao)
-                : Builders<Processo>.Sort.Descending(campoOrdenacao);
+                // Cria a coluna temporária de peso (Nulo e Vazio vão pro final)
+                var addFields = new BsonDocument("$addFields", new BsonDocument("PesoVazio",
+                    new BsonDocument("$cond", new BsonArray
+                    {
+                new BsonDocument("$or", new BsonArray
+                {
+                    new BsonDocument("$eq", new BsonArray { sortField, BsonNull.Value }),
+                    new BsonDocument("$eq", new BsonArray { sortField, "" })
+                }),
+                1, // Peso 1 = Vai pro fim da fila
+                0  // Peso 0 = Fica no topo da fila
+                    })));
 
-            var itens = await _colecao.Find(filtroFinal)
-                .Sort(sort)
-                .Skip((pagina - 1) * tamanhoPagina)
-                .Limit(tamanhoPagina)
-                .ToListAsync();
+                // Ordena por Peso primeiro e depois pela coluna real
+                var sortDef = ascendente
+                    ? Builders<BsonDocument>.Sort.Ascending("PesoVazio").Ascending(campoOrdenacao)
+                    : Builders<BsonDocument>.Sort.Ascending("PesoVazio").Descending(campoOrdenacao);
 
-            return (itens, total);
+                // Executa o Pipeline nativo do MongoDB
+                var resultadosBson = await _colecao.Aggregate()
+                    .Match(filtroFinal)
+                    .AppendStage<BsonDocument>(addFields)
+                    .Sort(sortDef)
+                    .Skip((pagina - 1) * tamanhoPagina)
+                    .Limit(tamanhoPagina)
+                    // A MÁGICA AQUI: Remove o 'PesoVazio' antes de devolver pro C# (0 significa excluir)
+                    .AppendStage<BsonDocument>(new BsonDocument("$project", new BsonDocument("PesoVazio", 0)))
+                    .ToListAsync();
+
+                // Converte de BSON devolta para a classe Processo
+                var paginaGenerica = resultadosBson
+                    .Select(b => MongoDB.Bson.Serialization.BsonSerializer.Deserialize<Processo>(b))
+                    .ToList();
+
+                return (paginaGenerica, total);
+            }
         }
 
-        // O método ExtrairAnoNumeroRepo continua exatamente igual!
+        // O método extrator continua o mesmo (deixe-o logo abaixo na sua classe)
         private (int ano, int numero) ExtrairAnoNumeroRepo(string refUsa)
         {
             if (string.IsNullOrWhiteSpace(refUsa)) return (0, 0);

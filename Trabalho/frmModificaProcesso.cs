@@ -18,9 +18,9 @@ namespace Trabalho
     }
     public partial class FrmModificaProcesso : Form
     {
-        public Logado _logado;
         public Processo processo { get; set; } = null!;
         private Processo _processoOriginal = null!;
+        public Logado UsuarioLogado { get; set; }
         public string Modo { get; set; } = "Adicionar";
         public bool Visualização { get; set; } = false;
         public OrigemProcesso Origem { get; set; }
@@ -204,11 +204,65 @@ namespace Trabalho
                     var liAntiga = listaAntiga[i];
                     var liNova = listaNova[i];
 
+                    // Usado para identificar a LI no texto do Log
+                    string identificadorLi = string.IsNullOrWhiteSpace(liNova.Numero) ? $"[{i + 1}]" : liNova.Numero;
+
+                    // 1. Compara os dados da própria LI
                     if (liAntiga.Numero != liNova.Numero)
-                        logs.Add($"LI[{i + 1}]: '{liAntiga.Numero}' -> '{liNova.Numero}'");
+                        logs.Add($"LI {identificadorLi} (Número): '{liAntiga.Numero}' -> '{liNova.Numero}'");
 
                     if (liAntiga.NCM != liNova.NCM)
-                        logs.Add($"LI {liNova.Numero} (NCM): '{liAntiga.NCM}' -> '{liNova.NCM}'");
+                        logs.Add($"LI {identificadorLi} (NCM): '{liAntiga.NCM}' -> '{liNova.NCM}'");
+
+                    if (liAntiga.Amostra != liNova.Amostra)
+                        logs.Add($"LI {identificadorLi} (Amostra): '{(liAntiga.Amostra ? "Sim" : "Não")}' -> '{(liNova.Amostra ? "Sim" : "Não")}'");
+
+                    if (liAntiga.DataRegistro != liNova.DataRegistro)
+                        logs.Add($"LI {identificadorLi} (Data Registro): '{FormatarValor(liAntiga.DataRegistro)}' -> '{FormatarValor(liNova.DataRegistro)}'");
+
+                    // 2. Compara a lista de LPCOs dentro desta LI
+                    var lpcosAntigos = liAntiga.LPCO ?? new List<LpcoInfo>();
+                    var lpcosNovos = liNova.LPCO ?? new List<LpcoInfo>();
+
+                    if (lpcosAntigos.Count != lpcosNovos.Count)
+                    {
+                        logs.Add($"LI {identificadorLi} (Qtd LPCOs): {lpcosAntigos.Count} -> {lpcosNovos.Count}");
+                    }
+                    else
+                    {
+                        // Compara campo a campo de cada LPCO
+                        for (int j = 0; j < lpcosNovos.Count; j++)
+                        {
+                            var lAntigo = lpcosAntigos[j];
+                            var lNovo = lpcosNovos[j];
+
+                            string idLpco = string.IsNullOrWhiteSpace(lNovo.LPCO) ? $"[{j + 1}]" : lNovo.LPCO;
+
+                            if (lAntigo.NomeOrgao != lNovo.NomeOrgao)
+                                logs.Add($"LI {identificadorLi} - LPCO {idLpco} (Órgão): '{lAntigo.NomeOrgao}' -> '{lNovo.NomeOrgao}'");
+
+                            if (lAntigo.LPCO != lNovo.LPCO)
+                                logs.Add($"LI {identificadorLi} - LPCO {idLpco} (Número): '{lAntigo.LPCO}' -> '{lNovo.LPCO}'");
+
+                            if (lAntigo.StatusLPCO != lNovo.StatusLPCO)
+                                logs.Add($"LI {identificadorLi} - LPCO {idLpco} (Status): '{lAntigo.StatusLPCO}' -> '{lNovo.StatusLPCO}'");
+
+                            if (lAntigo.ParametrizacaoLPCO != lNovo.ParametrizacaoLPCO)
+                                logs.Add($"LI {identificadorLi} - LPCO {idLpco} (Canal): '{lAntigo.ParametrizacaoLPCO}' -> '{lNovo.ParametrizacaoLPCO}'");
+
+                            if (lAntigo.EmExigencia != lNovo.EmExigencia)
+                                logs.Add($"LI {identificadorLi} - LPCO {idLpco} (Exigência): '{(lAntigo.EmExigencia ? "Sim" : "Não")}' -> '{(lNovo.EmExigencia ? "Sim" : "Não")}'");
+
+                            if (lAntigo.MotivoExigencia != lNovo.MotivoExigencia)
+                                logs.Add($"LI {identificadorLi} - LPCO {idLpco} (Motivo Exig.): '{lAntigo.MotivoExigencia}' -> '{lNovo.MotivoExigencia}'");
+
+                            if (lAntigo.DataRegistroLPCO != lNovo.DataRegistroLPCO)
+                                logs.Add($"LI {identificadorLi} - LPCO {idLpco} (Registro): '{FormatarValor(lAntigo.DataRegistroLPCO)}' -> '{FormatarValor(lNovo.DataRegistroLPCO)}'");
+
+                            if (lAntigo.DataDeferimentoLPCO != lNovo.DataDeferimentoLPCO)
+                                logs.Add($"LI {identificadorLi} - LPCO {idLpco} (Deferimento): '{FormatarValor(lAntigo.DataDeferimentoLPCO)}' -> '{FormatarValor(lNovo.DataDeferimentoLPCO)}'");
+                        }
+                    }
                 }
             }
         }
@@ -403,7 +457,7 @@ namespace Trabalho
                 {
                     await _repositorio.CreateAsync(processo);
 
-                    await _logRepo.RegistrarLogAsync("Criação", _logado.Usuario, $"Novo processo: {processo.Ref_USA}");
+                    await _logRepo.RegistrarLogAsync("Criação", UsuarioLogado?.Usuario, $"Novo processo: {processo.Ref_USA}");
 
                     var settings = new Newtonsoft.Json.JsonSerializerSettings();
                     settings.Converters.Add(new ObjectIdConverter());
@@ -428,7 +482,7 @@ namespace Trabalho
 
                         // Grava no log do sistema
                         await _logRepo.RegistrarLogAsync(
-                            "Edição", _logado.Usuario,
+                            "Edição", UsuarioLogado?.Usuario,
                             $"Atualização em {processo.Ref_USA}",
                             logDetalhado
                         );
@@ -504,7 +558,16 @@ namespace Trabalho
             }
             catch (Exception ex)
             {
-                await _logRepo.RegistrarLogAsync("Erro", _logado.Usuario, $"Falha ao salvar processo {processo.Ref_USA}", ex.Message);
+                // Pega o nome do usuário. Se por algum motivo vier vazio, salva como "Sistema"
+                string nomeAutor = UsuarioLogado?.Usuario ?? "Sistema";
+
+                await _logRepo.RegistrarLogAsync(
+                    "Erro",                                       // Tipo
+                    nomeAutor,                                    // Autor
+                    $"Falha ao salvar processo {processo?.Ref_USA}", // Mensagem
+                    ex.Message                                    // Detalhes
+                );
+
                 MessageBox.Show($"Erro ao salvar o processo: {ex.Message}", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
@@ -745,7 +808,7 @@ namespace Trabalho
             AtualizarEstadoBotoesLI();
 
             await _logRepo.RegistrarLogAsync(
-                "Exclusão", _logado.Usuario,
+                "Exclusão", UsuarioLogado?.Usuario,
                 $"LI {numeroLi} removida do processo {processo.Ref_USA}",
                 $"Usuário removeu a aba da LI"
             );

@@ -78,15 +78,15 @@ namespace Trabalho
             {
                 MostrarLoading($"Carregando página {_paginaAtual}...");
 
-                string campoBD = _colunaOrdenada?.DataPropertyName ?? "Id";
+                string campoBD = _colunaOrdenada?.DataPropertyName ?? "DataDeAtracacao";
 
                 // Proteção: Se a coluna for ignorada no Mongo (ex: OrgaosAnuentesString), não podemos ordenar por ela no BD
                 if (campoBD == "OrgaosAnuentesString" || string.IsNullOrWhiteSpace(campoBD))
                 {
-                    campoBD = "Id";
+                    campoBD = "DataDeAtracacao";
                 }
 
-                bool isAsc = (_direcaoOrdenacao == ListSortDirection.Descending);
+                bool isAsc = (_direcaoOrdenacao == ListSortDirection.Ascending);
 
                 // Busca no banco
                 var (itens, total) = await _repositorio.ListarPrincipalPaginadoAsync(
@@ -180,7 +180,7 @@ namespace Trabalho
         {
             var processo = new Processo();
             OrigemProcesso Santos = OrigemProcesso.Santos;
-            using var frm = new FrmModificaProcesso { processo = processo, Modo = "Adicionar", Origem = Santos, _logado = _logado };
+            using var frm = new FrmModificaProcesso { processo = processo, Modo = "Adicionar", Origem = Santos, UsuarioLogado = _logado };
 
             if (frm.ShowDialog() == DialogResult.OK)
             {
@@ -223,7 +223,7 @@ namespace Trabalho
         {
             if (BsProcesso.Current is not Processo processoSelecionado) return;
 
-            using var frm = new FrmModificaProcesso { processo = processoSelecionado, Modo = "Editar" };
+            using var frm = new FrmModificaProcesso { processo = processoSelecionado, Modo = "Editar", UsuarioLogado = _logado};
             frm.ShowDialog();
 
             _cacheAutoComplete.Clear(); // Limpa cache
