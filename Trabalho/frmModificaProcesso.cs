@@ -695,22 +695,7 @@ namespace Trabalho
         }
         private async Task SincronizarOrgaoAnuenteAsync()
         {
-            var lisValidas = processo.LI
-                .Where(li => !string.IsNullOrWhiteSpace(li.Numero))
-                .Select(li => li.Numero)
-                .ToList();
-
-            var db = ConfigDatabase.GetDatabase();
-            var collection = db.GetCollection<OrgaoAnuente>("OrgaoAnuente");
-
-            var filtroRef = Builders<OrgaoAnuente>.Filter.Eq(x => x.Ref_USA, processo.Ref_USA);
-
-            var update = Builders<OrgaoAnuente>.Update.PullFilter(
-                "LIs", 
-                Builders<BsonDocument>.Filter.Nin("Numero", lisValidas) 
-            );
-
-            await collection.UpdateOneAsync(filtroRef, update);
+            await _repositorio.SincronizarLicencas(processo);
         }
 
         #endregion

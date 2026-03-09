@@ -190,7 +190,7 @@ namespace CLUSA.Services
                 "Venc. FT", "Venc. FMA", "Veículo", "Atracação", "Embarque",
                 "Docs Recebidos", "Rec. Originais", "DI", "Param. DI", "Status"
             };
-            if (isCasaFlora) headers.Insert(3, "FLO");
+            if (isCasaFlora) headers.Insert(4, "FLO");
 
             // Pesos das colunas (Largura visual)
             var pesos = new List<float> { 1.5f, 2.5f, 1.5f };
@@ -224,8 +224,8 @@ namespace CLUSA.Services
                 valores.Add(Str(item.Ref_USA));
                 valores.Add(Str(item.Exportador));
                 valores.Add(Str(item.SR));
-                if (isCasaFlora) valores.Add(Str(item.FLO));
                 valores.Add(Str(item.Produto));
+                if (isCasaFlora) valores.Add(Str(item.FLO));
                 valores.Add(item.FreeTime.ToString());
                 valores.Add(Dt(item.VencimentoFreeTime));
                 valores.Add(Dt(item.VencimentoFMA));
@@ -312,7 +312,7 @@ namespace CLUSA.Services
                 "Documentos Recebidos", "Data Rec. Org.", "Histórico do Processo",
                 "DI", "Parametrização DI", "Status"
             };
-            if (isCasaFlora) headers.Insert(3, "FLO");
+            if (isCasaFlora) headers.Insert(4, "FLO");
 
             // 3. Estilização do Cabeçalho
             for (int i = 0; i < headers.Count; i++)
@@ -336,8 +336,8 @@ namespace CLUSA.Services
                 ws.Cell(row, col++).Value = Str(item.Ref_USA);
                 ws.Cell(row, col++).Value = Str(item.Exportador);
                 ws.Cell(row, col++).Value = Str(item.SR);
-                if (isCasaFlora) ws.Cell(row, col++).Value = Str(item.FLO);
                 ws.Cell(row, col++).Value = Str(item.Produto);
+                if (isCasaFlora) ws.Cell(row, col++).Value = Str(item.FLO);
                 ws.Cell(row, col++).Value = item.FreeTime;
                 ws.Cell(row, col++).Value = item.VencimentoFreeTime;
                 ws.Cell(row, col++).Value = item.VencimentoFMA;

@@ -143,38 +143,48 @@ namespace CLUSA.Services
 
         private bool ShouldCreateVistoria(LpcoInfo lpco, out StatusVistoria status)
         {
+            // Status Padrão (Fallback)
             status = StatusVistoria.AguardandoChegadaParaAgendar;
-            var motivo = (lpco.MotivoExigencia ?? "").ToUpper();
-            var stLpco = (lpco.StatusLPCO ?? "").ToUpper();
-            var param = (lpco.ParametrizacaoLPCO ?? "").ToUpper();
-            var orgao = (lpco.NomeOrgao ?? "").ToUpper();
 
-            // Regra 1: Se deferido, NÃO cria (retorna false)
-            if (motivo == "DEFERIDO" || motivo == "CANCELADA" || stLpco == "DEFERIDO" || stLpco == "CANCELADO")
-                return false;
+            var motivo = (lpco.MotivoExigencia ?? "").Trim().ToUpper();
+            var stLpco = (lpco.StatusLPCO ?? "").Trim().ToUpper();
+            var param = (lpco.ParametrizacaoLPCO ?? "").Trim().ToUpper();
+            var orgao = (lpco.NomeOrgao ?? "").Trim().ToUpper();
 
-            // Regra 2: MAPA
-            if (orgao.Contains("MAPA"))
+            // 1. A GUILHOTINA: Se deferido/cancelado, NÃO cria (retorna false na hora)
+            if (motivo == "DEFERIDO" || motivo == "CANCELADA")
             {
-                if (param.Contains("FÍSICA") || param.Contains("FISICA") || param.Contains("COLETA") || param.Contains("EXAME"))
-                {
-                    status = StatusVistoria.AguardandoChegadaParaAgendar;
-                    return true;
-                }
-                if (string.IsNullOrEmpty(param) && stLpco == "ENTRADA CONCLUÍDA")
+                return false;
+            }
+
+            // 2. REGRA DOCUMENTAL
+            if (param == "DOCUMENTAL")
+            {
+                status = StatusVistoria.ProcessoDadoEntrada;
+                return true;
+            }
+
+            // 3. REGRA DE VISTORIA FÍSICA (Usando as parametrizações exatas)
+            if (param == "EXAME FÍSICO" || param == "EXAME FISICO" ||
+                param == "CONFERÊNCIA FÍSICA" || param == "CONFERENCIA FISICA" ||
+                param == "COLETA DE AMOSTRA" ||
+                param == "INSPEÇÃO FÍSICA" || param == "INSPECAO FISICA")
+            {
+                status = StatusVistoria.AguardandoChegadaParaAgendar;
+                return true;
+            }
+
+            // 4. REGRA AGUARDANDO PARAMETRIZAÇÃO (MAPA e ANVISA)
+            if (stLpco == "ENTRADA CONCLUÍDA" && string.IsNullOrEmpty(param))
+            {
+                if (orgao.Contains("MAPA") || orgao.Contains("ANVISA"))
                 {
                     status = StatusVistoria.ProcessoDadoEntrada;
                     return true;
                 }
             }
 
-            // Regra 3: ANVISA
-            if (orgao.Contains("ANVISA") && stLpco == "ENTRADA CONCLUÍDA" && (string.IsNullOrEmpty(param) || param == "DOCUMENTAL"))
-            {
-                status = StatusVistoria.ProcessoDadoEntrada;
-                return true;
-            }
-
+            // Se não se encaixou em nenhuma regra válida de criação, ignora/remove.
             return false;
         }
     }

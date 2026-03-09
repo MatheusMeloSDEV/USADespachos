@@ -58,6 +58,7 @@
             toolStrip1 = new ToolStrip();
             BtnRecarrega = new ToolStripButton();
             panel1 = new Panel();
+            BtnDeferirProcessoDEntrada = new PictureBox();
             TableVistorias.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)DGVProcessosDadoEntrada).BeginInit();
             ((System.ComponentModel.ISupportInitialize)BtnDefere).BeginInit();
@@ -78,6 +79,7 @@
             ((System.ComponentModel.ISupportInitialize)BtnCancelada).BeginInit();
             toolStrip1.SuspendLayout();
             panel1.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)BtnDeferirProcessoDEntrada).BeginInit();
             SuspendLayout();
             // 
             // TableVistorias
@@ -112,7 +114,8 @@
             TableVistorias.Controls.Add(btnDesceParaAguardando, 3, 7);
             TableVistorias.Controls.Add(BtnSobeAgendada, 2, 7);
             TableVistorias.Controls.Add(BtnSobeSolicitado, 3, 9);
-            TableVistorias.Controls.Add(BtnCancelada, 3, 11);
+            TableVistorias.Controls.Add(BtnCancelada, 2, 11);
+            TableVistorias.Controls.Add(BtnDeferirProcessoDEntrada, 3, 11);
             TableVistorias.Dock = DockStyle.Top;
             TableVistorias.Location = new Point(0, 0);
             TableVistorias.Name = "TableVistorias";
@@ -149,12 +152,12 @@
             // 
             label6.AutoSize = true;
             label6.BackColor = SystemColors.Control;
-            TableVistorias.SetColumnSpan(label6, 3);
+            TableVistorias.SetColumnSpan(label6, 2);
             label6.Dock = DockStyle.Fill;
             label6.Font = new Font("Segoe UI", 11F, FontStyle.Bold);
             label6.Location = new Point(3, 777);
             label6.Name = "label6";
-            label6.Size = new Size(1082, 30);
+            label6.Size = new Size(1052, 30);
             label6.TabIndex = 26;
             label6.Text = "Processos Dado Entrada";
             label6.TextAlign = ContentAlignment.MiddleCenter;
@@ -165,9 +168,10 @@
             BtnDefere.BackgroundImage = (Image)resources.GetObject("BtnDefere.BackgroundImage");
             BtnDefere.BackgroundImageLayout = ImageLayout.Stretch;
             BtnDefere.Dock = DockStyle.Fill;
-            BtnDefere.Location = new Point(1031, 117);
+            BtnDefere.Location = new Point(1028, 114);
+            BtnDefere.Margin = new Padding(0);
             BtnDefere.Name = "BtnDefere";
-            BtnDefere.Size = new Size(24, 24);
+            BtnDefere.Size = new Size(30, 30);
             BtnDefere.TabIndex = 25;
             BtnDefere.TabStop = false;
             BtnDefere.Click += BtnDeferido_Click;
@@ -307,9 +311,10 @@
             BtnDesceDeferimento.BackgroundImage = (Image)resources.GetObject("BtnDesceDeferimento.BackgroundImage");
             BtnDesceDeferimento.BackgroundImageLayout = ImageLayout.Stretch;
             BtnDesceDeferimento.Dock = DockStyle.Fill;
-            BtnDesceDeferimento.Location = new Point(1091, 28);
+            BtnDesceDeferimento.Location = new Point(1088, 25);
+            BtnDesceDeferimento.Margin = new Padding(0);
             BtnDesceDeferimento.Name = "BtnDesceDeferimento";
-            BtnDesceDeferimento.Size = new Size(24, 26);
+            BtnDesceDeferimento.Size = new Size(30, 32);
             BtnDesceDeferimento.TabIndex = 23;
             BtnDesceDeferimento.TabStop = false;
             BtnDesceDeferimento.Click += BtnDesceDeferimento_Click;
@@ -320,9 +325,10 @@
             BtnDeferido.BackgroundImage = (Image)resources.GetObject("BtnDeferido.BackgroundImage");
             BtnDeferido.BackgroundImageLayout = ImageLayout.Stretch;
             BtnDeferido.Dock = DockStyle.Fill;
-            BtnDeferido.Location = new Point(1061, 28);
+            BtnDeferido.Location = new Point(1058, 25);
+            BtnDeferido.Margin = new Padding(0);
             BtnDeferido.Name = "BtnDeferido";
-            BtnDeferido.Size = new Size(24, 26);
+            BtnDeferido.Size = new Size(30, 32);
             BtnDeferido.TabIndex = 17;
             BtnDeferido.TabStop = false;
             BtnDeferido.Click += BtnDeferido_Click_1;
@@ -333,9 +339,10 @@
             btnDesceParaAgendada.BackgroundImage = (Image)resources.GetObject("btnDesceParaAgendada.BackgroundImage");
             btnDesceParaAgendada.BackgroundImageLayout = ImageLayout.Stretch;
             btnDesceParaAgendada.Dock = DockStyle.Fill;
-            btnDesceParaAgendada.Location = new Point(1091, 117);
+            btnDesceParaAgendada.Location = new Point(1088, 114);
+            btnDesceParaAgendada.Margin = new Padding(0);
             btnDesceParaAgendada.Name = "btnDesceParaAgendada";
-            btnDesceParaAgendada.Size = new Size(24, 24);
+            btnDesceParaAgendada.Size = new Size(30, 30);
             btnDesceParaAgendada.TabIndex = 18;
             btnDesceParaAgendada.TabStop = false;
             btnDesceParaAgendada.Click += btnDesceParaAgendada_Click;
@@ -346,35 +353,38 @@
             BtnSobeLaudo.BackgroundImage = (Image)resources.GetObject("BtnSobeLaudo.BackgroundImage");
             BtnSobeLaudo.BackgroundImageLayout = ImageLayout.Stretch;
             BtnSobeLaudo.Dock = DockStyle.Fill;
-            BtnSobeLaudo.Location = new Point(1061, 117);
+            BtnSobeLaudo.Location = new Point(1058, 114);
+            BtnSobeLaudo.Margin = new Padding(0);
             BtnSobeLaudo.Name = "BtnSobeLaudo";
-            BtnSobeLaudo.Size = new Size(24, 24);
+            BtnSobeLaudo.Size = new Size(30, 30);
             BtnSobeLaudo.TabIndex = 21;
             BtnSobeLaudo.TabStop = false;
             BtnSobeLaudo.Click += BtnSobeLaudo_Click;
             // 
             // btnDesceParaSolicitado
             // 
-            btnDesceParaSolicitado.BackColor = SystemColors.ActiveBorder;
+            btnDesceParaSolicitado.BackColor = Color.Transparent;
             btnDesceParaSolicitado.BackgroundImage = (Image)resources.GetObject("btnDesceParaSolicitado.BackgroundImage");
             btnDesceParaSolicitado.BackgroundImageLayout = ImageLayout.Stretch;
             btnDesceParaSolicitado.Dock = DockStyle.Fill;
-            btnDesceParaSolicitado.Location = new Point(1091, 204);
+            btnDesceParaSolicitado.Location = new Point(1088, 201);
+            btnDesceParaSolicitado.Margin = new Padding(0);
             btnDesceParaSolicitado.Name = "btnDesceParaSolicitado";
-            btnDesceParaSolicitado.Size = new Size(24, 24);
+            btnDesceParaSolicitado.Size = new Size(30, 30);
             btnDesceParaSolicitado.TabIndex = 19;
             btnDesceParaSolicitado.TabStop = false;
             btnDesceParaSolicitado.Click += btnDesceParaSolicitado_Click;
             // 
             // BtnSobeAguardDef
             // 
-            BtnSobeAguardDef.BackColor = SystemColors.ActiveBorder;
+            BtnSobeAguardDef.BackColor = Color.Transparent;
             BtnSobeAguardDef.BackgroundImage = (Image)resources.GetObject("BtnSobeAguardDef.BackgroundImage");
             BtnSobeAguardDef.BackgroundImageLayout = ImageLayout.Stretch;
             BtnSobeAguardDef.Dock = DockStyle.Fill;
-            BtnSobeAguardDef.Location = new Point(1061, 204);
+            BtnSobeAguardDef.Location = new Point(1058, 201);
+            BtnSobeAguardDef.Margin = new Padding(0);
             BtnSobeAguardDef.Name = "BtnSobeAguardDef";
-            BtnSobeAguardDef.Size = new Size(24, 24);
+            BtnSobeAguardDef.Size = new Size(30, 30);
             BtnSobeAguardDef.TabIndex = 14;
             BtnSobeAguardDef.TabStop = false;
             BtnSobeAguardDef.Click += BtnSobeAguardDef_Click;
@@ -385,9 +395,10 @@
             btnDesceParaAguardando.BackgroundImage = (Image)resources.GetObject("btnDesceParaAguardando.BackgroundImage");
             btnDesceParaAguardando.BackgroundImageLayout = ImageLayout.Stretch;
             btnDesceParaAguardando.Dock = DockStyle.Fill;
-            btnDesceParaAguardando.Location = new Point(1091, 291);
+            btnDesceParaAguardando.Location = new Point(1088, 288);
+            btnDesceParaAguardando.Margin = new Padding(0);
             btnDesceParaAguardando.Name = "btnDesceParaAguardando";
-            btnDesceParaAguardando.Size = new Size(24, 24);
+            btnDesceParaAguardando.Size = new Size(30, 30);
             btnDesceParaAguardando.TabIndex = 20;
             btnDesceParaAguardando.TabStop = false;
             btnDesceParaAguardando.Click += btnDesceParaAguardando_Click;
@@ -398,33 +409,37 @@
             BtnSobeAgendada.BackgroundImage = (Image)resources.GetObject("BtnSobeAgendada.BackgroundImage");
             BtnSobeAgendada.BackgroundImageLayout = ImageLayout.Stretch;
             BtnSobeAgendada.Dock = DockStyle.Fill;
-            BtnSobeAgendada.Location = new Point(1061, 291);
+            BtnSobeAgendada.Location = new Point(1058, 288);
+            BtnSobeAgendada.Margin = new Padding(0);
             BtnSobeAgendada.Name = "BtnSobeAgendada";
-            BtnSobeAgendada.Size = new Size(24, 24);
+            BtnSobeAgendada.Size = new Size(30, 30);
             BtnSobeAgendada.TabIndex = 15;
             BtnSobeAgendada.TabStop = false;
             BtnSobeAgendada.Click += BtnSobeAgendada_Click;
             // 
             // BtnSobeSolicitado
             // 
-            BtnSobeSolicitado.BackColor = SystemColors.ActiveBorder;
+            BtnSobeSolicitado.BackColor = Color.Transparent;
             BtnSobeSolicitado.BackgroundImage = (Image)resources.GetObject("BtnSobeSolicitado.BackgroundImage");
             BtnSobeSolicitado.BackgroundImageLayout = ImageLayout.Stretch;
             BtnSobeSolicitado.Dock = DockStyle.Fill;
-            BtnSobeSolicitado.Location = new Point(1091, 521);
+            BtnSobeSolicitado.Location = new Point(1088, 518);
+            BtnSobeSolicitado.Margin = new Padding(0);
             BtnSobeSolicitado.Name = "BtnSobeSolicitado";
-            BtnSobeSolicitado.Size = new Size(24, 24);
+            BtnSobeSolicitado.Size = new Size(30, 30);
             BtnSobeSolicitado.TabIndex = 16;
             BtnSobeSolicitado.TabStop = false;
             BtnSobeSolicitado.Click += BtnSobeSolicitado_Click;
             // 
             // BtnCancelada
             // 
+            BtnCancelada.BackColor = SystemColors.Control;
             BtnCancelada.Dock = DockStyle.Fill;
             BtnCancelada.Image = (Image)resources.GetObject("BtnCancelada.Image");
-            BtnCancelada.Location = new Point(1091, 780);
+            BtnCancelada.Location = new Point(1058, 777);
+            BtnCancelada.Margin = new Padding(0);
             BtnCancelada.Name = "BtnCancelada";
-            BtnCancelada.Size = new Size(24, 24);
+            BtnCancelada.Size = new Size(30, 30);
             BtnCancelada.SizeMode = PictureBoxSizeMode.StretchImage;
             BtnCancelada.TabIndex = 30;
             BtnCancelada.TabStop = false;
@@ -457,6 +472,20 @@
             panel1.Name = "panel1";
             panel1.Size = new Size(1118, 952);
             panel1.TabIndex = 2;
+            // 
+            // BtnDeferirProcessoDEntrada
+            // 
+            BtnDeferirProcessoDEntrada.BackColor = SystemColors.Control;
+            BtnDeferirProcessoDEntrada.Dock = DockStyle.Fill;
+            BtnDeferirProcessoDEntrada.Image = Properties.Resources.done;
+            BtnDeferirProcessoDEntrada.Location = new Point(1088, 777);
+            BtnDeferirProcessoDEntrada.Margin = new Padding(0);
+            BtnDeferirProcessoDEntrada.Name = "BtnDeferirProcessoDEntrada";
+            BtnDeferirProcessoDEntrada.Size = new Size(30, 30);
+            BtnDeferirProcessoDEntrada.SizeMode = PictureBoxSizeMode.StretchImage;
+            BtnDeferirProcessoDEntrada.TabIndex = 31;
+            BtnDeferirProcessoDEntrada.TabStop = false;
+            BtnDeferirProcessoDEntrada.Click += BtnDeferirProcessoDEntrada_Click;
             // 
             // FrmVistorias
             // 
@@ -494,6 +523,7 @@
             toolStrip1.PerformLayout();
             panel1.ResumeLayout(false);
             panel1.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)BtnDeferirProcessoDEntrada).EndInit();
             ResumeLayout(false);
             PerformLayout();
         }
@@ -529,5 +559,6 @@
         private ToolStripButton BtnRecarrega;
         private Panel panel1;
         private PictureBox BtnCancelada;
+        private PictureBox BtnDeferirProcessoDEntrada;
     }
 }

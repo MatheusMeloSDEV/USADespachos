@@ -77,7 +77,7 @@ namespace Trabalho
 
                 if (result == DialogResult.No)
                 {
-                    e.Cancel = true; 
+                    e.Cancel = true;
                     return;
                 }
             }
@@ -541,7 +541,7 @@ namespace Trabalho
 
         // O último botão é um pouco diferente, pois ele "finaliza" o processo.
 
-        private async Task FinalizarVistoriaAsync(Vistoria vistoria, string novoStatusMotivoExigencia, BindingSource bindingSource)
+        private async Task FinalizarVistoriaAsync(Vistoria vistoria, string novoStatusMotivoExigencia, BindingSource bindingSource, bool adicionarNoHistorico = false)
         {
             if (vistoria == null) return;
 
@@ -556,9 +556,15 @@ namespace Trabalho
             {
                 Cursor = Cursors.WaitCursor;
 
-                // 1. Atualiza o Processo Principal (Marca LPCO como DEFERIDO/CANCELADA)
-                // Isso impede que a vistoria seja recriada no futuro
-                await _repositorioProcesso.AtualizarStatusLpcoAsync(vistoria.Ref_USA, vistoria.LPCO, novoStatusMotivoExigencia);
+                // Monta a string do Histórico se o parâmetro for true
+                string textoHistorico = null;
+                if (adicionarNoHistorico)
+                {
+                    textoHistorico = $"{DateTime.Now:dd/MM/yyyy} LPCO {vistoria.LPCO} foi deferido.";
+                }
+
+                // 1. Atualiza o Processo Principal (Agora passando o histórico!)
+                await _repositorioProcesso.AtualizarStatusLpcoAsync(vistoria.Ref_USA, vistoria.LPCO, novoStatusMotivoExigencia, textoHistorico);
 
                 // 2. Remove a Vistoria da coleção de Vistorias
                 await DeleteVistoriaComFilaAsync(vistoria.LPCO);
@@ -621,6 +627,20 @@ namespace Trabalho
             }
         }
         #endregion
+
+        private async void BtnDeferirProcessoDEntrada_Click(object sender, EventArgs e)
+        {
+            // Verifica qual item está selecionado na grid de Processo Dado Entrada
+            if (DGVProcessosDadoEntrada.CurrentRow?.DataBoundItem is Vistoria vistoria)
+            {
+                // Chama a finalização passando 'true' para adicionar o texto no histórico!
+                await FinalizarVistoriaAsync(vistoria, "DEFERIDO", _bsProcessosDadoEntrada, true);
+            }
+            else
+            {
+                MessageBox.Show("Selecione um item para finalizar.", "Aviso");
+            }
+        }
     }
     #region "Operações Pendentes - Sistema de Fila"
     public enum TipoOperacaoGenerica
@@ -636,5 +656,6 @@ namespace Trabalho
         public T? Entidade { get; set; }
         public object? Chave { get; set; }
     }
-    #endregion
 }
+    #endregion
+//0}

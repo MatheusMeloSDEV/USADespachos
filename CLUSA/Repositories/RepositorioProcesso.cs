@@ -147,35 +147,57 @@ namespace CLUSA.Repositories
             await _colecao.UpdateOneAsync(filtro, updateCombinado);
         }
         /// <summary>
-        /// OTIMIZAÇÃO: Atualiza o status do LPCO direto no banco sem trazer o processo inteiro para a memória.
-        /// Evita tráfego de rede desnecessário e previne conflitos de concorrência.
+        /// OTIMIZAÇÃO: Atualiza o status do LPCO direto no banco usando ArrayFilters.
+        /// E agora permite adicionar logs no topo do Histórico do Processo!
         /// </summary>
-        public async Task AtualizarStatusLpcoAsync(string refUsa, string numeroLpco, string novoStatus)
+        public async Task AtualizarStatusLpcoAsync(string refUsa, string numeroLpco, string novoStatus, string logHistorico = null)
         {
-            var processo = await GetByRefUsaAsync(refUsa);
-            if (processo == null) return;
+            var filtro = Builders<Processo>.Filter.Eq(p => p.Ref_USA, refUsa);
+            var builderUpdate = Builders<Processo>.Update;
 
-            bool alterou = false;
+            // 1. Prepara a atualização
+            var update = builderUpdate
+                .Set("LI.$[].LPCO.$[itemLpco].StatusLPCO", novoStatus)
+                .Set("LI.$[].LPCO.$[itemLpco].MotivoExigencia", novoStatus);
 
-            if (processo.LI != null)
+            // 2. Data de Deferimento automática
+            if (novoStatus.ToUpper() == "DEFERIDO")
             {
-                foreach (var li in processo.LI)
-                {
-                    if (li.LPCO != null)
-                    {
-                        var lpcoAlvo = li.LPCO.FirstOrDefault(x => x.LPCO == numeroLpco);
-                        if (lpcoAlvo != null)
-                        {
-                            lpcoAlvo.MotivoExigencia = novoStatus;
-                            alterou = true;
-                        }
-                    }
-                }
+                update = update.Set("LI.$[].LPCO.$[itemLpco].DataDeferimentoLPCO", DateTime.Now);
             }
 
-            if (alterou)
+            // 3. Atualização do Histórico
+            if (!string.IsNullOrWhiteSpace(logHistorico))
             {
-                await _colecao.ReplaceOneAsync(p => p.Id == processo.Id, processo);
+                var processoAtual = await _colecao.Find(filtro)
+                                                  .Project(p => new { p.HistoricoDoProcesso })
+                                                  .FirstOrDefaultAsync();
+
+                string historicoAntigo = processoAtual?.HistoricoDoProcesso ?? "";
+                string novoHistorico = $"{logHistorico}\r\n{historicoAntigo}".Trim();
+
+                update = update.Set(p => p.HistoricoDoProcesso, novoHistorico);
+            }
+
+            // 4. Filtro Mágico (Anti-espaço em branco)
+            var arrayFilters = new List<ArrayFilterDefinition>
+    {
+        new BsonDocumentArrayFilterDefinition<BsonDocument>(
+            new BsonDocument("itemLpco.LPCO", new BsonRegularExpression(numeroLpco.Trim(), "i"))
+        )
+    };
+
+            var opcoes = new UpdateOptions { ArrayFilters = arrayFilters };
+
+            // 5. Executa a atualização no Processo
+            await _colecao.UpdateOneAsync(filtro, update, opcoes);
+
+            // --- A CORREÇÃO ENTRA AQUI! ---
+            // 6. Sincroniza o Órgão Anuente para ele não ficar para trás!
+            var processoAtualizado = await GetByRefUsaAsync(refUsa);
+            if (processoAtualizado != null)
+            {
+                await SincronizarLicencas(processoAtualizado);
             }
         }
         public async Task<List<string>> ListarRefUsaAtivosAsync()
@@ -332,7 +354,7 @@ namespace CLUSA.Repositories
 
         #region Sincronização (Lógica de Negócio Otimizada)
 
-        private async Task SincronizarLicencas(Processo processo)
+        public async Task SincronizarLicencas(Processo processo)
         {
             var lisDoProcesso = processo.LI ?? new List<LicencaImportacao>();
             var lisAtuaisNoDb = await _repositorioOrgaoAnuente.ListByRefUsaAsync(processo.Ref_USA);
@@ -496,46 +518,46 @@ namespace CLUSA.Repositories
 
         private (AcaoVistoria Acao, StatusVistoria Status) AnalisarRegraVistoria(LpcoInfo lpco)
         {
-            var motivo = (lpco.MotivoExigencia ?? "").ToUpper();
-            var status = (lpco.StatusLPCO ?? "").ToUpper();
-            var param = (lpco.ParametrizacaoLPCO ?? "").ToUpper();
-            var orgao = (lpco.NomeOrgao ?? "").ToUpper();
+            var motivo = (lpco.MotivoExigencia ?? "").Trim().ToUpper();
+            var status = (lpco.StatusLPCO ?? "").Trim().ToUpper();
+            var param = (lpco.ParametrizacaoLPCO ?? "").Trim().ToUpper();
+            var orgao = (lpco.NomeOrgao ?? "").Trim().ToUpper();
 
-            // 1. REGRA DE SAÍDA: Se Deferido/Cancelado -> REMOVER
-            if (motivo == "DEFERIDO" || motivo == "CANCELADA" || status == "DEFERIDO" || status == "CANCELADO")
+            // 1. A GUILHOTINA (Fim de papo)
+            if (motivo == "DEFERIDO" || motivo == "CANCELADA")
             {
                 return (AcaoVistoria.Remover, StatusVistoria.AguardandoChegadaParaAgendar);
             }
 
-            // 2. REGRA MAPA
-            if (orgao.Contains("MAPA"))
+            // 2. REGRA DOCUMENTAL
+            if (param == "DOCUMENTAL")
             {
-                // Parametrização Física -> Aguardando Chegada
-                if (param.Contains("FÍSICA") || param.Contains("FISICA") || param.Contains("COLETA") || param.Contains("EXAME"))
-                {
-                    return (AcaoVistoria.ManterOuCriar, StatusVistoria.AguardandoChegadaParaAgendar);
-                }
+                return (AcaoVistoria.ManterOuCriar, StatusVistoria.ProcessoDadoEntrada);
+            }
 
-                // Sem Parametrização + Entrada Concluída -> Dado Entrada
-                if (string.IsNullOrEmpty(param) && status == "ENTRADA CONCLUÍDA")
+            // 3. REGRA DE VISTORIA FÍSICA (Usando as parametrizações exatas)
+            // Adicionei as versões sem acento por segurança (caso a API ou o usuário digite sem acento)
+            if (param == "EXAME FÍSICO" || param == "EXAME FISICO" ||
+                param == "CONFERÊNCIA FÍSICA" || param == "CONFERENCIA FISICA" ||
+                param == "COLETA DE AMOSTRA" ||
+                param == "INSPEÇÃO FÍSICA" || param == "INSPECAO FISICA")
+            {
+                return (AcaoVistoria.ManterOuCriar, StatusVistoria.AguardandoChegadaParaAgendar);
+            }
+
+            // 4. REGRA AGUARDANDO PARAMETRIZAÇÃO (MAPA e ANVISA)
+            // Se a entrada já foi concluída, mas o fiscal AINDA NÃO DEFINIU a parametrização (está vazio).
+            if (status == "ENTRADA CONCLUÍDA" && string.IsNullOrEmpty(param))
+            {
+                if (orgao.Contains("MAPA") || orgao.Contains("ANVISA"))
                 {
                     return (AcaoVistoria.ManterOuCriar, StatusVistoria.ProcessoDadoEntrada);
                 }
             }
 
-            // 3. REGRA ANVISA
-            if (orgao.Contains("ANVISA"))
-            {
-                if (status == "ENTRADA CONCLUÍDA")
-                {
-                    if (string.IsNullOrEmpty(param) || param == "DOCUMENTAL")
-                    {
-                        return (AcaoVistoria.ManterOuCriar, StatusVistoria.ProcessoDadoEntrada);
-                    }
-                }
-            }
-
-            // Padrão: Se não caiu em regra de criação e nem de exclusão, apenas ignora (ou remove se quiser limpar lixo)
+            // PADRÃO (Lixeira)
+            // Cai aqui se o status for "Pronto para Entrada" ou "Pendência Documental", 
+            // ou se for de outro órgão que não controlamos.
             return (AcaoVistoria.Remover, StatusVistoria.AguardandoChegadaParaAgendar);
         }
         #endregion
