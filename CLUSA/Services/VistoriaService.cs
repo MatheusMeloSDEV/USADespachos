@@ -36,92 +36,104 @@ namespace CLUSA.Services
         {
             var listaLog = new List<string>();
 
-            // 1. Carrega dados
             var processosAtivos = await _repoProcesso.ListarProcessosAtivosParaStatusAsync();
-            var dictProcessos = processosAtivos
-                .Where(p => !string.IsNullOrEmpty(p.Ref_USA))
-                .GroupBy(p => p.Ref_USA)
-                .ToDictionary(g => g.Key, g => g.First());
-
-            var lisAtivas = await _repoOrgaoAnuente.GetByListaRefUsaAsync(dictProcessos.Keys.ToList());
-
-            // CARREGA TUDO DO BANCO (Fundamental para limpar Zumbis)
             var vistoriasDb = await _repoVistorias.GetTodasAsVistoriasDoBancoAsync();
 
-            // 2. Prepara Bulk Operations
             var bulkOps = new List<WriteModel<Vistoria>>();
             var lpcosValidosNestaRodada = new HashSet<string>();
 
-            // 3. Processa LIs Ativas (Criação e Atualização)
-            foreach (var orgao in lisAtivas)
+            foreach (var proc in processosAtivos)
             {
-                if (orgao.LPCO == null) continue;
-                dictProcessos.TryGetValue(orgao.Ref_USA, out var proc);
+                if (proc.LI == null) continue;
 
-                foreach (var item in orgao.LPCO)
+                // --- LÓGICA DE CÁLCULO DE PROGRESSO DAS LIS ---
+                // 1. Conta o total de LIs reais (ignorando vazias ou "Nova LI")
+                int totalLIs = proc.LI.Count(li => !string.IsNullOrWhiteSpace(li.Numero) && li.Numero != "Nova LI");
+
+                // 2. Conta quantas já estão totalmente deferidas (olhando para os LPCOs)
+                int lisDeferidas = 0;
+                foreach (var liParaContar in proc.LI)
                 {
-                    if (string.IsNullOrWhiteSpace(item.LPCO)) continue;
-                    string lpcoLimpo = item.LPCO.Trim();
-
-                    // Aplica as mesmas regras do RepositorioProcesso
-                    if (ShouldCreateVistoria(item, out var statusInicial))
+                    if (liParaContar.LPCO != null && liParaContar.LPCO.Any())
                     {
-                        lpcosValidosNestaRodada.Add(lpcoLimpo); // Marca como válido
+                        // Verifica se TODOS os LPCOs dessa LI estão Deferidos ou Cancelados
+                        bool todosDeferidos = liParaContar.LPCO.All(lpco =>
+                            (lpco.MotivoExigencia ?? "").Trim().ToUpper() == "DEFERIDO" ||
+                            (lpco.MotivoExigencia ?? "").Trim().ToUpper() == "CANCELADA");
 
-                        var vistoriaNova = new Vistoria
+                        if (todosDeferidos) lisDeferidas++;
+                    }
+                }
+
+                // 3. Monta a string no formato "2/5"
+                string progressoCalculado = totalLIs > 0 ? $"{lisDeferidas}/{totalLIs}" : "0/0";
+                // ----------------------------------------------
+
+                foreach (var li in proc.LI)
+                {
+                    if (li.LPCO == null) continue;
+
+                    foreach (var item in li.LPCO)
+                    {
+                        if (string.IsNullOrWhiteSpace(item.LPCO)) continue;
+                        string lpcoLimpo = item.LPCO.Trim();
+
+                        if (ShouldCreateVistoria(item, out var statusInicial))
                         {
-                            Ref_USA = orgao.Ref_USA,
-                            LPCO = lpcoLimpo,
-                            LI = orgao.Numero,
-                            ParametrizacaoLPCO = item.ParametrizacaoLPCO,
-                            DataRegistroLPCO = item.DataRegistroLPCO,
-                            Importador = orgao.Importador,
-                            Container = orgao.Container,
-                            Previsao = proc?.DataDeAtracacao,
-                            Terminal = proc?.Terminal,
-                            Status = statusInicial,
-                            // Preenche o resto...
-                            Produto = orgao.Produto,
-                            Conhecimento = orgao.Conhecimento
-                        };
+                            lpcosValidosNestaRodada.Add(lpcoLimpo);
 
-                        var existente = vistoriasDb.FirstOrDefault(v => v.LPCO == lpcoLimpo);
-                        if (existente != null)
-                        {
-                            // ATUALIZA
-                            bool mudouParam = (existente.ParametrizacaoLPCO ?? "") != (vistoriaNova.ParametrizacaoLPCO ?? "");
-
-                            // Se mudou parametrização, reseta status. Se não, mantém.
-                            if (!mudouParam && existente.Status != StatusVistoria.ProcessoDadoEntrada)
+                            var vistoriaNova = new Vistoria
                             {
-                                vistoriaNova.Status = existente.Status;
-                            }
+                                Ref_USA = proc.Ref_USA,
+                                LPCO = lpcoLimpo,
+                                LI = li.Numero,
+                                ParametrizacaoLPCO = item.ParametrizacaoLPCO,
+                                DataRegistroLPCO = item.DataRegistroLPCO,
+                                Importador = proc.Importador,
+                                Container = proc.Container,
+                                Previsao = proc.DataDeAtracacao,
+                                Terminal = proc.Terminal,
+                                Status = statusInicial,
+                                Produto = proc.Produto,
+                                Conhecimento = proc.Conhecimento,
 
-                            vistoriaNova.Id = existente.Id;
-                            vistoriaNova.Notas = existente.Notas;
+                                // Joga o texto calculado na propriedade nova!
+                                ProgressoLIs = progressoCalculado
+                            };
 
-                            // Compara para evitar update desnecessário
-                            if (mudouParam || existente.Status != vistoriaNova.Status || existente.Previsao != vistoriaNova.Previsao)
+                            var existente = vistoriasDb.FirstOrDefault(v => v.LPCO == lpcoLimpo);
+                            if (existente != null)
                             {
-                                var filter = Builders<Vistoria>.Filter.Eq(x => x.Id, existente.Id);
-                                bulkOps.Add(new ReplaceOneModel<Vistoria>(filter, vistoriaNova));
-                                listaLog.Add($"Atualizado: {lpcoLimpo}");
+                                bool mudouParam = (existente.ParametrizacaoLPCO ?? "") != (vistoriaNova.ParametrizacaoLPCO ?? "");
+
+                                if (!mudouParam && existente.Status != StatusVistoria.ProcessoDadoEntrada)
+                                {
+                                    vistoriaNova.Status = existente.Status;
+                                }
+
+                                vistoriaNova.Id = existente.Id;
+                                vistoriaNova.Notas = existente.Notas;
+
+                                // Adicionamos a comparação do ProgressoLIs para garantir atualização na tela
+                                if (mudouParam || existente.Status != vistoriaNova.Status ||
+                                    existente.Previsao != vistoriaNova.Previsao || existente.ProgressoLIs != vistoriaNova.ProgressoLIs)
+                                {
+                                    var filter = Builders<Vistoria>.Filter.Eq(x => x.Id, existente.Id);
+                                    bulkOps.Add(new ReplaceOneModel<Vistoria>(filter, vistoriaNova));
+                                    listaLog.Add($"Atualizado: {lpcoLimpo}");
+                                }
                             }
-                        }
-                        else
-                        {
-                            // INSERE
-                            vistoriaNova.Id = ObjectId.GenerateNewId();
-                            bulkOps.Add(new InsertOneModel<Vistoria>(vistoriaNova));
-                            listaLog.Add($"Novo: {lpcoLimpo}");
+                            else
+                            {
+                                vistoriaNova.Id = ObjectId.GenerateNewId();
+                                bulkOps.Add(new InsertOneModel<Vistoria>(vistoriaNova));
+                                listaLog.Add($"Novo: {lpcoLimpo}");
+                            }
                         }
                     }
                 }
             }
 
-            // 4. GARBAGE COLLECTOR (Remove Zumbis e Deferidos)
-            // Se está no banco, mas não está na lista de 'lpcosValidosNestaRodada', é LIXO.
-            // (Isso inclui processos finalizados e LPCOs que viraram Deferido)
             foreach (var v in vistoriasDb)
             {
                 if (!lpcosValidosNestaRodada.Contains(v.LPCO.Trim()))
@@ -132,7 +144,6 @@ namespace CLUSA.Services
                 }
             }
 
-            // 5. Executa
             if (bulkOps.Any())
             {
                 await _repoVistorias.ExecutarBulkAsync(bulkOps);

@@ -25,7 +25,8 @@ namespace Trabalho
         private readonly Logado _logado;
 
         private int _paginaAtual = 1;
-        private const int _itensPorPagina = 50; // Quantidade por "fatiada"
+        private int _itensPorPagina = 50;
+        private bool _carregandoCombobox = true;
         private long _totalRegistros = 0;
         public frmSantos(Logado logado)
         {
@@ -56,6 +57,15 @@ namespace Trabalho
                 {
                     _usuarioLogado.PreferenciasGrids.TryGetValue("DGVSantos", out colunasVisiveis);
                 }
+                if (_usuarioLogado != null && _usuarioLogado.ItensPorPagina > 0)
+                {
+                    _itensPorPagina = _usuarioLogado.ItensPorPagina;
+                }
+
+                // Ajusta o texto do ComboBox para refletir o banco de dados
+                string valorCombo = _itensPorPagina == int.MaxValue ? "Sem Limite" : _itensPorPagina.ToString();
+                cbMaxRows.SelectedItem = valorCombo;
+                _carregandoCombobox = false;
 
                 GridColumnManager.ConfigurarGrid(DGVSantos, "DGVSantos", colunasVisiveis);
                 GridColumnManager.ConfigurarFormatacaoListas(DGVSantos);
@@ -80,7 +90,7 @@ namespace Trabalho
 
                 string campoBD = _colunaOrdenada?.DataPropertyName ?? "DataDeAtracacao";
 
-                // Proteção: Se a coluna for ignorada no Mongo (ex: OrgaosAnuentesString), não podemos ordenar por ela no BD
+                // Proteção: Se a coluna for ignorada no Mongo, usamos um padrão
                 if (campoBD == "OrgaosAnuentesString" || string.IsNullOrWhiteSpace(campoBD))
                 {
                     campoBD = "DataDeAtracacao";
@@ -88,7 +98,10 @@ namespace Trabalho
 
                 bool isAsc = (_direcaoOrdenacao == ListSortDirection.Ascending);
 
-                // Busca no banco
+                // --- 1. SALVA O ITEM SELECIONADO ATUALMENTE ---
+                var idSelecionado = (BsProcesso.Current as Processo)?.Id;
+
+                // Busca no banco (já respeitando a página atual e a ordenação salva nas variáveis!)
                 var (itens, total) = await _repositorio.ListarPrincipalPaginadoAsync(
                     "Santos",
                     _paginaAtual,
@@ -100,10 +113,34 @@ namespace Trabalho
                 _totalRegistros = total;
                 _listaOriginal = itens;
 
-                // Atualiza a Grid de forma limpa
+                // Atualiza a Grid
                 BsProcesso.DataSource = _listaOriginal;
                 DGVSantos.DataSource = BsProcesso;
                 BsProcesso.ResetBindings(false);
+
+                // --- 2. RESTAURA A SELEÇÃO DA LINHA ---
+                // Assim a tela não "pula" lá para o topo depois que você edita
+                if (idSelecionado != null)
+                {
+                    var index = _listaOriginal.FindIndex(p => p.Id == idSelecionado);
+                    if (index >= 0)
+                    {
+                        BsProcesso.Position = index;
+                    }
+                }
+
+                // --- 3. RESTAURA A SETINHA DO CABEÇALHO ---
+                // O C# apaga a seta visualmente quando recarregamos a fonte de dados, isso força ele a desenhar de novo.
+                if (_colunaOrdenada != null)
+                {
+                    foreach (DataGridViewColumn col in DGVSantos.Columns)
+                    {
+                        if (col.Name == _colunaOrdenada.Name)
+                            col.HeaderCell.SortGlyphDirection = isAsc ? SortOrder.Ascending : SortOrder.Descending;
+                        else
+                            col.HeaderCell.SortGlyphDirection = SortOrder.None;
+                    }
+                }
 
                 AtualizarControlesPaginacao();
             }
@@ -115,19 +152,6 @@ namespace Trabalho
             {
                 EsconderLoading();
             }
-        }
-
-        private void AtualizarControlesPaginacao()
-        {
-            int inicio = ((_paginaAtual - 1) * _itensPorPagina) + 1;
-            int fim = inicio + _listaOriginal.Count - 1;
-
-            // Ex: "Mostrando 1-50 de 697"
-            lblQtd.Text = $"{inicio}-{fim} de {_totalRegistros}";
-
-            // Desativa botões se não houver para onde ir
-            btnPrevious.Enabled = _paginaAtual > 1;
-            btnForward.Enabled = fim < _totalRegistros;
         }
 
         private void PopularComboBoxDePesquisa()
@@ -223,21 +247,29 @@ namespace Trabalho
         {
             if (BsProcesso.Current is not Processo processoSelecionado) return;
 
-            using var frm = new FrmModificaProcesso { processo = processoSelecionado, Modo = "Editar", UsuarioLogado = _logado};
+            using var frm = new FrmModificaProcesso { processo = processoSelecionado, Modo = "Editar", UsuarioLogado = _logado };
             frm.ShowDialog();
 
             _cacheAutoComplete.Clear(); // Limpa cache
-            await CarregarDadosAsync();
+
+            if (!string.IsNullOrWhiteSpace(TxtPesquisar.Text))
+            {
+                await ExecutarPesquisaAsync(); // Espera a pesquisa e a ordenação terminarem com segurança
+            }
+            else
+            {
+                await CarregarDadosAsync();
+            }
         }
 
-        private async void BtnPesquisar_Click(object sender, EventArgs e)
+        private async Task ExecutarPesquisaAsync()
         {
             if (CmbPesquisar.SelectedItem is not DisplayItem campoSelecionado) return;
 
             var pesquisa = TxtPesquisar.Text;
             if (string.IsNullOrWhiteSpace(pesquisa))
             {
-                _paginaAtual = 1; // Reseta para o modo normal
+                _paginaAtual = 1;
                 await CarregarDadosAsync();
                 return;
             }
@@ -246,18 +278,18 @@ namespace Trabalho
             {
                 MostrarLoading("Pesquisando...");
 
-                // Na pesquisa, como costuma retornar poucos itens, 
-                // podemos trazer direto ou paginar também. 
-                // Aqui está a versão simples com contagem:
                 var resultados = await _repositorio.PesquisarAsync(campoSelecionado.DataPropertyName, pesquisa);
 
                 BsProcesso.DataSource = resultados;
+
+                // --- A MÁGICA AQUI ---
+                // Se já existir uma coluna ordenada, ele aplica a ordem instantaneamente
+                // antes de desenhar a grade de novo!
+                OrdenarListaEmMemoria();
+
                 BsProcesso.ResetBindings(false);
 
-                // Atualiza a label com o resultado da busca
                 lblQtd.Text = $"Encontrados: {resultados.Count}";
-
-                // Desativa paginação durante uma busca específica para não confundir o usuário
                 btnForward.Enabled = false;
                 btnPrevious.Enabled = false;
             }
@@ -270,13 +302,28 @@ namespace Trabalho
                 EsconderLoading();
             }
         }
+
+        // O clique do botão agora só chama o método de forma segura
+        private async void BtnPesquisar_Click(object sender, EventArgs e)
+        {
+            await ExecutarPesquisaAsync();
+        }
         private async void DGVSantos_CellDoubleClick(object sender, DataGridViewCellEventArgs e)
         {
             if (e.RowIndex < 0 || BsProcesso.Current is not Processo processoSelecionado) return;
 
             using var frm = new FrmModificaProcesso { processo = processoSelecionado, Visualização = true, Modo = "Visualizar" };
             frm.ShowDialog();
-            await CarregarDadosAsync();
+
+            // --- MESMA MÁGICA PARA O DUPLO CLIQUE ---
+            if (!string.IsNullOrWhiteSpace(TxtPesquisar.Text))
+            {
+                BtnPesquisar.PerformClick();
+            }
+            else
+            {
+                await CarregarDadosAsync();
+            }
         }
         private async void BtnExportar_Click(object sender, EventArgs e)
         {
@@ -326,6 +373,7 @@ namespace Trabalho
         {
             await CarregarDadosAsync();
             TxtPesquisar.Clear();
+            cbMaxRows.Enabled = true;
         }
 
         private void FrmProcesso_KeyDown(object sender, KeyEventArgs e)
@@ -357,9 +405,9 @@ namespace Trabalho
         {
             if (sender is not DataGridView dgv) return;
             var novaColuna = dgv.Columns[e.ColumnIndex];
-            if (novaColuna.SortMode == DataGridViewColumnSortMode.NotSortable) return;
 
-            // 1. Define a Direção (Inverte se clicar na mesma coluna)
+            if (novaColuna.SortMode == DataGridViewColumnSortMode.NotSortable || string.IsNullOrEmpty(novaColuna.DataPropertyName)) return;
+
             if (_colunaOrdenada != null && _colunaOrdenada.Name == novaColuna.Name)
             {
                 _direcaoOrdenacao = (_direcaoOrdenacao == ListSortDirection.Ascending)
@@ -372,21 +420,26 @@ namespace Trabalho
             }
             _colunaOrdenada = novaColuna;
 
-            // 2. RESETAR PARA A PÁGINA 1 (O que você pediu)
-            _paginaAtual = 1;
-
-            // 3. ATUALIZAR AS SETAS VISUAIS (Glyphs)
             foreach (DataGridViewColumn col in dgv.Columns)
             {
                 if (col.Name == novaColuna.Name)
-                    col.HeaderCell.SortGlyphDirection = (_direcaoOrdenacao == ListSortDirection.Ascending)
-                        ? SortOrder.Ascending : SortOrder.Descending;
+                    col.HeaderCell.SortGlyphDirection = (_direcaoOrdenacao == ListSortDirection.Ascending) ? SortOrder.Ascending : SortOrder.Descending;
                 else
                     col.HeaderCell.SortGlyphDirection = SortOrder.None;
             }
 
-            // 4. RECARREGAR DO BANCO (Agora com a nova ordem e página 1)
-            await CarregarDadosAsync();
+            // Se tem texto na pesquisa, ordena em memória
+            if (!string.IsNullOrWhiteSpace(TxtPesquisar.Text))
+            {
+                OrdenarListaEmMemoria();
+                BsProcesso.ResetBindings(false);
+            }
+            else
+            {
+                // Se não tem pesquisa, carrega paginado do banco
+                _paginaAtual = 1;
+                await CarregarDadosAsync();
+            }
         }
 
         private void BtnAjuda_Click(object sender, EventArgs e)
@@ -502,6 +555,104 @@ namespace Trabalho
             {
                 _paginaAtual--;
                 await CarregarDadosAsync();
+            }
+        }
+
+        private async void cbMaxRows_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            // Evita que o evento dispare sozinho enquanto a tela está abrindo
+            if (_carregandoCombobox || _usuarioLogado == null) return;
+
+            string selecionado = cbMaxRows.SelectedItem?.ToString() ?? "50";
+
+            // "Sem Limite" = O maior número possível no C# (2 bilhões de registros)
+            if (selecionado == "Sem Limite")
+            {
+                _itensPorPagina = int.MaxValue;
+            }
+            else if (int.TryParse(selecionado, out int qtd))
+            {
+                _itensPorPagina = qtd;
+            }
+
+            try
+            {
+                // Salva a nova preferência no banco de dados do usuário
+                _usuarioLogado.ItensPorPagina = _itensPorPagina;
+
+                // Chame o método que você usa no seu repositório para salvar a edição do usuário
+                // Pode ser UpdateAsync, UpsertAsync ou SalvarAlteracoesAsync, dependendo de como você nomeou
+                await _repositorioUsers.UpdateAsync(_usuarioLogado);
+
+                // Reseta para a página 1 e recarrega os dados com o novo limite
+                _paginaAtual = 1;
+                await CarregarDadosAsync();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Erro ao salvar sua preferência: {ex.Message}", "Aviso", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            }
+        }
+
+        private void AtualizarControlesPaginacao()
+        {
+            // Se não tiver nenhum registro
+            if (_totalRegistros == 0)
+            {
+                lblQtd.Text = "0 registros";
+                btnPrevious.Enabled = false;
+                btnForward.Enabled = false;
+                return;
+            }
+
+            // Se o usuário escolheu "Sem Limite", o texto e os botões mudam
+            if (_itensPorPagina == int.MaxValue)
+            {
+                lblQtd.Text = $"Mostrando todos os {_totalRegistros} registros";
+                btnPrevious.Enabled = false;
+                btnForward.Enabled = false;
+                return;
+            }
+
+            // Cálculo normal de paginação
+            int inicio = ((_paginaAtual - 1) * _itensPorPagina) + 1;
+            int fim = inicio + _listaOriginal.Count - 1;
+
+            lblQtd.Text = $"{inicio}-{fim} de {_totalRegistros}";
+
+            btnPrevious.Enabled = _paginaAtual > 1;
+            btnForward.Enabled = fim < _totalRegistros;
+        }
+
+        private void OrdenarListaEmMemoria()
+        {
+            // Se não tem coluna clicada ou não é uma lista, não faz nada
+            if (_colunaOrdenada == null || BsProcesso.DataSource is not IEnumerable<Processo> listaPesquisa) return;
+
+            var propInfo = typeof(Processo).GetProperty(_colunaOrdenada.DataPropertyName);
+            if (propInfo == null) return;
+
+            bool CampoEstaVazio(object valor)
+            {
+                if (valor == null) return true;
+                if (valor is string texto && string.IsNullOrWhiteSpace(texto)) return true;
+                return false;
+            }
+
+            // Aplica a ordem mantendo os vazios no final
+            if (_direcaoOrdenacao == ListSortDirection.Ascending)
+            {
+                BsProcesso.DataSource = listaPesquisa
+                    .OrderBy(x => CampoEstaVazio(propInfo.GetValue(x)))
+                    .ThenBy(x => propInfo.GetValue(x))
+                    .ToList();
+            }
+            else
+            {
+                BsProcesso.DataSource = listaPesquisa
+                    .OrderBy(x => CampoEstaVazio(propInfo.GetValue(x)))
+                    .ThenByDescending(x => propInfo.GetValue(x))
+                    .ToList();
             }
         }
     }

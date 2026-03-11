@@ -56,6 +56,7 @@
             lblQtd = new Label();
             btnForward = new Button();
             btnPrevious = new Button();
+            cbMaxRows = new ComboBox();
             TSMenuItajai.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)BsProcesso).BeginInit();
             panel1.SuspendLayout();
@@ -222,23 +223,25 @@
             // 
             // tableLayoutPanel1
             // 
-            tableLayoutPanel1.ColumnCount = 4;
+            tableLayoutPanel1.ColumnCount = 5;
             tableLayoutPanel1.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
-            tableLayoutPanel1.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 25F));
-            tableLayoutPanel1.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 25F));
+            tableLayoutPanel1.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 30F));
+            tableLayoutPanel1.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 30F));
             tableLayoutPanel1.ColumnStyles.Add(new ColumnStyle());
+            tableLayoutPanel1.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 80F));
             tableLayoutPanel1.Controls.Add(DGVItajai, 0, 0);
             tableLayoutPanel1.Controls.Add(lblQtd, 3, 1);
             tableLayoutPanel1.Controls.Add(btnForward, 2, 1);
             tableLayoutPanel1.Controls.Add(btnPrevious, 1, 1);
+            tableLayoutPanel1.Controls.Add(cbMaxRows, 4, 1);
             tableLayoutPanel1.Dock = DockStyle.Fill;
             tableLayoutPanel1.Location = new Point(0, 0);
             tableLayoutPanel1.Name = "tableLayoutPanel1";
             tableLayoutPanel1.RowCount = 2;
             tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
-            tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Absolute, 25F));
+            tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Absolute, 30F));
             tableLayoutPanel1.Size = new Size(800, 409);
-            tableLayoutPanel1.TabIndex = 3;
+            tableLayoutPanel1.TabIndex = 4;
             // 
             // DGVItajai
             // 
@@ -257,7 +260,7 @@
             dataGridViewCellStyle2.WrapMode = DataGridViewTriState.True;
             DGVItajai.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle2;
             DGVItajai.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            tableLayoutPanel1.SetColumnSpan(DGVItajai, 4);
+            tableLayoutPanel1.SetColumnSpan(DGVItajai, 5);
             dataGridViewCellStyle3.Alignment = DataGridViewContentAlignment.MiddleLeft;
             dataGridViewCellStyle3.BackColor = Color.White;
             dataGridViewCellStyle3.Font = new Font("Segoe UI", 9.75F, FontStyle.Regular, GraphicsUnit.Point, 0);
@@ -273,17 +276,18 @@
             DGVItajai.ReadOnly = true;
             DGVItajai.RowHeadersVisible = false;
             DGVItajai.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
-            DGVItajai.Size = new Size(794, 378);
+            DGVItajai.Size = new Size(794, 373);
             DGVItajai.TabIndex = 2;
+            DGVItajai.CellDoubleClick += DGVItajai_CellDoubleClick;
             DGVItajai.ColumnHeaderMouseClick += DGV_ColumnHeaderMouseClick;
             // 
             // lblQtd
             // 
             lblQtd.AutoSize = true;
             lblQtd.Dock = DockStyle.Fill;
-            lblQtd.Location = new Point(732, 384);
+            lblQtd.Location = new Point(652, 379);
             lblQtd.Name = "lblQtd";
-            lblQtd.Size = new Size(65, 25);
+            lblQtd.Size = new Size(65, 30);
             lblQtd.TabIndex = 3;
             lblQtd.Text = "1 - 50 / 500";
             lblQtd.TextAlign = ContentAlignment.MiddleCenter;
@@ -293,25 +297,39 @@
             btnForward.Dock = DockStyle.Fill;
             btnForward.FlatAppearance.BorderSize = 0;
             btnForward.FlatStyle = FlatStyle.Flat;
-            btnForward.Location = new Point(704, 384);
+            btnForward.Location = new Point(619, 379);
             btnForward.Margin = new Padding(0);
             btnForward.Name = "btnForward";
-            btnForward.Size = new Size(25, 25);
+            btnForward.Size = new Size(30, 30);
             btnForward.TabIndex = 5;
             btnForward.Text = ">";
             btnForward.UseVisualStyleBackColor = true;
+            btnForward.Click += BtnForward_Click;
             // 
             // btnPrevious
             // 
             btnPrevious.FlatAppearance.BorderSize = 0;
             btnPrevious.FlatStyle = FlatStyle.Flat;
-            btnPrevious.Location = new Point(679, 384);
+            btnPrevious.Location = new Point(589, 379);
             btnPrevious.Margin = new Padding(0);
             btnPrevious.Name = "btnPrevious";
             btnPrevious.Size = new Size(21, 25);
             btnPrevious.TabIndex = 6;
             btnPrevious.Text = "<";
             btnPrevious.UseVisualStyleBackColor = true;
+            btnPrevious.Click += BtnPrevious_Click;
+            // 
+            // cbMaxRows
+            // 
+            cbMaxRows.Dock = DockStyle.Fill;
+            cbMaxRows.FormattingEnabled = true;
+            cbMaxRows.Items.AddRange(new object[] { "10", "25", "50", "100", "Sem Limite" });
+            cbMaxRows.Location = new Point(723, 382);
+            cbMaxRows.Name = "cbMaxRows";
+            cbMaxRows.Size = new Size(74, 23);
+            cbMaxRows.TabIndex = 7;
+            cbMaxRows.Text = "50";
+            cbMaxRows.SelectedIndexChanged += cbMaxRows_SelectedIndexChanged;
             // 
             // FrmItajaí
             // 
@@ -361,5 +379,6 @@
         private Label lblQtd;
         private Button btnForward;
         private Button btnPrevious;
+        private ComboBox cbMaxRows;
     }
 }

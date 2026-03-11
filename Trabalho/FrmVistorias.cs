@@ -507,7 +507,54 @@ namespace Trabalho
 
         private async void BtnSobeAgendada_Click(object? sender, EventArgs e)
         {
-            await MoverVistoria(DGVSolicitadoDataVistoria, DGVVistoriaAgendada, _bsSolicitadoData, _bsVistoriaAgendada, StatusVistoria.VistoriaAgendada);
+            // 1. Verifica se tem um item selecionado ANTES de pedir a data
+            if (DGVSolicitadoDataVistoria.CurrentRow?.DataBoundItem is not Vistoria vistoriaSelecionada)
+            {
+                MessageBox.Show("Por favor, selecione um item para agendar.", "Aviso", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            // 2. Chama a nossa janelinha de calendário
+            DateTime? dataEscolhida = SolicitarDataVistoria();
+
+            // Se ele cancelou ou fechou a janela, a gente para o processo aqui mesmo
+            if (dataEscolhida == null) return;
+
+            try
+            {
+                Cursor = Cursors.WaitCursor;
+
+                // 3. Busca o processo no banco para atualizar o Histórico
+                var processo = await _repositorioProcesso.GetByRefUsaAsync(vistoriaSelecionada.Ref_USA);
+
+                if (processo != null)
+                {
+                    // Monta a frase exatamente como você pediu
+                    string novaLinha = $"{DateTime.Now:dd/MM/yyyy} Vistoria agendada para: {dataEscolhida.Value:dd/MM/yyyy}";
+                    string historicoAntigo = processo.HistoricoDoProcesso ?? "";
+
+                    string novoHistorico = $"{novaLinha}\r\n{historicoAntigo}".Trim();
+
+                    // Usa o UpdateParcial para alterar SOMENTE o histórico e não mexer no resto do processo
+                    var atualizacoes = new List<UpdateDefinition<Processo>>
+            {
+                Builders<Processo>.Update.Set(p => p.HistoricoDoProcesso, novoHistorico)
+            };
+
+                    await _repositorioProcesso.UpdateParcialAsync(processo.Id, atualizacoes);
+                }
+
+                // 4. Se deu tudo certo no banco, move a vistoria para a próxima grid (Seu código original)
+                await MoverVistoria(DGVSolicitadoDataVistoria, DGVVistoriaAgendada, _bsSolicitadoData, _bsVistoriaAgendada, StatusVistoria.VistoriaAgendada);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Erro ao agendar e salvar o histórico: {ex.Message}", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+            finally
+            {
+                Cursor = Cursors.Default;
+            }
         }
 
         private async void BtnSobeAguardDef_Click(object? sender, EventArgs e)
@@ -541,7 +588,7 @@ namespace Trabalho
 
         // O último botão é um pouco diferente, pois ele "finaliza" o processo.
 
-        private async Task FinalizarVistoriaAsync(Vistoria vistoria, string novoStatusMotivoExigencia, BindingSource bindingSource, bool adicionarNoHistorico = false)
+        private async Task FinalizarVistoriaAsync(Vistoria vistoria, string novoStatusMotivoExigencia, BindingSource bindingSource, bool adicionarNoHistorico = false, string forcarParametrizacao = null)
         {
             if (vistoria == null) return;
 
@@ -556,27 +603,19 @@ namespace Trabalho
             {
                 Cursor = Cursors.WaitCursor;
 
-                // Monta a string do Histórico se o parâmetro for true
                 string textoHistorico = null;
                 if (adicionarNoHistorico)
                 {
                     textoHistorico = $"{DateTime.Now:dd/MM/yyyy} LPCO {vistoria.LPCO} foi deferido.";
                 }
 
-                // 1. Atualiza o Processo Principal (Agora passando o histórico!)
-                await _repositorioProcesso.AtualizarStatusLpcoAsync(vistoria.Ref_USA, vistoria.LPCO, novoStatusMotivoExigencia, textoHistorico);
+                // Envia todos os comandos para o repositório
+                await _repositorioProcesso.AtualizarStatusLpcoAsync(vistoria.Ref_USA, vistoria.LPCO, novoStatusMotivoExigencia, textoHistorico, forcarParametrizacao);
 
-                // 2. Remove a Vistoria da coleção de Vistorias
                 await DeleteVistoriaComFilaAsync(vistoria.LPCO);
-
-                // 3. Atualiza a UI (Remove da tela)
                 bindingSource.Remove(vistoria);
 
-                await _logRepo.RegistrarLogAsync(
-                    "Finalização Vistoria", _logado.Usuario,
-                    $"Vistoria {acao} para LPCO {vistoria.LPCO}",
-                    $"Processo: {vistoria.Ref_USA} | Status Final: {novoStatusMotivoExigencia} | Usuário: {_logado.Usuario}"
-                );
+                await _logRepo.RegistrarLogAsync("Finalização Vistoria", _logado.Usuario, $"Vistoria {acao} para LPCO {vistoria.LPCO}", $"Processo: {vistoria.Ref_USA}");
 
                 MessageBox.Show($"Vistoria finalizada e LPCO atualizado como {novoStatusMotivoExigencia}!", "Sucesso", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
@@ -588,30 +627,6 @@ namespace Trabalho
             finally
             {
                 Cursor = Cursors.Default;
-            }
-        }
-        private async void BtnDeferido_Click(object? sender, EventArgs e)
-        {
-            if (DGVAguardandoDef.CurrentRow?.DataBoundItem is Vistoria vistoria)
-            {
-                await FinalizarVistoriaAsync(vistoria, "DEFERIDO", _bsAguardandoDef);
-            }
-            else
-            {
-                MessageBox.Show("Selecione um item para finalizar.", "Aviso");
-            }
-        }
-
-        private async void BtnDeferido_Click_1(object sender, EventArgs e)
-        {
-            // Este botão parece estar no DGVLaudo (baseado no seu código anterior)
-            if (DGVLaudo.CurrentRow?.DataBoundItem is Vistoria vistoria)
-            {
-                await FinalizarVistoriaAsync(vistoria, "DEFERIDO", _bsAguardandoLaudo);
-            }
-            else
-            {
-                MessageBox.Show("Selecione um item para finalizar.", "Aviso");
             }
         }
 
@@ -628,20 +643,82 @@ namespace Trabalho
         }
         #endregion
 
-        private async void BtnDeferirProcessoDEntrada_Click(object sender, EventArgs e)
+        // 1. Botão da Grade de Aguardando Deferimento
+        private async void BtnDeferido_Click(object? sender, EventArgs e)
         {
-            // Verifica qual item está selecionado na grid de Processo Dado Entrada
-            if (DGVProcessosDadoEntrada.CurrentRow?.DataBoundItem is Vistoria vistoria)
+            if (DGVAguardandoDef.CurrentRow?.DataBoundItem is Vistoria vistoria)
             {
-                // Chama a finalização passando 'true' para adicionar o texto no histórico!
-                await FinalizarVistoriaAsync(vistoria, "DEFERIDO", _bsProcessosDadoEntrada, true);
+                // 'true' para histórico, 'null' para não alterar a parametrização
+                await FinalizarVistoriaAsync(vistoria, "DEFERIDO", _bsAguardandoDef, true, null);
             }
             else
             {
                 MessageBox.Show("Selecione um item para finalizar.", "Aviso");
             }
         }
+
+        // 2. Botão da Grade de Laudo
+        private async void BtnDeferido_Click_1(object sender, EventArgs e)
+        {
+            if (DGVLaudo.CurrentRow?.DataBoundItem is Vistoria vistoria)
+            {
+                // 'true' para histórico, 'null' para não alterar a parametrização
+                await FinalizarVistoriaAsync(vistoria, "DEFERIDO", _bsAguardandoLaudo, true, null);
+            }
+            else
+            {
+                MessageBox.Show("Selecione um item para finalizar.", "Aviso");
+            }
+        }
+
+        // 3. O Botão da Grade de Processos Dado Entrada (Apenas ele força o "Documental")
+        private async void BtnDeferirProcessoDEntrada_Click(object sender, EventArgs e)
+        {
+            if (DGVProcessosDadoEntrada.CurrentRow?.DataBoundItem is Vistoria vistoria)
+            {
+                // 'true' para histórico, '"Documental"' para forçar a parametrização
+                await FinalizarVistoriaAsync(vistoria, "DEFERIDO", _bsProcessosDadoEntrada, true, "Documental");
+            }
+            else
+            {
+                MessageBox.Show("Selecione um item para finalizar.", "Aviso");
+            }
+        }
+        private DateTime? SolicitarDataVistoria()
+        {
+            // Cria uma janelinha de diálogo dinâmica na hora
+            using var form = new Form
+            {
+                Text = "Agendar Vistoria",
+                Size = new Size(320, 160),
+                FormBorderStyle = FormBorderStyle.FixedDialog,
+                StartPosition = FormStartPosition.CenterParent,
+                MaximizeBox = false,
+                MinimizeBox = false
+            };
+
+            var lbl = new Label { Text = "Selecione a data do agendamento:", Left = 20, Top = 15, Width = 260 };
+            var dtp = new DateTimePicker { Left = 20, Top = 40, Width = 260, Format = DateTimePickerFormat.Short };
+            var btnOk = new Button { Text = "Confirmar", Left = 110, Top = 75, Width = 80, DialogResult = DialogResult.OK };
+            var btnCancel = new Button { Text = "Cancelar", Left = 200, Top = 75, Width = 80, DialogResult = DialogResult.Cancel };
+
+            form.Controls.Add(lbl);
+            form.Controls.Add(dtp);
+            form.Controls.Add(btnOk);
+            form.Controls.Add(btnCancel);
+
+            form.AcceptButton = btnOk;   // Permite dar 'Enter'
+            form.CancelButton = btnCancel; // Permite dar 'Esc'
+
+            // Mostra a tela e retorna a data se ele clicar em Confirmar
+            if (form.ShowDialog(this) == DialogResult.OK)
+            {
+                return dtp.Value;
+            }
+            return null; // Retorna nulo se ele cancelar
+        }
     }
+
     #region "Operações Pendentes - Sistema de Fila"
     public enum TipoOperacaoGenerica
     {

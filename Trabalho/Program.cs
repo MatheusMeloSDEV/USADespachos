@@ -1,4 +1,5 @@
 using CLUSA;
+using MongoDB.Bson;
 using MongoDB.Bson.Serialization;
 
 namespace Trabalho
@@ -12,7 +13,6 @@ namespace Trabalho
             // ApplicationConfiguration.Initialize() é o método moderno para .NET 6+
             ApplicationConfiguration.Initialize();
 
-            // Inicia a aplicação e abre o formulário de login.
             Application.Run(new FrmLogin());
         }
     }

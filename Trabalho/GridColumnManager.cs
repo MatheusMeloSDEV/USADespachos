@@ -327,6 +327,7 @@ namespace Trabalho
         {
             new("LPCO", "LPCO"),
             new("LI", "LI", autoSizeMode: DataGridViewAutoSizeColumnMode.AllCells),
+            new("ProgressoLIs", "LIs Deferidas", autoSizeMode: DataGridViewAutoSizeColumnMode.AllCells, centralizar: true),
             new("Importador", "Importador", minimumWidth: 150),
             new("Container", "Container"),
             new("Conhecimento", "Conhecimento"),

@@ -38,6 +38,7 @@ namespace CLUSA.Models
         public string Terminal { get; set; } = string.Empty;
         public DateTime? DataRegistroLPCO { get; set; } = null;
         public DateTime? Previsao { get; set; } = null;
+        public string ProgressoLIs { get; set; } = string.Empty;
 
         // Dados específicos da Vistoria (editáveis)
         public string Notas { get; set; } = string.Empty;

@@ -150,23 +150,27 @@ namespace CLUSA.Repositories
         /// OTIMIZAÇÃO: Atualiza o status do LPCO direto no banco usando ArrayFilters.
         /// E agora permite adicionar logs no topo do Histórico do Processo!
         /// </summary>
-        public async Task AtualizarStatusLpcoAsync(string refUsa, string numeroLpco, string novoStatus, string logHistorico = null)
+        public async Task AtualizarStatusLpcoAsync(string refUsa, string numeroLpco, string novoStatus, string logHistorico = null, string novaParametrizacao = null)
         {
             var filtro = Builders<Processo>.Filter.Eq(p => p.Ref_USA, refUsa);
             var builderUpdate = Builders<Processo>.Update;
 
-            // 1. Prepara a atualização
-            var update = builderUpdate
-                .Set("LI.$[].LPCO.$[itemLpco].StatusLPCO", novoStatus)
-                .Set("LI.$[].LPCO.$[itemLpco].MotivoExigencia", novoStatus);
+            // 1. Atualiza sempre o MotivoExigencia
+            var update = builderUpdate.Set("LI.$[].LPCO.$[itemLpco].MotivoExigencia", novoStatus);
 
-            // 2. Data de Deferimento automática
+            // 2. Só altera a parametrização se recebermos a instrução para isso (Ex: "Documental")
+            if (!string.IsNullOrWhiteSpace(novaParametrizacao))
+            {
+                update = update.Set("LI.$[].LPCO.$[itemLpco].ParametrizacaoLPCO", novaParametrizacao);
+            }
+
+            // 3. Data de Deferimento automática
             if (novoStatus.ToUpper() == "DEFERIDO")
             {
                 update = update.Set("LI.$[].LPCO.$[itemLpco].DataDeferimentoLPCO", DateTime.Now);
             }
 
-            // 3. Atualização do Histórico
+            // 4. Atualização do Histórico
             if (!string.IsNullOrWhiteSpace(logHistorico))
             {
                 var processoAtual = await _colecao.Find(filtro)
@@ -179,7 +183,6 @@ namespace CLUSA.Repositories
                 update = update.Set(p => p.HistoricoDoProcesso, novoHistorico);
             }
 
-            // 4. Filtro Mágico (Anti-espaço em branco)
             var arrayFilters = new List<ArrayFilterDefinition>
     {
         new BsonDocumentArrayFilterDefinition<BsonDocument>(
@@ -189,11 +192,8 @@ namespace CLUSA.Repositories
 
             var opcoes = new UpdateOptions { ArrayFilters = arrayFilters };
 
-            // 5. Executa a atualização no Processo
             await _colecao.UpdateOneAsync(filtro, update, opcoes);
 
-            // --- A CORREÇÃO ENTRA AQUI! ---
-            // 6. Sincroniza o Órgão Anuente para ele não ficar para trás!
             var processoAtualizado = await GetByRefUsaAsync(refUsa);
             if (processoAtualizado != null)
             {

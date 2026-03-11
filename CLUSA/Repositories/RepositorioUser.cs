@@ -39,14 +39,12 @@ namespace CLUSA.Repositories
 
         public async Task UpdateAsync(Users user)
         {
+            // O filtro continua o mesmo: localizar pelo ID
             var filter = Builders<Users>.Filter.Eq(u => u.Id, user.Id);
-            var update = Builders<Users>.Update
-                .Set(u => u.Username, user.Username)
-                .Set(u => u.Password, user.Password)
-                .Set(u => u.Admin, user.Admin)
-                .Set(u => u.PreferenciasGrids, user.PreferenciasGrids);
 
-            await _Users.UpdateOneAsync(filter, update);
+            // Em vez de dar .Set em cada campo, o ReplaceOne substitui o documento 
+            // inteiro pelo objeto 'user' que veio do seu formulário.
+            await _Users.ReplaceOneAsync(filter, user);
         }
 
         public async Task DeleteAsync(Users user)

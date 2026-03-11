@@ -16,6 +16,9 @@ namespace CLUSA.Models
         public string Username { get; set; } = string.Empty;
         public string Password { get; set; } = string.Empty;
         public bool Admin { get; set; } = false;
+        public bool UsarEstiloNovo { get; set; } = false; 
+        public bool ModoEscuro { get; set; } = false;
+        public int ItensPorPagina { get; set; } = 50; // 50 é o padrão caso seja a primeira vez
         public Dictionary<string, List<string>> PreferenciasGrids { get; set; } = new();
     }
     public class Logado

@@ -338,30 +338,34 @@ namespace Trabalho
         {
             try
             {
+                // 1. Busca os dados mais atualizados do usuário uma única vez
                 var usuario = await _repositorioUsers.GetByIdAsync(_logadoUsuario.Id);
                 if (usuario == null)
                 {
-                    MessageBox.Show("Erro ao carregar dados do usuário.", "Erro",
-                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    MessageBox.Show("Erro ao carregar dados do usuário.", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     return;
                 }
-                using var frmConfig = new frmConfiguracoes(usuario.Id, usuario.PreferenciasGrids) { _logadoNome = usuario.Username };
-                frmConfig.ShowDialog(this);
 
-                // Sempre recarrega preferências depois de fechar
-                usuario.PreferenciasGrids = frmConfig.ObterPreferencias();
-                await _repositorioUsers.UpdateAsync(usuario);
+                // 2. Abre a tela passando as informações direto no construtor
+                using var frmConfig = new frmConfiguracoes(usuario.Id, usuario.PreferenciasGrids, usuario.Username);
 
-                MessageBox.Show(
-                    "Configurações salvas com sucesso!\n\nAs alterações serão aplicadas ao reabrir os grids.",
-                    "Sucesso",
-                    MessageBoxButtons.OK,
-                    MessageBoxIcon.Information);
+                // 3. Apenas salva no banco se o usuário confirmou no botão "Salvar"
+                if (frmConfig.ShowDialog(this) == DialogResult.OK)
+                {
+                    usuario.PreferenciasGrids = frmConfig.ObterPreferencias();
+                    await _repositorioUsers.UpdateAsync(usuario);
+
+                    MessageBox.Show(
+                        "Configurações salvas com sucesso!\n\nAs alterações serão aplicadas ao reabrir as telas.",
+                        "Sucesso",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Information);
+                }
+                // Se cair fora do 'if', significa que ele fechou a janela no 'X', então o banco fica intacto!
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Erro ao abrir configurações:\n{ex.Message}", "Erro",
-                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show($"Erro ao abrir configurações:\n{ex.Message}", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
         private async void BtnAddNotifUrg_Click(object sender, EventArgs e)
