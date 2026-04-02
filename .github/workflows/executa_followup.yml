@@ -21,13 +21,13 @@ jobs:
           dotnet-version: '8.0.x' # Ajuste para a versão que você usa (6.0, 7.0, 8.0)
 
       - name: Restaurando Dependencias (Nuget)
-        run: dotnet restore
+        # Apontamos para o .csproj, ignorando o arquivo de solução (.sln) problemático
+        run: dotnet restore Trabalho/Trabalho.csproj
 
       - name: Compilando e Rodando a Automação
-        # 'Trabalho' é o nome da sua pasta/projeto principal onde está o Program.cs
-        run: dotnet run --project Trabalho/Trabalho.csproj -- --rotina-10h
+        # Usamos o --no-restore para não tentar ler a solução novamente
+        run: dotnet run --project Trabalho/Trabalho.csproj --no-restore -- --rotina-10h
         env:
-          # Aqui o GitHub "injeta" as secrets que você criou no passo 2
           FOLLOW_USER: ${{ secrets.FOLLOW_USER }}
           FOLLOW_PASS: ${{ secrets.FOLLOW_PASS }}
           FOLLOW_HOST: ${{ secrets.FOLLOW_HOST }}
