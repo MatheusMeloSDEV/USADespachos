@@ -1,5 +1,6 @@
-﻿using CLUSA.Services;
+﻿using CLUSA.Models;
 using CLUSA.Repositories;
+using CLUSA.Services;
 using System.Data;
 
 namespace Trabalho
@@ -29,15 +30,12 @@ namespace Trabalho
             await VerificarNotificacoesAutomaticas();
         }
 
-        private async System.Threading.Tasks.Task VerificarNotificacoesAutomaticas()
+        public async System.Threading.Tasks.Task VerificarNotificacoesAutomaticas()
         {
             var todos = await _repoVencimento.ObterTodosAsync();
-
             DateTime hoje = DateTime.Today;
-
             DateTime dataMinima = hoje.AddDays(14);
             DateTime dataMaxima = hoje.AddMonths(1);
-
             int emailsEnviados = 0;
 
             foreach (var item in todos)
@@ -45,34 +43,23 @@ namespace Trabalho
                 if (item.DataUltimaNotificacao.HasValue)
                 {
                     TimeSpan tempoDesdeUltimoAviso = hoje - item.DataUltimaNotificacao.Value;
-                    if (tempoDesdeUltimoAviso.TotalDays < 20)
-                    {
-                        continue;
-                    }
+                    if (tempoDesdeUltimoAviso.TotalDays < 20) continue;
                 }
 
                 string avisos = "";
 
-                if (EstaNaJanela(item.DataVencimentoRadar, dataMinima, dataMaxima))
-                    avisos += $"- RADAR vence em {item.DataVencimentoRadar:dd/MM/yyyy}\n";
-
-                if (EstaNaJanela(item.DataVencimentoProcuracao, dataMinima, dataMaxima))
-                    avisos += $"- PROCURAÇÃO vence em {item.DataVencimentoProcuracao:dd/MM/yyyy}\n";
-
-                if (EstaNaJanela(item.DataVencimentoEcac, dataMinima, dataMaxima))
-                    avisos += $"- ECAC vence em {item.DataVencimentoEcac:dd/MM/yyyy}\n";
-
-                if (EstaNaJanela(item.DataVencimentoSigvig, dataMinima, dataMaxima))
-                    avisos += $"- SIGVIG vence em {item.DataVencimentoSigvig:dd/MM/yyyy}\n";
-
-                if (EstaNaJanela(item.DataVencimentoLecom, dataMinima, dataMaxima))
-                    avisos += $"- LECOM vence em {item.DataVencimentoLecom:dd/MM/yyyy}\n";
-
-                if (EstaNaJanela(item.DataVencimentoAzeite, dataMinima, dataMaxima))
-                    avisos += $"- AZEITE vence em {item.DataVencimentoAzeite:dd/MM/yyyy}\n";
-
-                if (EstaNaJanela(item.DataVencimentoVinho, dataMinima, dataMaxima))
-                    avisos += $"- VINHO vence em {item.DataVencimentoVinho:dd/MM/yyyy}\n";
+                // Novo loop dinâmico que varre todos os eventos cadastrados!
+                if (item.Eventos != null)
+                {
+                    foreach (var evento in item.Eventos)
+                    {
+                        // Note a alteração do método EstaNaJanela abaixo
+                        if (EstaNaJanela(evento.Data, dataMinima, dataMaxima))
+                        {
+                            avisos += $"- {evento.Tag.ToUpper()} vence em {evento.Data:dd/MM/yyyy}\n";
+                        }
+                    }
+                }
 
                 if (!string.IsNullOrEmpty(avisos))
                 {
@@ -81,40 +68,40 @@ namespace Trabalho
                                         : "Nenhum CNPJ registado";
 
                     string assunto = $"[ALERTA] Vencimentos Próximos: {item.Importador}";
-
-                    // Dica: Use <br> se quiser garantir quebra de linha no HTML do email
                     string corpo = $"O cliente <b>{item.Importador}</b> tem documentos a vencer em breve.<br><br>" +
                                    $"CNPJs Vinculados: {textoCnpjs}<br><br>" +
                                    $"Itens a vencer:<br>{avisos.Replace("\n", "<br>")}<br>" +
                                    $"Por favor, verifique no sistema.";
 
-                    // --- AQUI A MUDANÇA ---
-                    // Usa o novo método que aceita só texto com a conta corporativa
                     await EmailService.EnviarFollowUpTextoAsync(assunto, corpo);
-                    // ----------------------
-
-                    await _repoLog.RegistrarLogAsync("Notificação", _logadoNome, $"E-mail automático enviado para {item.Importador}", "Enviado pelo sistema Anti-Spam");
+                    await _repoLog.RegistrarLogAsync("Notificação", _logadoNome, $"E-mail automático enviado para {item.Importador}");
 
                     item.DataUltimaNotificacao = hoje;
                     await _repoVencimento.AtualizarAsync(item);
-
                     emailsEnviados++;
                 }
             }
-            if (emailsEnviados > 0)
-            {
-                MessageBox.Show($"{emailsEnviados} notificação(ões) enviada(s).", "Notificação Automática");
-            }
+            if (emailsEnviados > 0) MessageBox.Show($"{emailsEnviados} notificação(ões) enviada(s).", "Notificação Automática");
         }
 
-        private bool EstaNaJanela(DateTime? dataDoBanco, DateTime min, DateTime max)
+        private bool EstaNaJanela(DateTime dataDoBanco, DateTime min, DateTime max)
         {
-            if (!dataDoBanco.HasValue) return false;
-
-            DateTime data = dataDoBanco.Value.Date;
-
-            // Retorna VERDADEIRO se a data estiver entre o Mínimo (2 semanas) e o Máximo (1 Mês)
+            DateTime data = dataDoBanco.Date;
             return data >= min.Date && data <= max.Date;
+        }
+        private string ObterDataDoEvento(List<EventoVencimento> eventos, string tagBusca)
+        {
+            // Se a lista for nula ou vazia, retorna o traço
+            if (eventos == null || !eventos.Any()) return "-";
+
+            // Filtra todos os eventos que correspondem à tag buscada (ignorando maiúsculas/minúsculas)
+            var datasEncontradas = eventos
+                .Where(e => e.Tag.Equals(tagBusca, StringComparison.OrdinalIgnoreCase))
+                .Select(e => e.Data.ToShortDateString())
+                .ToList();
+
+            // Se encontrou 1 ou mais datas, junta com vírgula. Se não, retorna "-"
+            return datasEncontradas.Any() ? string.Join(", ", datasEncontradas) : "-";
         }
 
         private void ConfigurarGrid()
@@ -137,36 +124,24 @@ namespace Trabalho
                     Id = x.Id,
                     Importador = x.Importador,
 
-                    // As datas (mantivemos a lógica do traço se for nulo)
-                    Radar = x.DataVencimentoRadar.HasValue ? x.DataVencimentoRadar.Value.ToShortDateString() : "-",
-                    Procuração = x.DataVencimentoProcuracao.HasValue ? x.DataVencimentoProcuracao.Value.ToShortDateString() : "-",
-                    ECAC = x.DataVencimentoEcac.HasValue ? x.DataVencimentoEcac.Value.ToShortDateString() : "-",
-                    SIGVIG = x.DataVencimentoSigvig.HasValue ? x.DataVencimentoSigvig.Value.ToShortDateString() : "-",
-                    LECOM = x.DataVencimentoLecom.HasValue ? x.DataVencimentoLecom.Value.ToShortDateString() : "-",
-                    Azeite = x.DataVencimentoAzeite.HasValue ? x.DataVencimentoAzeite.Value.ToShortDateString() : "-",
-                    Vinho = x.DataVencimentoVinho.HasValue ? x.DataVencimentoVinho.Value.ToShortDateString() : "-",
+                    // Busca a data certa na nova lista para mostrar na coluna
+                    Radar = ObterDataDoEvento(x.Eventos, "Radar"),
+                    Procuração = ObterDataDoEvento(x.Eventos, "Procuração"),
+                    ECAC = ObterDataDoEvento(x.Eventos, "ECAC"),
+                    SIGVIG = ObterDataDoEvento(x.Eventos, "SIGVIG"),
+                    LECOM = ObterDataDoEvento(x.Eventos, "LECOM"),
+                    Azeite = ObterDataDoEvento(x.Eventos, "Azeite"),
+                    Vinho = ObterDataDoEvento(x.Eventos, "Vinho"),
 
-
-                    // --- NOVA COLUNA DE CNPJs ---
-                    // Verifica se a lista existe. Se sim, junta com ", ". Se não, põe um traço.
-                    CNPJs = (x.Cnpjs != null && x.Cnpjs.Count > 0)
-                            ? string.Join(", ", x.Cnpjs)
-                            : "-"
+                    CNPJs = (x.Cnpjs != null && x.Cnpjs.Count > 0) ? string.Join(", ", x.Cnpjs) : "-"
                 }).ToList();
 
                 DGVVencimentos.DataSource = listaParaExibir;
 
-                // --- AJUSTES VISUAIS ---
-
-                // Esconde o ID
-                if (DGVVencimentos.Columns["Id"] != null)
-                    DGVVencimentos.Columns["Id"].Visible = false;
-
-                // Renomeia o cabeçalho da coluna de CNPJs para ficar mais bonito
+                if (DGVVencimentos.Columns["Id"] != null) DGVVencimentos.Columns["Id"].Visible = false;
                 if (DGVVencimentos.Columns["CNPJs"] != null)
                 {
                     DGVVencimentos.Columns["CNPJs"].HeaderText = "CNPJs da Empresa";
-                    // Opcional: Define uma largura mínima pois CNPJs ocupam espaço
                     DGVVencimentos.Columns["CNPJs"].MinimumWidth = 200;
                 }
             }

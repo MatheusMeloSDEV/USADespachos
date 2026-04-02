@@ -1,6 +1,6 @@
 ﻿using ClosedXML.Excel;
 using CLUSA.Models;
-using CLUSA.Repositories; // Certifique-se que ConfigDatabase está aqui
+using CLUSA.Repositories;
 using iText.IO.Font.Constants;
 using iText.IO.Image;
 using iText.Kernel.Colors;
@@ -17,6 +17,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Drawing;   
+using System.Drawing.Imaging;
 
 namespace CLUSA.Services
 {
@@ -24,18 +26,49 @@ namespace CLUSA.Services
     {
         // --- CONFIGURAÇÕES ---
         private const string Colecao = "PROCESSO";
+        private readonly string _pastaDestino;
+        public System.Drawing.Image LogoParaRelatorio { get; set; }
 
-        // Ajuste estes caminhos conforme seu ambiente real
-        private readonly string _pastaDestino = @"C:\UsaDespachos\Docs\FollowUp";
-        private readonly string _caminhoLogo = @"C:\UsaDespachos\Exportador\logo.png";
-
-        public FollowUpService()
+        public FollowUpService(System.Drawing.Image logoExterna = null)
         {
-            // Garante que a pasta de destino exista
+            // Se passarmos a logo no construtor, ela já fica salva
+            LogoParaRelatorio = logoExterna;
+
+            // Ajuste do Path (Sempre use System.IO.Path para evitar erro com iText)
+            if (Directory.Exists(@"C:\UsaDespachos"))
+            {
+                _pastaDestino = @"C:\UsaDespachos\Docs\FollowUp";
+            }
+            else
+            {
+                _pastaDestino = System.IO.Path.Combine(AppContext.BaseDirectory, "Docs", "FollowUp");
+            }
+
             if (!Directory.Exists(_pastaDestino))
                 Directory.CreateDirectory(_pastaDestino);
         }
+        public async Task ExecutarFluxoAutomaticoAsync(string nomeImportador)
+        {
+            try
+            {
+                // 1. Gera os bytes do PDF em memória
+                byte[] pdfBytes = await GerarPdfBytesAsync(nomeImportador);
 
+                // 2. Define o nome do arquivo e o assunto
+                string nomeArquivo = $"FollowUp_{nomeImportador}_{DateTime.Now:yyyyMMdd}.pdf";
+                string assunto = $"Follow-Up Diário - {nomeImportador} - {DateTime.Now:dd/MM/yyyy}";
+                string corpo = $"<p>Segue em anexo o Follow-Up atualizado de <b>{nomeImportador}</b>.</p>";
+
+                // 3. Envia o e-mail usando o EmailService
+                await EmailService.EnviarFollowUpAsync(assunto, corpo, pdfBytes, nomeArquivo);
+            }
+            catch (Exception ex)
+            {
+                // No GitHub Actions, isso aparecerá no log do console
+                Console.WriteLine($"Erro no fluxo automático: {ex.Message}");
+                throw; // Re-lança para o sistema saber que falhou
+            }
+        }
         // ===================================================================================
         // CENÁRIO 1: GERAÇÃO EM DISCO (Para uso interno/botão de relatório)
         // Gera Excel (.xlsx) + PDF (.pdf) e salva na pasta C:\UsaDespachos\Docs\FollowUp
@@ -139,13 +172,17 @@ namespace CLUSA.Services
             var fontOblique = PdfFontFactory.CreateFont(StandardFonts.HELVETICA_OBLIQUE);
 
             // 1. Logo
-            if (File.Exists(_caminhoLogo))
+            if (LogoParaRelatorio != null)
             {
                 try
                 {
-                    ImageData imageData = ImageDataFactory.Create(_caminhoLogo);
-                    Image logo = new Image(imageData).ScaleToFit(120, 80);
-                    document.Add(logo);
+                    using (var ms = new MemoryStream())
+                    {
+                        LogoParaRelatorio.Save(ms, System.Drawing.Imaging.ImageFormat.Png);
+                        var imageData = iText.IO.Image.ImageDataFactory.Create(ms.ToArray());
+                        var logo = new iText.Layout.Element.Image(imageData).ScaleToFit(120, 80);
+                        document.Add(logo);
+                    }
                 }
                 catch { }
             }
@@ -298,11 +335,23 @@ namespace CLUSA.Services
             ws.Cell("C1").Style.Font.Bold = true;
             ws.Cell("C1").Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
 
-            if (File.Exists(_caminhoLogo))
+            if (LogoParaRelatorio != null)
             {
-                var pic = ws.AddPicture(_caminhoLogo).MoveTo(ws.Cell(1, 1));
-                pic.Height = 60; pic.Width = 100;
-                ws.Range("C1:H1").Merge();
+                try
+                {
+                    // Note que aqui NÃO usamos mais Properties.Resources
+                    // Usamos direto a variável que você preencheu no Program.cs
+                    using (var ms = new MemoryStream())
+                    {
+                        // Salva a imagem no stream para o Excel conseguir ler
+                        LogoParaRelatorio.Save(ms, System.Drawing.Imaging.ImageFormat.Png);
+
+                        var pic = ws.AddPicture(ms).MoveTo(ws.Cell(1, 1));
+                        pic.Height = 60;
+                        pic.Width = 100;
+                    }
+                }
+                catch{}
             }
 
             // 2. Definição de Colunas

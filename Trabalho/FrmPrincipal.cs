@@ -18,6 +18,8 @@ namespace Trabalho
         private readonly RepositorioLog _repositorioLog;
         private readonly NotificacaoService _NotificacaoService;
 
+        private readonly FrmVencimentos EmailService;
+
         private bool _atualizandoInterface = false; // <--- ADICIONE ISSO
         private readonly Logado _logadoUsuario;
         private readonly Dictionary<Type, Form> _forms = new();
@@ -47,6 +49,8 @@ namespace Trabalho
             _notificacaoTimer.Interval = 30000; // 30 segundos
             _notificacaoTimer.Tick += NotificacaoTimer_Tick;
 
+            EmailService = new FrmVencimentos();
+
             if (pictureBox1.Image != null)
             {
                 pictureBox1.Image = SetImageOpacity(pictureBox1.Image, 0.2f);
@@ -62,6 +66,7 @@ namespace Trabalho
         {
             await PopularTableLayoutUrgentes(); // Garante a primeira carga
             await CarregarDadosProcessos();
+            await EmailService.VerificarNotificacoesAutomaticas(); // Verifica vencimentos assim que o sistema abre
             _notificacaoTimer.Start();
 
             // Só começa a escutar o Alt+Tab DEPOIS que o formulário já abriu completamente

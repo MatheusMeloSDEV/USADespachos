@@ -1,6 +1,7 @@
-﻿using CLUSA.Models;
+﻿using CLUSA.Helpers;
+using CLUSA.Models;
 using CLUSA.Repositories;
-using CLUSA.Helpers;
+using System.ComponentModel; // Necessário para o BindingList
 
 namespace Trabalho
 {
@@ -11,6 +12,9 @@ namespace Trabalho
         private string _idEdicao = null;
         public string _logadoNome;
 
+        // Lista dinâmica para controlar a grid de eventos
+        private BindingList<EventoVencimento> _listaEventos = new BindingList<EventoVencimento>();
+
         public class ImportadorOpcao { public string Nome { get; set; } public List<string> Cnpjs { get; set; } }
 
         public FrmModificaVencimentos(string idParaEditar = null)
@@ -20,8 +24,8 @@ namespace Trabalho
             _repoLog = new RepositorioLog();
             _idEdicao = idParaEditar;
 
-            CarregarComboBox();
-            ConfigurarEventosDosChecks(); // Liga a lógica visual
+            CarregarComboBoxImportador();
+            ConfigurarTelaDeEventos();
 
             if (!string.IsNullOrEmpty(_idEdicao))
             {
@@ -30,34 +34,36 @@ namespace Trabalho
             }
         }
 
-        // Método auxiliar para ativar/desativar o calendário quando clica no check
-        private void ConfigurarEventosDosChecks()
+        private void ConfigurarTelaDeEventos()
         {
-            // Antigos
-            chkRadar.CheckedChanged += (s, e) => dtpRadar.Enabled = chkRadar.Checked;
-            chkProcuracao.CheckedChanged += (s, e) => dtpProcuracao.Enabled = chkProcuracao.Checked;
-            chkEcac.CheckedChanged += (s, e) => dtpEcac.Enabled = chkEcac.Checked;
-            chkSigvig.CheckedChanged += (s, e) => dtpSigvig.Enabled = chkSigvig.Checked;
-            chkLecom.CheckedChanged += (s, e) => dtpLecom.Enabled = chkLecom.Checked;
+            // Opções de Tags disponíveis
+            cbTagEvento.Items.AddRange(new string[] { "Radar", "Procuração", "ECAC", "SIGVIG", "LECOM", "Azeite", "Vinho" });
+            cbTagEvento.DropDownStyle = ComboBoxStyle.DropDownList;
 
-            // --- NOVOS (Azeite e Vinho) ---
-            // Assumindo que cbAzeite e cbVinho são os CheckBoxes novos
-            cbAzeite.CheckedChanged += (s, e) => dtpAzeite.Enabled = cbAzeite.Checked;
-            cbVinho.CheckedChanged += (s, e) => dtpVinho.Enabled = cbVinho.Checked;
-
-            // Inicia desabilitados ou habilitados conforme o designer
-            dtpRadar.Enabled = chkRadar.Checked;
-            dtpProcuracao.Enabled = chkProcuracao.Checked;
-            dtpEcac.Enabled = chkEcac.Checked;
-            dtpSigvig.Enabled = chkSigvig.Checked;
-            dtpLecom.Enabled = chkLecom.Checked;
-
-            // --- NOVOS ---
-            dtpAzeite.Enabled = cbAzeite.Checked;
-            dtpVinho.Enabled = cbVinho.Checked;
+            // Vincula a lista ao GridView
+            dgvEventos.DataSource = _listaEventos;
+            dgvEventos.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
+            dgvEventos.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
+            dgvEventos.AllowUserToAddRows = false; // Usuário adiciona pelo botão
         }
 
-        // Lógica de LOAD (Carregar do Banco para a Tela)
+        // Evento do botão de adicionar evento
+        private void btnAdicionarEvento_Click(object sender, EventArgs e)
+        {
+            if (cbTagEvento.SelectedItem == null)
+            {
+                MessageBox.Show("Selecione uma Tag (Ex: Radar, Procuração).");
+                return;
+            }
+
+            _listaEventos.Add(new EventoVencimento
+            {
+                Tag = cbTagEvento.SelectedItem.ToString(),
+                Data = dtpDataEvento.Value.Date
+            });
+        }
+
+        // Lógica de LOAD
         private async void CarregarDadosParaEdicao()
         {
             try
@@ -66,37 +72,23 @@ namespace Trabalho
                 if (v != null)
                 {
                     int index = cbImportador.FindStringExact(v.Importador);
-                    cbImportador.SelectedIndex = index;
+                    if (index >= 0) cbImportador.SelectedIndex = index;
 
-                    PreencherCampo(v.DataVencimentoRadar, chkRadar, dtpRadar);
-                    PreencherCampo(v.DataVencimentoProcuracao, chkProcuracao, dtpProcuracao);
-                    PreencherCampo(v.DataVencimentoEcac, chkEcac, dtpEcac);
-                    PreencherCampo(v.DataVencimentoSigvig, chkSigvig, dtpSigvig);
-                    PreencherCampo(v.DataVencimentoLecom, chkLecom, dtpLecom);
-
-                    // --- NOVOS ---
-                    PreencherCampo(v.DataVencimentoAzeite, cbAzeite, dtpAzeite);
-                    PreencherCampo(v.DataVencimentoVinho, cbVinho, dtpVinho);
+                    // Carrega os eventos salvos para a grid
+                    _listaEventos.Clear();
+                    if (v.Eventos != null)
+                    {
+                        foreach (var ev in v.Eventos)
+                        {
+                            _listaEventos.Add(ev);
+                        }
+                    }
                 }
             }
             catch (Exception ex) { MessageBox.Show("Erro: " + ex.Message); }
         }
 
-        // Helper para limpar o código acima
-        private void PreencherCampo(DateTime? data, CheckBox chk, DateTimePicker dtp)
-        {
-            if (data.HasValue)
-            {
-                chk.Checked = true;
-                dtp.Value = data.Value;
-            }
-            else
-            {
-                chk.Checked = false;
-            }
-        }
-
-        // Lógica de SAVE (Da Tela para o Banco)
+        // Lógica de SAVE
         private async void btnEnviar_Click(object sender, EventArgs e)
         {
             if (cbImportador.SelectedItem is ImportadorOpcao itemSelecionado)
@@ -108,18 +100,7 @@ namespace Trabalho
                         Id = _idEdicao,
                         Importador = itemSelecionado.Nome,
                         Cnpjs = itemSelecionado.Cnpjs,
-
-                        DataVencimentoRadar = chkRadar.Checked ? dtpRadar.Value : (DateTime?)null,
-                        DataVencimentoProcuracao = chkProcuracao.Checked ? dtpProcuracao.Value : (DateTime?)null,
-                        DataVencimentoEcac = chkEcac.Checked ? dtpEcac.Value : (DateTime?)null,
-                        DataVencimentoSigvig = chkSigvig.Checked ? dtpSigvig.Value : (DateTime?)null,
-                        DataVencimentoLecom = chkLecom.Checked ? dtpLecom.Value : (DateTime?)null,
-
-                        // --- NOVOS ---
-                        DataVencimentoAzeite = cbAzeite.Checked ? dtpAzeite.Value : (DateTime?)null,
-                        DataVencimentoVinho = cbVinho.Checked ? dtpVinho.Value : (DateTime?)null,
-                        // -------------
-
+                        Eventos = _listaEventos.ToList(), // Salva a lista dinâmica
                         DataUltimaNotificacao = null
                     };
 
@@ -130,13 +111,8 @@ namespace Trabalho
                     }
                     else
                     {
-                        // Se for edição, precisamos manter a data da ultima notificação ou resetar?
-                        // Normalmente mantemos o que estava no banco se quisermos evitar spam, 
-                        // ou resetamos se quisermos que a mudança de data force um novo email.
-                        // A lógica atual reseta para null (força novo email em breve).
-
                         await _repoVencimento.AtualizarAsync(vencimento);
-                        await _repoLog.RegistrarLogAsync("Edição", _logadoNome, $"Vencimento de {vencimento.Importador} foi alterado.", $"ID: {_idEdicao}");
+                        await _repoLog.RegistrarLogAsync("Edição", _logadoNome, $"Vencimento de {vencimento.Importador} alterado.", $"ID: {_idEdicao}");
                     }
 
                     MessageBox.Show("Salvo com sucesso!");
@@ -147,7 +123,7 @@ namespace Trabalho
             else { MessageBox.Show("Selecione um importador."); }
         }
 
-        private void CarregarComboBox()
+        private void CarregarComboBoxImportador()
         {
             var dadosBrutos = DadosEstaticos.ObterListaCNPJs();
             var listaParaCombo = dadosBrutos

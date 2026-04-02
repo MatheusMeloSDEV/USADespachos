@@ -326,19 +326,19 @@ namespace Trabalho
             var colunasVistoria = new List<DefinicaoColuna>
         {
             new("LPCO", "LPCO"),
-            new("LI", "LI", autoSizeMode: DataGridViewAutoSizeColumnMode.AllCells),
-            new("ProgressoLIs", "LIs Deferidas", autoSizeMode: DataGridViewAutoSizeColumnMode.AllCells, centralizar: true),
-            new("Importador", "Importador", minimumWidth: 150),
+            new("LI", "LI"),
+            new("ProgressoLIs", "LIs Def.", autoSizeMode: DataGridViewAutoSizeColumnMode.ColumnHeader, centralizar: true),
+            new("Importador", "Importador", autoSizeMode: DataGridViewAutoSizeColumnMode.AllCells, centralizar: true),
             new("Container", "Container"),
             new("Conhecimento", "Conhecimento"),
-            new("Ref_USA", "Ref. USA"),
-            new("Produto", "Produto", minimumWidth: 200),
+            new("Ref_USA", "Ref. USA", autoSizeMode: DataGridViewAutoSizeColumnMode.DisplayedCells, centralizar: true),
+            new("Produto", "Produto", minimumWidth: 150, autoSizeMode: DataGridViewAutoSizeColumnMode.Fill),
             new("ParametrizacaoLPCO", "Parametrização LPCO"),
             new("Terminal", "Terminal"),
-            new("DataRegistroLPCO", "Registro LPCO", formato: "dd/MM/yyyy"),
+            new("DataRegistroLPCO", "Registro LPCO", formato: "dd/MM/yyyy", autoSizeMode: DataGridViewAutoSizeColumnMode.AllCells, centralizar: true),
             new("Previsao", "Previsão", formato: "dd/MM/yyyy"),
-            new("Notas", "Notas", minimumWidth: 250),
-            new("Status", "Status", autoSizeMode: DataGridViewAutoSizeColumnMode.AllCells)
+            new("Notas", "Notas", minimumWidth: 150),
+            new("Status", "Status")
         };
 
             RegistrarCatalogo("DGVVistorias", colunasVistoria);

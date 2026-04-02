@@ -2,12 +2,19 @@
 using MongoDB.Bson.Serialization.Attributes;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace CLUSA.Models
 {
+    // Nova classe para representar cada data dinâmica
+    public class EventoVencimento
+    {
+        [BsonElement("tag")]
+        public string Tag { get; set; } // Ex: "Procuração", "Radar", etc.
+
+        [BsonElement("data")]
+        public DateTime Data { get; set; }
+    }
+
     public class Vencimento
     {
         [BsonId]
@@ -15,38 +22,14 @@ namespace CLUSA.Models
         public string Id { get; set; }
 
         [BsonElement("importador")]
-        public string Importador { get; set; } // Ex: "FREEWAY"
+        public string Importador { get; set; }
 
         [BsonElement("cnpjs")]
-        public List<string> Cnpjs { get; set; } // Ex: ["04.600.../0001", "04.600.../0002"]
+        public List<string> Cnpjs { get; set; }
 
-        [BsonElement("data_radar")]
-        [BsonIgnoreIfNull]
-        public DateTime? DataVencimentoRadar { get; set; }
-
-        [BsonElement("data_procuracao")]
-        [BsonIgnoreIfNull]
-        public DateTime? DataVencimentoProcuracao { get; set; }
-
-        [BsonElement("data_ecac")]
-        [BsonIgnoreIfNull]
-        public DateTime? DataVencimentoEcac { get; set; }
-
-        [BsonElement("data_azeite")]
-        [BsonIgnoreIfNull] 
-        public DateTime? DataVencimentoAzeite { get; set; }
-
-        [BsonElement("data_vinho")]
-        [BsonIgnoreIfNull] 
-        public DateTime? DataVencimentoVinho { get; set; }
-
-        [BsonElement("data_sigvig")]
-        [BsonIgnoreIfNull]
-        public DateTime? DataVencimentoSigvig { get; set; }
-
-        [BsonElement("data_lecom")]
-        [BsonIgnoreIfNull]
-        public DateTime? DataVencimentoLecom { get; set; }
+        // Nova propriedade que substitui todas as datas soltas
+        [BsonElement("eventos")]
+        public List<EventoVencimento> Eventos { get; set; } = new List<EventoVencimento>();
 
         [BsonElement("ultima_notificacao")]
         [BsonIgnoreIfNull]

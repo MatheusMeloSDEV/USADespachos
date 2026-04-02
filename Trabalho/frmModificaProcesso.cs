@@ -360,7 +360,7 @@ namespace Trabalho
                 processo.VencimentoFMA = DataHelper.CalcularVencimento(DTPdatadeatracacao.Value, 85);
                 dtpVencimentoFMA.Value = processo.VencimentoFMA ?? dtpVencimentoFMA.Value;
 
-                processo.VencimentoFreeTime = DataHelper.CalcularVencimento(DTPdatadeatracacao.Value, Convert.ToInt32(NUMfreetime.Value));
+                processo.VencimentoFreeTime = DataHelper.CalcularVencimento(DTPdatadeatracacao.Value, Convert.ToInt32(NUMfreetime.Value) - 1);
                 dtpVencimentoFreeTime.Value = processo.VencimentoFreeTime ?? dtpVencimentoFreeTime.Value;
             }
             else

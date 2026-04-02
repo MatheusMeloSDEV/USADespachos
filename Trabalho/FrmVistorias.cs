@@ -559,7 +559,53 @@ namespace Trabalho
 
         private async void BtnSobeAguardDef_Click(object? sender, EventArgs e)
         {
-            await MoverVistoria(DGVVistoriaAgendada, DGVAguardandoDef, _bsVistoriaAgendada, _bsAguardandoDef, StatusVistoria.AguardandoDeferimento);
+            
+            // 1. Verifica se tem um item selecionado ANTES de pedir a data
+            if (DGVVistoriaAgendada.CurrentRow?.DataBoundItem is not Vistoria vistoriaSelecionada)
+            {
+                MessageBox.Show("Por favor, selecione um item.", "Aviso", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            // 2. Chama a nossa janelinha de calendário
+            DateTime? dataEscolhida = SolicitarDataVistoria();
+
+            // Se ele cancelou ou fechou a janela, a gente para o processo aqui mesmo
+            if (dataEscolhida == null) return;
+
+            try
+            {
+                Cursor = Cursors.WaitCursor;
+
+                // 3. Busca o processo no banco para atualizar o Histórico
+                var processo = await _repositorioProcesso.GetByRefUsaAsync(vistoriaSelecionada.Ref_USA);
+
+                if (processo != null)
+                {
+                    // Monta a frase exatamente como você pediu
+                    string novaLinha = $"{DateTime.Now:dd/MM/yyyy} Vistoria realizada em: {dataEscolhida.Value:dd/MM/yyyy}";
+                    string historicoAntigo = processo.HistoricoDoProcesso ?? "";
+
+                    string novoHistorico = $"{novaLinha}\r\n{historicoAntigo}".Trim();
+
+                    var atualizacoes = new List<UpdateDefinition<Processo>>
+            {
+                Builders<Processo>.Update.Set(p => p.HistoricoDoProcesso, novoHistorico)
+            };
+
+                    await _repositorioProcesso.UpdateParcialAsync(processo.Id, atualizacoes);
+                }
+
+                await MoverVistoria(DGVVistoriaAgendada, DGVAguardandoDef, _bsVistoriaAgendada, _bsAguardandoDef, StatusVistoria.AguardandoDeferimento);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Erro ao agendar e salvar o histórico: {ex.Message}", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+            finally
+            {
+                Cursor = Cursors.Default;
+            }
         }
         private async void BtnSobeLaudo_Click(object sender, EventArgs e)
         {
@@ -697,7 +743,7 @@ namespace Trabalho
                 MinimizeBox = false
             };
 
-            var lbl = new Label { Text = "Selecione a data do agendamento:", Left = 20, Top = 15, Width = 260 };
+            var lbl = new Label { Text = "Selecione a data:", Left = 20, Top = 15, Width = 260 };
             var dtp = new DateTimePicker { Left = 20, Top = 40, Width = 260, Format = DateTimePickerFormat.Short };
             var btnOk = new Button { Text = "Confirmar", Left = 110, Top = 75, Width = 80, DialogResult = DialogResult.OK };
             var btnCancel = new Button { Text = "Cancelar", Left = 200, Top = 75, Width = 80, DialogResult = DialogResult.Cancel };

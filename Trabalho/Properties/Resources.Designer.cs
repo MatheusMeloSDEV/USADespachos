@@ -83,6 +83,16 @@ namespace Trabalho.Properties {
         /// <summary>
         ///   Consulta um recurso localizado do tipo System.Drawing.Bitmap.
         /// </summary>
+        public static System.Drawing.Bitmap FollowUpLogo {
+            get {
+                object obj = ResourceManager.GetObject("FollowUpLogo", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta um recurso localizado do tipo System.Drawing.Bitmap.
+        /// </summary>
         public static System.Drawing.Bitmap gif {
             get {
                 object obj = ResourceManager.GetObject("gif", resourceCulture);
