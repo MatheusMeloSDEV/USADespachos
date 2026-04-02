@@ -505,56 +505,57 @@ namespace Trabalho
                 _dadosForamAlterados = false;
                 this.Text = this.Text.Replace("*", "");
 
-                MessageBox.Show("Salvo com sucesso!", "Sucesso", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                // --- NOVA LÓGICA: FOLLOW UP AUTOMÁTICO PARA LEITESOL ---
+                if (!string.IsNullOrEmpty(processo.Importador) && processo.Importador.Equals("LEITESOL", StringComparison.OrdinalIgnoreCase))
+                {
+                    bool historicoMudou = logDetalhado.Contains("HistoricoDoProcesso");
 
-                //bool historicoMudou = logDetalhado.Contains("HistoricoDoProcesso");
+                    // Se for um novo processo (Modo Adicionar), consideramos que "mudou" (criou)
+                    // Como a variável Modo muda para "Editar" no bloco de adição acima, 
+                    // usamos a variável historicoMudou também se o log estiver vazio e for um processo novo
+                    if (string.IsNullOrEmpty(logDetalhado)) historicoMudou = true;
 
-                //// Se for um novo processo (Modo Adicionar), consideramos que "mudou" (criou)
-                //if (Modo == "Adicionar") historicoMudou = true;
+                    using (var frmSucesso = new FrmDialogoSucesso(historicoMudou))
+                    {
+                        frmSucesso.ShowDialog(this);
 
-                //// 2. Chama o Diálogo Personalizado
-                //using (var frmSucesso = new FrmDialogoSucesso(historicoMudou))
-                //{
-                //    frmSucesso.ShowDialog(this);
+                        if (frmSucesso.EnviarEmail)
+                        {
+                            try
+                            {
+                                string assunto = $"Atualização processo SRef: {processo.SR}";
+                                string corpo = "";
 
-                //    if (frmSucesso.EnviarEmail)
-                //    {
-                //        try
-                //        {
-                //            // 1. Assunto
-                //            string assunto = $"Atualização processo SRref: {processo.SR}";
+                                // ATENÇÃO: Se o seu FollowUpService exigir a logo no construtor (como no Program.cs),
+                                // você precisará passar aqui: new CLUSA.Services.FollowUpService(Trabalho.Properties.Resources.FollowUpLogo);
+                                var followUpService = new CLUSA.Services.FollowUpService();
 
-                //            // 2. Corpo vazio (conforme solicitado)
-                //            string corpo = "";
+                                string nomeImportador = processo.Importador;
+                                byte[] pdfBytes = await followUpService.GerarPdfBytesAsync(nomeImportador);
+                                string nomeArquivoAnexo = $"FollowUp_{nomeImportador.Replace(" ", "_")}.pdf";
 
-                //            // 3. Gera o PDF em Memória
-                //            var followUpService = new CLUSA.Services.FollowUpService();
+                                await CLUSA.Services.EmailService.EnviarFollowUpAsync(
+                                    assunto,
+                                    corpo,
+                                    pdfBytes,
+                                    nomeArquivoAnexo
+                                );
 
-                //            // Define o nome do importador (ou usa "Cliente" se estiver vazio)
-                //            string nomeImportador = !string.IsNullOrEmpty(processo.Importador) ? processo.Importador : "Cliente";
-
-                //            // Gera os bytes do PDF
-                //            byte[] pdfBytes = await followUpService.GerarPdfBytesAsync(nomeImportador);
-
-                //            // Define o nome do arquivo
-                //            string nomeArquivoAnexo = $"FollowUp_{nomeImportador.Replace(" ", "_")}.pdf";
-
-                //            // 4. Envia
-                //            await CLUSA.Services.EmailService.EnviarFollowUpAsync(
-                //                assunto,
-                //                corpo,
-                //                pdfBytes,
-                //                nomeArquivoAnexo
-                //            );
-
-                //            MessageBox.Show("E-mail enviado com o PDF anexo!", "Sucesso", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                //        }
-                //        catch (Exception exEmail)
-                //        {
-                //            MessageBox.Show($"Erro ao enviar e-mail: {exEmail.Message}", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                //        }
-                //    }
-                //}
+                                MessageBox.Show("Salvo com sucesso e E-mail enviado com o PDF anexo!", "Sucesso", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                            }
+                            catch (Exception exEmail)
+                            {
+                                MessageBox.Show($"Salvo, mas houve erro ao enviar e-mail: {exEmail.Message}", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    // Fluxo normal para outros importadores
+                    MessageBox.Show("Salvo com sucesso!", "Sucesso", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
+                // --------------------------------------------------------
             }
             catch (Exception ex)
             {

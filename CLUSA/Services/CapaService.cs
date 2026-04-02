@@ -142,8 +142,17 @@ namespace CLUSA.Services
             // Linha 7
             row++;
             string ncms = string.Join("; ", p.LI.Select(l => l.NCM).Distinct());
-            SetVal(ws, row, 1, "NCM", ncms, 4);
-            SetVal(ws, row, 6, "Armador", p.Armador);
+            if (!string.IsNullOrEmpty(p.Importador) && p.Importador.ToUpper().Contains("CASA FLORA"))
+            {
+                SetVal(ws, row, 1, "NCM", ncms, 1); // Ocupa colunas 1, 2 e 3
+                SetVal(ws, row, 4, "FLO", p.FLO, 0); // Ocupa colunas 4 e 5
+                SetVal(ws, row, 6, "Armador", p.Armador); // Ocupa colunas 6 e 7
+            }
+            else
+            {
+                SetVal(ws, row, 1, "NCM", ncms, 3); // Ocupa colunas de 1 a 5 (Ajustado de 4 para 3 para não sobrepor a coluna 6 do Armador)
+                SetVal(ws, row, 6, "Armador", p.Armador); // Ocupa colunas 6 e 7
+            }
 
             // Free Time (H)
             ws.Cell(row, 8).Value = $"Free Time: {p.FreeTime}";
@@ -373,8 +382,18 @@ namespace CLUSA.Services
 
             // Linha 7
             string ncms = string.Join("; ", p.LI.Select(l => l.NCM).Distinct());
-            AddLabelValue(table, "NCM", ncms, fontBold, fontRegular, 1, 4); // A-E
-            AddLabelValue(table, "Armador", p.Armador, fontBold, fontRegular); // F-G 
+
+            if (!string.IsNullOrEmpty(p.Importador) && p.Importador.ToUpper().Contains("CASA FLORA"))
+            {
+                AddLabelValue(table, "NCM", ncms, fontBold, fontRegular, 1, 2); // 1 col Label + 2 cols Valor (Total 3)
+                AddLabelValue(table, "FLO", p.FLO, fontBold, fontRegular);      // 1 col Label + 1 col Valor (Total 2)
+                AddLabelValue(table, "Armador", p.Armador, fontBold, fontRegular); // 1 col Label + 1 col Valor (Total 2)
+            }
+            else
+            {
+                AddLabelValue(table, "NCM", ncms, fontBold, fontRegular, 1, 4); // A-E (Total 5 colunas)
+                AddLabelValue(table, "Armador", p.Armador, fontBold, fontRegular); // F-G (Total 2 colunas)
+            }
 
             // Free Time no H
             table.AddCell(CriarCellTexto($"Free Time: {p.FreeTime}", 1, 1, fontRegular, 10, true)); // H

@@ -8,10 +8,9 @@ namespace Trabalho
     internal static class Program
     {
         [STAThread]
-        static async Task Main(string[] args) // Mude para 'void', não 'async Task'
+        static void Main(string[] args) // Voltando para 'void' síncrono
         {
             // Linhas essenciais para inicializar o WinForms corretamente.
-            // ApplicationConfiguration.Initialize() é o método moderno para .NET 6+
             ApplicationConfiguration.Initialize();
 
             if (args != null && args.Contains("--rotina-10h"))
@@ -24,7 +23,8 @@ namespace Trabalho
                     // 2. Passamos a logo para o serviço que está LÁ na CLUSA
                     var service = new FollowUpService(minhaLogo);
 
-                    await service.ExecutarFluxoAutomaticoAsync("LEITESOL");
+                    // Esperamos o método assíncrono terminar de forma síncrona
+                    service.ExecutarFluxoAutomaticoAsync("LEITESOL").GetAwaiter().GetResult();
                 }
                 catch (Exception ex)
                 {
@@ -38,9 +38,10 @@ namespace Trabalho
                     Console.WriteLine($"[ERRO FATAL]: {ex.Message}");
                     throw;
                 }
-                return;
+                return; // Encerra a aplicação após a rotina automática
             }
 
+            // Inicia a interface gráfica normalmente na thread STA
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
             Application.Run(new FrmLogin());
