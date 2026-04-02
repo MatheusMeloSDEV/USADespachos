@@ -25,8 +25,8 @@ jobs:
         run: dotnet restore Trabalho/Trabalho.csproj
 
       - name: Compilando e Rodando a Automação
-        # Usamos o --no-restore para não tentar ler a solução novamente
-        run: dotnet run --project Trabalho/Trabalho.csproj --no-restore -- --rotina-10h
+        # Adicionamos o parâmetro -p:DefineConstants=GITHUB_ACTIONS
+        run: dotnet run --project Trabalho/Trabalho.csproj -p:DefineConstants=GITHUB_ACTIONS --no-restore -- --rotina-10h
         env:
           FOLLOW_USER: ${{ secrets.FOLLOW_USER }}
           FOLLOW_PASS: ${{ secrets.FOLLOW_PASS }}
