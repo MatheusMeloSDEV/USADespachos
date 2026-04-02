@@ -28,7 +28,15 @@ namespace Trabalho
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine("Erro na automação: " + ex.Message);
+                    // Só mostra MessageBox se NÃO for a rotina automática
+                    if (!Environment.CommandLine.Contains("--rotina-10h"))
+                    {
+                        MessageBox.Show($"Erro: {ex.Message}");
+                    }
+
+                    // Escreve no console para você ler no log do GitHub
+                    Console.WriteLine($"[ERRO FATAL]: {ex.Message}");
+                    throw;
                 }
                 return;
             }

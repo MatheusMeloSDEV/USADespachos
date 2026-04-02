@@ -49,24 +49,27 @@ namespace CLUSA.Services
         }
         public async Task ExecutarFluxoAutomaticoAsync(string nomeImportador)
         {
+            Console.WriteLine($"--> Iniciando fluxo para: {nomeImportador}");
             try
             {
-                // 1. Gera os bytes do PDF em memória
+                var (ativos, finalizados) = await BuscarESepararDadosAsync(nomeImportador);
+                Console.WriteLine($"--> Dados buscados. Ativos: {ativos.Count}, Finalizados: {finalizados.Count}");
+
                 byte[] pdfBytes = await GerarPdfBytesAsync(nomeImportador);
+                Console.WriteLine("--> PDF gerado com sucesso em memória.");
 
                 // 2. Define o nome do arquivo e o assunto
                 string nomeArquivo = $"FollowUp_{nomeImportador}_{DateTime.Now:yyyyMMdd}.pdf";
                 string assunto = $"Follow-Up Diário - {nomeImportador} - {DateTime.Now:dd/MM/yyyy}";
                 string corpo = $"<p>Segue em anexo o Follow-Up atualizado de <b>{nomeImportador}</b>.</p>";
 
-                // 3. Envia o e-mail usando o EmailService
                 await EmailService.EnviarFollowUpAsync(assunto, corpo, pdfBytes, nomeArquivo);
+                Console.WriteLine("--> E-mail enviado com sucesso!");
             }
             catch (Exception ex)
             {
-                // No GitHub Actions, isso aparecerá no log do console
-                Console.WriteLine($"Erro no fluxo automático: {ex.Message}");
-                throw; // Re-lança para o sistema saber que falhou
+                Console.WriteLine($"--> ERRO NO FLUXO: {ex.Message}");
+                throw;
             }
         }
         // ===================================================================================
