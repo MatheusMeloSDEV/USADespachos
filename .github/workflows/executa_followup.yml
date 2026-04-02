@@ -19,7 +19,28 @@ jobs:
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '8.0.x' # Ajuste para a versão que você usa (6.0, 7.0, 8.0)
-
+      - name: Criando EmailConfig.cs dinamicamente
+        shell: pwsh
+        run: |
+          $content = @"
+          namespace CLUSA.Services
+          {
+              public static class EmailConfig
+              {
+                  public const string Follow_User = "${{ secrets.FOLLOW_USER }}";
+                  public const string Follow_Pass = "${{ secrets.FOLLOW_PASS }}";
+                  public const string Follow_Host = "${{ secrets.FOLLOW_HOST }}";
+                  public const int Follow_Port = ${{ secrets.FOLLOW_PORT }};
+                  public const string Follow_Dest = "${{ secrets.FOLLOW_DEST }}";
+                  public const string Follow_Cc = "${{ secrets.FOLLOW_CC }}";
+                  public const string Follow_Bcc = "${{ secrets.FOLLOW_BCC }}";
+                  public const string MongoUriProducao = "${{ secrets.MONGODB_URI }}";
+                  public const string MongoUriTeste = "${{ secrets.MONGODB_URI }}";
+              }
+          }
+          "@
+          $content | Out-File -FilePath CLUSA/Services/EmailConfig.cs -Encoding utf8
+        
       - name: Restaurando Dependencias (Nuget)
         # Apontamos para o .csproj, ignorando o arquivo de solução (.sln) problemático
         run: dotnet restore Trabalho/Trabalho.csproj
