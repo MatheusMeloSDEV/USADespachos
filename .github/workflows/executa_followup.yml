@@ -22,7 +22,6 @@ jobs:
       - name: Criando EmailConfig.cs dinamicamente
         shell: pwsh
         run: |
-          # Criamos a pasta Helpers caso ela não exista no servidor
           New-Item -ItemType Directory -Force -Path CLUSA/Helpers
           
           $content = @"
@@ -30,6 +29,7 @@ jobs:
           {
               public static class EmailConfig
               {
+                  // --- PERFIL FOLLOW-UP ---
                   public const string Follow_User = "${{ secrets.FOLLOW_USER }}";
                   public const string Follow_Pass = "${{ secrets.FOLLOW_PASS }}";
                   public const string Follow_Host = "${{ secrets.FOLLOW_HOST }}";
@@ -37,16 +37,22 @@ jobs:
                   public const string Follow_Dest = "${{ secrets.FOLLOW_DEST }}";
                   public const string Follow_Cc = "${{ secrets.FOLLOW_CC }}";
                   public const string Follow_Bcc = "${{ secrets.FOLLOW_BCC }}";
+
+                  // --- PERFIL VENCIMENTO (ADICIONADOS PARA NÃO DAR ERRO) ---
                   public const string Venc_User = "${{ secrets.FOLLOW_USER }}";
                   public const string Venc_Pass = "${{ secrets.FOLLOW_PASS }}";
+                  public const string Venc_Host = "smtp.gmail.com";
+                  public const int Venc_Port = 587;
                   public const string Venc_Dest = "${{ secrets.FOLLOW_DEST }}";
                   public const string Venc_Cc = "${{ secrets.FOLLOW_CC }}";
+                  public const string Venc_Bcc = "${{ secrets.FOLLOW_BCC }}";
+
+                  // --- BANCO DE DADOS ---
                   public const string MongoUriProducao = "${{ secrets.MONGODB_URI }}";
                   public const string MongoUriTeste = "${{ secrets.MONGODB_URI }}";
               }
           }
           "@
-          # Salvamos na pasta Helpers para ficar organizado
           $content | Out-File -FilePath CLUSA/Helpers/EmailConfig.cs -Encoding utf8
         
       - name: Restaurando Dependencias (Nuget)
