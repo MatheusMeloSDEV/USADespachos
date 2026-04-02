@@ -367,3 +367,7 @@ FodyWeavers.xsd
 /CLUSA/Services/EmailService.cs
 /CLUSA.Tests/Tests.csproj
 /CLUSA/Helpers/EmailConfig.cs
+/CLUSA.Tests/EmailServiceTests.cs
+/CLUSA.Tests/FollowUpTests.cs
+/CLUSA.Tests/MSTestSettings.cs
+/CLUSA.Tests/ScraperTests.cs
