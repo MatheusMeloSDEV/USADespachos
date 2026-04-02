@@ -13,9 +13,24 @@ namespace CLUSA.Repositories
         // Lógica Híbrida: 
         // 1. Tenta ler "MONGODB_URI" da Nuvem (GitHub).
         // 2. Se for nulo, usa o EmailConfig local baseado no IsProducao.
-        public static string MongoConnectionString =>
-            Environment.GetEnvironmentVariable("MONGODB_URI")
-            ?? (IsProducao ? EmailConfig.MongoUriProducao : EmailConfig.MongoUriTeste);
+        public static string MongoConnectionString
+        {
+            get
+            {
+                // 1. Tenta sempre ler da Nuvem primeiro
+                var uriNuvem = Environment.GetEnvironmentVariable("MONGODB_URI");
+                if (!string.IsNullOrEmpty(uriNuvem)) return uriNuvem;
+
+                // 2. Se não estiver na nuvem, usa a lógica local
+                #if GITHUB_ACTIONS
+                    return "mongodb://localhost:27017"; 
+                #else
+                // No seu PC, ele vai usar o seu arquivo privado normalmente
+                bool IsProducao = true;
+                return IsProducao ? CLUSA.Helpers.EmailConfig.MongoUriProducao : CLUSA.Helpers.EmailConfig.MongoUriTeste;
+                #endif
+            }
+        }
 
         public static string MongoDatabaseName => "Trabalho";
 

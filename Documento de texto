@@ -1,4 +1,0 @@
-GridView Anvisa
-
-N-Ref / S-Ref / Importador / Previsão / Terminal / Pendência / LI / LPCO / Data de Entrada / Data de Inspeção / Status do Processo
-Int   /Int    /String      /DateTime  /String    /String     /Int /Int   /DateTime         /Datetime          /String
