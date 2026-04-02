@@ -107,7 +107,16 @@ namespace CLUSA.Services
                 // LOGICA PARA BCC (Cópia Oculta)
                 if (!string.IsNullOrWhiteSpace(emailOculto))
                 {
-                    message.Bcc.Add(new MailboxAddress("", emailOculto.Trim()));
+                    // A mesma "mágica" da vírgula: divide, limpa os espaços e adiciona à lista
+                    var listaBcc = emailOculto.Split(',').Select(e => e.Trim());
+
+                    foreach (var email in listaBcc)
+                    {
+                        if (!string.IsNullOrEmpty(email))
+                        {
+                            message.Bcc.Add(new MailboxAddress("", email));
+                        }
+                    }
                 }
 
                 message.Subject = assunto;
