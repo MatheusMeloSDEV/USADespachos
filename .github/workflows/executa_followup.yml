@@ -22,8 +22,11 @@ jobs:
       - name: Criando EmailConfig.cs dinamicamente
         shell: pwsh
         run: |
+          # Criamos a pasta Helpers caso ela não exista no servidor
+          New-Item -ItemType Directory -Force -Path CLUSA/Helpers
+          
           $content = @"
-          namespace CLUSA.Services
+          namespace CLUSA.Helpers
           {
               public static class EmailConfig
               {
@@ -34,12 +37,17 @@ jobs:
                   public const string Follow_Dest = "${{ secrets.FOLLOW_DEST }}";
                   public const string Follow_Cc = "${{ secrets.FOLLOW_CC }}";
                   public const string Follow_Bcc = "${{ secrets.FOLLOW_BCC }}";
+                  public const string Venc_User = "${{ secrets.FOLLOW_USER }}";
+                  public const string Venc_Pass = "${{ secrets.FOLLOW_PASS }}";
+                  public const string Venc_Dest = "${{ secrets.FOLLOW_DEST }}";
+                  public const string Venc_Cc = "${{ secrets.FOLLOW_CC }}";
                   public const string MongoUriProducao = "${{ secrets.MONGODB_URI }}";
                   public const string MongoUriTeste = "${{ secrets.MONGODB_URI }}";
               }
           }
           "@
-          $content | Out-File -FilePath CLUSA/Services/EmailConfig.cs -Encoding utf8
+          # Salvamos na pasta Helpers para ficar organizado
+          $content | Out-File -FilePath CLUSA/Helpers/EmailConfig.cs -Encoding utf8
         
       - name: Restaurando Dependencias (Nuget)
         # Apontamos para o .csproj, ignorando o arquivo de solução (.sln) problemático
