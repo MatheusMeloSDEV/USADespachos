@@ -92,15 +92,18 @@ namespace CLUSA.Services
                 message.From.Add(new MailboxAddress(nomeExibicao, remetente));
                 message.To.Add(new MailboxAddress("", destinatario));
 
-                // LOGICA PARA MÚLTIPLOS CC
+                // LOGICA PARA MÚLTIPLOS CC (Versão Blindada)
                 if (!string.IsNullOrWhiteSpace(emailsCopia))
                 {
-                    // Divide a string por vírgula e remove espaços extras
-                    var listaCc = emailsCopia.Split(',').Select(e => e.Trim());
+                    // 1. Aceita tanto vírgula quanto ponto e vírgula
+                    // 2. Remove entradas vazias (caso tenha digitado ,, por erro)
+                    var listaCc = emailsCopia.Split(new[] { ',', ';' }, StringSplitOptions.RemoveEmptyEntries)
+                                             .Select(e => e.Trim());
+
                     foreach (var email in listaCc)
                     {
                         if (!string.IsNullOrEmpty(email))
-                            message.Cc.Add(new MailboxAddress("", email));
+                            message.Cc.Add(new MailboxAddress("", email));  
                     }
                 }
 
