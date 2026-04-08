@@ -111,7 +111,8 @@ namespace CLUSA.Services
                 if (!string.IsNullOrWhiteSpace(emailOculto))
                 {
                     // A mesma "mágica" da vírgula: divide, limpa os espaços e adiciona à lista
-                    var listaBcc = emailOculto.Split(',').Select(e => e.Trim());
+                    var listaBcc = emailOculto.Split(new[] { ',', ';' }, StringSplitOptions.RemoveEmptyEntries)
+                         .Select(e => e.Trim());
 
                     foreach (var email in listaBcc)
                     {
