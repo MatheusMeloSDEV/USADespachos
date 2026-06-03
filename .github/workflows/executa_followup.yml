@@ -1,9 +1,9 @@
-name: Rotina Diaria Follow-Up 10h
+name: Rotina Diaria Follow-Up 7h
 
 on:
   schedule:
-    # 10:00 Horário de Brasília = 13:00 UTC
-    - cron: '30 11 * * *'
+    # 07:00 Horário de Brasília = 10:00 UTC
+    - cron: '0 10 * * *'
   workflow_dispatch: # Isso permite que você rode manualmente pelo site para testar
 
 jobs:
