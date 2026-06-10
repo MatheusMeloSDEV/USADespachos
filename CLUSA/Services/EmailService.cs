@@ -5,6 +5,7 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using MailKit.Security;
 
 namespace CLUSA.Services
 {
@@ -26,7 +27,7 @@ namespace CLUSA.Services
         // --- CONFIGURAÇÕES GERAIS (GMAIL) ---
         private const string SmtpHost = "smtp.gmail.com";
         private const int SmtpPort = 587;
-        private const bool SmtpSsl = false; 
+        private const SecureSocketOptions SmtpSecureSocketOption = SecureSocketOptions.StartTls; // Usar STARTTLS na porta 587
 
         // --- PROPRIEDADES DINÂMICAS (PERFIL 1: VENCIMENTOS) ---
         private static string Venc_Remetente => GetVal("VENC_USER", CLUSA.Helpers.EmailConfig.Venc_User);
@@ -48,12 +49,12 @@ namespace CLUSA.Services
 
         // =========================================================================
         // MÉTODOS DE ENVIO
-        // =========================================================================
+        // ========================================================================
 
         public static async Task EnviarNotificacaoVencimentoAsync(string assunto, string corpo)
         {
             await EnviarEmailComMailKitAsync(
-                SmtpHost, SmtpPort, SmtpSsl, "USA Despachos (Avisos)",
+                SmtpHost, SmtpPort, SmtpSecureSocketOption, "USA Despachos (Avisos)",
                 Venc_Remetente, Venc_Senha, Venc_Destinatario, Venc_Copia, Venc_Bcc,
                 assunto, corpo, null, null);
         }
@@ -61,7 +62,7 @@ namespace CLUSA.Services
         public static async Task EnviarFollowUpTextoAsync(string assunto, string corpo)
         {
             await EnviarEmailComMailKitAsync(
-                SmtpHost, SmtpPort, SmtpSsl, "USA Despachos",
+                SmtpHost, SmtpPort, SmtpSecureSocketOption, "USA Despachos",
                 Follow_Remetente, Follow_Senha, Follow_Destinatario, Follow_Cc, Follow_Bcc,
                 assunto, corpo, null, null);
         }
@@ -71,7 +72,7 @@ namespace CLUSA.Services
             await EnviarEmailComMailKitAsync(
                 Follow_Host,
                 Follow_Port,
-                UseSsl, // Agora ele decide se é true ou false baseado na porta
+                UseSsl ? SecureSocketOptions.SslOnConnect : SecureSocketOptions.StartTls, // Ajustado para usar SecureSocketOptions
                 "USA Despachos",
                 Follow_Remetente, Follow_Senha, Follow_Destinatario, Follow_Cc, Follow_Bcc,
                 assunto, corpo, anexoPdf, nomeArquivoPdf);
@@ -81,7 +82,7 @@ namespace CLUSA.Services
         // MOTOR DE ENVIO (PRIVADO)
         // =========================================================================
         private static async Task EnviarEmailComMailKitAsync(
-            string host, int port, bool useSsl, string nomeExibicao,
+            string host, int port, SecureSocketOptions secureSocketOption, string nomeExibicao,
             string remetente, string senha, string destinatario,
             string emailsCopia, string emailOculto, // Parâmetros atualizados
             string assunto, string corpo, byte[] anexoBytes, string nomeAnexo)
@@ -137,7 +138,7 @@ namespace CLUSA.Services
                     // Ignora erros de certificado (comum em servidores corporativos)
                     client.ServerCertificateValidationCallback = (s, c, h, e) => true;
 
-                    await client.ConnectAsync(host, port, useSsl);
+                    await client.ConnectAsync(host, port, secureSocketOption);
                     await client.AuthenticateAsync(remetente, senha);
                     await client.SendAsync(message);
                     await client.DisconnectAsync(true);

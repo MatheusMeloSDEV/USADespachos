@@ -14,7 +14,7 @@ namespace Trabalho
     public enum OrigemProcesso
     {
         Santos,
-        Itajai 
+        Itajai
     }
     public partial class FrmModificaProcesso : Form
     {
@@ -23,6 +23,7 @@ namespace Trabalho
         public Logado UsuarioLogado { get; set; }
         public string Modo { get; set; } = "Adicionar";
         public bool Visualização { get; set; } = false;
+        private bool _atualizandoGridCatalogo = false;
         public OrigemProcesso Origem { get; set; }
         private FrmLoadingOverlay? _overlay;
         private readonly RepositorioProcesso _repositorio;
@@ -80,7 +81,16 @@ namespace Trabalho
         private void AtualizarEstadoBotoesLI()
         {
             // O botão de excluir só fica ativo se houver pelo menos uma aba no controle.
-            BtnExcluirLI.Enabled = TCLi.TabCount > 0;
+            bool possuiLIsReais = processo.LI != null && processo.LI.Any(li => !string.IsNullOrWhiteSpace(li.Numero) && li.Numero != "Nova LI");
+            if (possuiLIsReais)
+            {
+                // Se tem dados de LI salvos, foca na aba de LI/LPCO
+                tcCat_LI.SelectedTab = TabLI_LPCO;
+            }
+            else
+            {
+                tcCat_LI.SelectedTab = tabCatalogo;
+            }
         }
         private void MarcarComoAlterado(object? sender, EventArgs e)
         {
@@ -118,8 +128,9 @@ namespace Trabalho
             var mudancas = new List<string>();
 
             // 1. Compara todas as propriedades simples do PROCESSO (String, Int, Date, Bool...)
-            // Ignora: Listas e Objetos complexos (Capa) que faremos separadamente
-            var ignorar = new HashSet<string> { "Id", "_id", "LI", "Capa", "DocRecebidos" };
+            // Ignora: Listas e Objetos complexos que faremos separadamente
+            // IMPORTANTE: "Catalogos" foi adicionado aqui para o Reflection não bugar
+            var ignorar = new HashSet<string> { "Id", "_id", "LI", "Capa", "DocRecebidos", "Catalogos" };
             mudancas.AddRange(CompararPropriedades(_processoOriginal, processo, ignorar));
 
             // 2. Compara a CAPA (se existir)
@@ -130,6 +141,26 @@ namespace Trabalho
                 {
                     mudancas.Add("[Alterações na CAPA]:");
                     mudancas.AddRange(mudancasCapa);
+                }
+            }
+
+            // 2.5 Compara a Lista de CATÁLOGOS
+            int qtdCatAntigo = _processoOriginal.Catalogos?.Count ?? 0;
+            int qtdCatNovo = processo.Catalogos?.Count ?? 0;
+
+            if (qtdCatAntigo != qtdCatNovo)
+            {
+                mudancas.Add($"Qtd de Catálogos: {qtdCatAntigo} -> {qtdCatNovo}");
+            }
+            else if (qtdCatNovo > 0)
+            {
+                // Se a quantidade é a mesma, verifica se os dados internos mudaram (usando JSON)
+                string jsonAntigo = JsonConvert.SerializeObject(_processoOriginal.Catalogos);
+                string jsonNovo = JsonConvert.SerializeObject(processo.Catalogos);
+
+                if (jsonAntigo != jsonNovo)
+                {
+                    mudancas.Add("Dados internos do(s) Catálogo(s) atualizados");
                 }
             }
 
@@ -178,11 +209,14 @@ namespace Trabalho
 
         private string FormatarValor(object val)
         {
-            if (val == null) return "";
-            if (val is DateTime dt) return dt.ToShortDateString(); 
-            if (val is decimal dec) return dec.ToString("N2");
-            if (val is bool b) return b ? "Sim" : "Não";
-            return val.ToString() ?? "";
+            return val switch
+            {
+                null => "",
+                DateTime dt => dt.ToShortDateString(),
+                decimal dec => dec.ToString("N2"),
+                bool b => b ? "Sim" : "Não",
+                _ => val.ToString() ?? ""
+            };
         }
 
         private void CompararListaLIs(List<string> logs)
@@ -292,7 +326,7 @@ namespace Trabalho
                     e.Cancel = true; // Cancela o fechamento
                 }
             }
-        }   
+        }
         #region "Configuração, Carregamento e Salvamento"
 
         private void ConfigurarFormularioPeloModo()
@@ -330,6 +364,11 @@ namespace Trabalho
             CarregarCheckedListBoxes();
             PopularMarca();
             CarregarAbasLi();
+
+            if (processo.Catalogos == null) processo.Catalogos = new List<Catalogo>();
+            RbRegistroRegistrado.Checked = processo.RegistroRegistrado;
+            RbRegistroPendente.Checked = processo.RegistroPendente;
+            AtualizarGridCatalogos();
         }
 
         private void SalvarDadosDosControles()
@@ -389,6 +428,9 @@ namespace Trabalho
                 processo.VencimentoLI_LPCO = null;
             }
 
+            processo.RegistroPendente = RbRegistroPendente.Checked;
+            processo.RegistroRegistrado = RbRegistroRegistrado.Checked;
+
             processo.HistoricoDoProcesso = TXTstatusdoprocesso.Text;
             processo.Pendencia = TXTpendencia.Text;
 
@@ -397,6 +439,7 @@ namespace Trabalho
             processo.Capa.Master = processo.Veiculo;
             processo.Capa.SigvigSelecionado = processo.SIGVIGSelecionado;
             processo.Capa.SigvigLiberado = processo.SIGVIGLiberado;
+
 
             foreach (TabPage abaLi in TCLi.TabPages)
             {
@@ -422,6 +465,8 @@ namespace Trabalho
 
                 throw new Exception(msg);
             }
+
+
             ProcessoHelper.AtualizarCondicaoProcesso(processo);
         }
         private async void btnAdiciona_Click(object? sender, EventArgs e)
@@ -443,9 +488,9 @@ namespace Trabalho
                             MessageBoxIcon.Warning
                         );
 
-                        TXTnr.Clear(); 
+                        TXTnr.Clear();
                         TXTnr.Focus();
-                        return; 
+                        return;
                     }
                 }
 
@@ -661,7 +706,8 @@ namespace Trabalho
             var builder = Builders<Processo>.Update;
 
             // 1. Verifica propriedades simples via Reflection
-            var ignorar = new HashSet<string> { "Id", "_id", "LI", "Capa", "DocRecebidos", "OrgaosAnuentesString" };
+            // IMPORTANTE: Adicionei "Catalogos" na lista de ignorar para o Reflection não bugar
+            var ignorar = new HashSet<string> { "Id", "_id", "LI", "Capa", "DocRecebidos", "OrgaosAnuentesString", "Catalogos" };
             PropertyInfo[] propriedades = _processoOriginal.GetType().GetProperties();
 
             foreach (var prop in propriedades)
@@ -687,10 +733,39 @@ namespace Trabalho
             string strNovo = processo.DocRecebidos == null ? "" : string.Join(",", processo.DocRecebidos);
             if (strAntigo != strNovo) updates.Add(builder.Set(p => p.DocRecebidos, processo.DocRecebidos));
 
-            // 4. Compara LIs (Se houver qualquer diferença nas LIs, atualiza o array todo)
+            // 4. Compara LIs
             var logsLi = new List<string>();
             CompararListaLIs(logsLi);
             if (logsLi.Any()) updates.Add(builder.Set(p => p.LI, processo.LI));
+
+            // 5. COMPARAÇÃO DA NOVA LISTA DE CATÁLOGOS
+            var listaCatAntiga = _processoOriginal.Catalogos ?? new List<Catalogo>();
+            var listaCatNova = processo.Catalogos ?? new List<Catalogo>();
+
+            bool catalogosMudou = false;
+
+            // Se a quantidade de catálogos for diferente, já sabemos que mudou (adicionou/excluiu)
+            if (listaCatAntiga.Count != listaCatNova.Count)
+            {
+                catalogosMudou = true;
+            }
+            else if (listaCatNova.Count > 0)
+            {
+                // Se a quantidade é a mesma, alguém pode ter editado um catálogo (alterado NCM, adicionado Órgão, etc).
+                // Usamos JSON para comparar o conteúdo de tudo de forma rápida.
+                string jsonAntigo = JsonConvert.SerializeObject(listaCatAntiga);
+                string jsonNovo = JsonConvert.SerializeObject(listaCatNova);
+
+                if (jsonAntigo != jsonNovo)
+                {
+                    catalogosMudou = true;
+                }
+            }
+
+            if (catalogosMudou)
+            {
+                updates.Add(builder.Set(p => p.Catalogos, processo.Catalogos));
+            }
 
             return updates;
         }
@@ -732,7 +807,8 @@ namespace Trabalho
             var txtLiControl = editorLi.Controls.Find("TxtLi", true).FirstOrDefault() as TextBox;
             if (txtLiControl != null)
             {
-                txtLiControl.TextChanged += (s, e) => {
+                txtLiControl.TextChanged += (s, e) =>
+                {
                     tabPageLi.Text = $"LI - {txtLiControl.Text}";
                 };
             }
@@ -962,9 +1038,7 @@ namespace Trabalho
         }
         private void SetCamposSomenteLeitura(Control parent)
         {
-            // Desabilita botões de ação que não fazem sentido no modo de visualização
-            BtnLI.Enabled = false; // Exemplo de botão no designer
-                                                 // Adicione outros botões que precisam ser desabilitados
+            BtnLI.Enabled = false;
 
             foreach (Control control in parent.Controls)
             {
@@ -1114,5 +1188,291 @@ namespace Trabalho
             _overlay = null;
         }
 
+        private void dataGridView1_CellContentClick(object sender, DataGridViewCellEventArgs e)
+        {
+
+        }
+
+        private void BtnAdicionarCatalogo_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                using var frm = new FrmModificaCatalogo();
+                frm.StartPosition = FormStartPosition.CenterParent;
+                frm.Modo = FrmModificaCatalogo.ModoFormulario.Adicionar;
+
+                var result = frm.ShowDialog(this);
+                if (result == DialogResult.OK && frm.CatalogoInicial != null)
+                {
+                    if (processo.Catalogos == null) processo.Catalogos = new List<Catalogo>();
+
+                    processo.Catalogos.Add(frm.CatalogoInicial);
+                    AtualizarGridCatalogos();
+
+                    // --- LÓGICA DE AUTOMATIZAÇÃO DO HISTÓRICO (ADICIONAR) ---
+                    string dataAtual = DateTime.Now.ToString("dd/MM");
+
+                    // 1. Adiciona a linha do NCM e cClassTrib
+                    string logNcm = $"{dataAtual} - NCM: {frm.CatalogoInicial.NCM} - cClassTrib: {frm.CatalogoInicial.cClassTrib}.";
+                    TXTstatusdoprocesso.Text = $"{logNcm}\r\n{TXTstatusdoprocesso.Text}".Trim();
+
+                    // 2. Se o usuário já adicionou ANVISA com comunicado logo na criação, também avisa
+                    var anvisa = frm.CatalogoInicial.Orgaos?.FirstOrDefault(o => o.OrgaoId != null && o.OrgaoId.Contains("ANVISA", StringComparison.OrdinalIgnoreCase));
+                    if (anvisa != null && !string.IsNullOrWhiteSpace(anvisa.Comunicado))
+                    {
+                        string logAnvisa = $"{dataAtual} - Comunicado ANVISA: {anvisa.Comunicado}.";
+                        TXTstatusdoprocesso.Text = $"{logAnvisa}\r\n{TXTstatusdoprocesso.Text}".Trim();
+                    }
+                    // --------------------------------------------------------
+
+                    _dadosForamAlterados = true;
+                    this.Text += this.Text.EndsWith("*") ? "" : "*";
+
+                    MessageBox.Show("Catálogo adicionado ao processo.", "Concluído", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Erro ao abrir o formulário de catálogo: {ex.Message}", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private void BtnEditarCatalogo_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                var catalogoSelecionado = DGVCatalogo.CurrentRow?.DataBoundItem as Catalogo;
+                if (catalogoSelecionado == null)
+                {
+                    MessageBox.Show("Selecione um catálogo na lista para editar.", "Atenção", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
+
+                using var frm = new FrmModificaCatalogo();
+                frm.StartPosition = FormStartPosition.CenterParent;
+                frm.Modo = FrmModificaCatalogo.ModoFormulario.Editar;
+                frm.CatalogoInicial = catalogoSelecionado;
+
+                var result = frm.ShowDialog(this);
+
+                if (result == DialogResult.OK && frm.CatalogoInicial != null)
+                {
+                    // --- LÓGICA DE AUTOMATIZAÇÃO DO HISTÓRICO (EDITAR ANVISA) ---
+                    var anvisaAntigo = catalogoSelecionado.Orgaos?.FirstOrDefault(o => o.OrgaoId != null && o.OrgaoId.Contains("ANVISA", StringComparison.OrdinalIgnoreCase));
+                    var anvisaNovo = frm.CatalogoInicial.Orgaos?.FirstOrDefault(o => o.OrgaoId != null && o.OrgaoId.Contains("ANVISA", StringComparison.OrdinalIgnoreCase));
+
+                    // Se o ANVISA existe no novo objeto
+                    if (anvisaNovo != null)
+                    {
+                        string comunicadoAntigo = anvisaAntigo?.Comunicado ?? "";
+                        string comunicadoNovo = anvisaNovo.Comunicado ?? "";
+
+                        // Verifica se a palavra mudou e se não está vazio
+                        if (comunicadoAntigo != comunicadoNovo && !string.IsNullOrWhiteSpace(comunicadoNovo))
+                        {
+                            string dataAtual = DateTime.Now.ToString("dd/MM");
+                            string logAnvisa = $"{dataAtual} - Comunicado ANVISA: {comunicadoNovo}.";
+                            TXTstatusdoprocesso.Text = $"{logAnvisa}\r\n{TXTstatusdoprocesso.Text}".Trim();
+                        }
+                    }
+                    // -----------------------------------------------------------
+
+                    int index = processo.Catalogos.IndexOf(catalogoSelecionado);
+                    if (index >= 0)
+                    {
+                        processo.Catalogos[index] = frm.CatalogoInicial;
+                    }
+
+                    AtualizarGridCatalogos();
+
+                    _dadosForamAlterados = true;
+                    this.Text += this.Text.EndsWith("*") ? "" : "*";
+                    MessageBox.Show("Catálogo atualizado.", "Concluído", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Erro ao editar o catálogo: {ex.Message}", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private void BtnExcluirCatalogo_Click(object sender, EventArgs e)
+        {
+            var catalogoSelecionado = DGVCatalogo.CurrentRow?.DataBoundItem as Catalogo;
+            if (catalogoSelecionado == null)
+            {
+                MessageBox.Show("Selecione um catálogo para excluir.", "Aviso", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+
+            var resp = MessageBox.Show("Tem certeza que deseja excluir o catálogo selecionado?", "Confirmar Exclusão", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
+            if (resp == DialogResult.Yes)
+            {
+                processo.Catalogos.Remove(catalogoSelecionado);
+
+                AtualizarGridCatalogos();
+                DGVOrgaoCatalogo.DataSource = null;
+
+                _dadosForamAlterados = true;
+                this.Text += this.Text.EndsWith("*") ? "" : "*";
+            }
+        }
+
+        // Este evento deve ser atrelado ao evento 'SelectionChanged' do seu DGVCatalogo
+        private void DGVCatalogo_SelectionChanged(object sender, EventArgs e)
+        {
+            // === 1. GUARDA DE SEGURANÇA CONTRA ERRO DE CURRENCYMANAGER ===
+            if (DGVCatalogo.DataSource == null || DGVCatalogo.Rows.Count == 0)
+            {
+                DGVOrgaoCatalogo.DataSource = null;
+                return; // Sai do método antes de tentar ler o CurrentRow e causar o erro
+            }
+
+            // === 2. LÓGICA NORMAL PROTEGIDA ===
+            if (DGVCatalogo.CurrentRow != null && DGVCatalogo.CurrentRow.Index >= 0)
+            {
+                var catalogoSelecionado = DGVCatalogo.CurrentRow.DataBoundItem as Catalogo;
+
+                if (catalogoSelecionado != null)
+                {
+                    var listaOrgaos = catalogoSelecionado.Orgaos;
+                    DGVOrgaoCatalogo.DataSource = null;
+
+                    if (listaOrgaos != null && listaOrgaos.Count > 0)
+                    {
+                        DGVOrgaoCatalogo.DataSource = listaOrgaos;
+
+                        // --- FORMATAÇÃO VISUAL DO DGVOrgaoCatalogo ---
+                        if (DGVOrgaoCatalogo.Columns.Contains("Inspecao"))
+                        {
+                            DGVOrgaoCatalogo.Columns["Inspecao"].DefaultCellStyle.Format = "d";
+                            DGVOrgaoCatalogo.Columns["Inspecao"].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
+                        }
+
+                        if (DGVOrgaoCatalogo.Columns.Contains("Coleta"))
+                        {
+                            DGVOrgaoCatalogo.Columns["Coleta"].DefaultCellStyle.Format = "d";
+                            DGVOrgaoCatalogo.Columns["Coleta"].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
+                        }
+
+                        if (DGVOrgaoCatalogo.Columns.Contains("Parametrizacao"))
+                        {
+                            DGVOrgaoCatalogo.Columns["Parametrizacao"].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
+                        }
+                    }
+                }
+                else
+                {
+                    DGVOrgaoCatalogo.DataSource = null;
+                }
+            }
+            else
+            {
+                DGVOrgaoCatalogo.DataSource = null;
+            }
+        }
+        private void AtualizarGridCatalogos()
+        {
+            // 1. Levanta a "bandeira" avisando que a grid está em manutenção
+            _atualizandoGridCatalogo = true;
+
+            try
+            {
+                DGVCatalogo.DataSource = null;
+
+                if (processo.Catalogos != null && processo.Catalogos.Count > 0)
+                {
+                    // O .ToList() é o segredo aqui: Ele força a grid a ler uma nova memória, 
+                    // fugindo do erro de Index do CurrencyManager.
+                    DGVCatalogo.DataSource = processo.Catalogos.ToList();
+
+                    // --- FORMATAÇÃO VISUAL DO DGVCatalogo ---
+                    if (DGVCatalogo.Columns.Contains("Id"))
+                        DGVCatalogo.Columns["Id"].Visible = false;
+
+                    if (DGVCatalogo.Columns.Contains("NCM"))
+                        DGVCatalogo.Columns["NCM"].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
+
+                    if (DGVCatalogo.Columns.Contains("cClassTrib"))
+                        DGVCatalogo.Columns["cClassTrib"].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
+                }
+                else
+                {
+                    DGVOrgaoCatalogo.DataSource = null;
+                }
+            }
+            finally
+            {
+                // 2. Abaixa a bandeira aconteça o que acontecer
+                _atualizandoGridCatalogo = false;
+            }
+
+            // 3. Força a leitura da seleção manualmente agora que a grid está estável
+            DGVCatalogo_SelectionChanged(DGVCatalogo, EventArgs.Empty);
+        }
+
+        private void RbRegistroRegistrado_CheckedChanged(object sender, EventArgs e)
+        {
+            // O .Focused garante que isso só dispare pelo clique do usuário, e não no Load da tela
+            if (RbRegistroRegistrado.Checked && RbRegistroRegistrado.Focused)
+            {
+                string codigo = MostrarInputBox("Digite o código interno gerado no registro:", "Código do Registro");
+
+                // Se o usuário digitou algo e clicou em OK
+                if (!string.IsNullOrWhiteSpace(codigo))
+                {
+                    string dataAtual = DateTime.Now.ToString("dd/MM");
+                    string novaLinha = $"{dataAtual} - Registro Catálogo de Produtos: Registrado ({codigo}).";
+
+                    // Adiciona no topo do TextBox do histórico
+                    TXTstatusdoprocesso.Text = $"{novaLinha}\r\n{TXTstatusdoprocesso.Text}".Trim();
+                }
+                else
+                {
+                    // Se ele cancelar a caixinha ou deixar vazio, voltamos a marcação pro Pendente
+                    RbRegistroPendente.Checked = true;
+                }
+            }
+        }
+
+        private void RbRegistroPendente_CheckedChanged(object sender, EventArgs e)
+        {
+            // O .Focused garante que isso só dispare pelo clique do usuário
+            if (RbRegistroPendente.Checked && RbRegistroPendente.Focused)
+            {
+                string dataAtual = DateTime.Now.ToString("dd/MM");
+                string novaLinha = $"{dataAtual} - Registro Catálogo de Produtos: Pendente.";
+
+                // Adiciona no topo do TextBox do histórico
+                TXTstatusdoprocesso.Text = $"{novaLinha}\r\n{TXTstatusdoprocesso.Text}".Trim();
+            }
+        }
+
+        private string MostrarInputBox(string mensagem, string titulo)
+        {
+            using Form prompt = new Form()
+            {
+                Width = 400,
+                Height = 150,
+                FormBorderStyle = FormBorderStyle.FixedDialog,
+                Text = titulo,
+                StartPosition = FormStartPosition.CenterParent,
+                MaximizeBox = false,
+                MinimizeBox = false
+            };
+
+            Label textLabel = new Label() { Left = 20, Top = 20, Text = mensagem, Width = 340 };
+            TextBox textBox = new TextBox() { Left = 20, Top = 45, Width = 340 };
+            Button confirmation = new Button() { Text = "OK", Left = 260, Top = 75, Width = 100, DialogResult = DialogResult.OK };
+
+            // Ao apertar ENTER no TextBox, ele clica no OK
+            prompt.AcceptButton = confirmation;
+
+            prompt.Controls.Add(textBox);
+            prompt.Controls.Add(confirmation);
+            prompt.Controls.Add(textLabel);
+
+            return prompt.ShowDialog(this) == DialogResult.OK ? textBox.Text : string.Empty;
+        }
     }
 }

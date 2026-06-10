@@ -6,6 +6,7 @@ using System.Linq;
 
 namespace CLUSA.Models
 {
+    [BsonIgnoreExtraElements]
     public class Processo
     {
         [BsonId]
@@ -30,7 +31,6 @@ namespace CLUSA.Models
         public DateTime? VencimentoFreeTime { get; set; }
         public DateTime? VencimentoFMA { get; set; }
         public DateTime? VencimentoLI_LPCO { get; set; }
-
         public string Ref_USA { get; set; } = string.Empty;
         public string Importador { get; set; } = string.Empty;
         public string SR { get; set; } = string.Empty;
@@ -46,17 +46,40 @@ namespace CLUSA.Models
         public string Armador { get; set; } = string.Empty;
         public string CE { get; set; } = string.Empty;
 
+        // Catálogo
+        public List<Catalogo> Catalogos { get; set; } = new List<Catalogo>();
+
+        // Compatibilidade com documentos antigos que tinham o campo singular 'catalogo'.
+        // Ao desserializar um documento com 'catalogo', o BSON irá popular esta propriedade
+        // e o setter migrará para a nova lista 'Catalogos'.
+        [BsonElement("catalogo")]
+        [System.Obsolete("Use Catalogos (lista) em vez de catalogo singular.")]
+        public Catalogo? CatalogoLegacy
+        {
+            get => (Catalogos != null && Catalogos.Count > 0) ? Catalogos[0] : null;
+            set
+            {
+                if (value == null)
+                {
+                    Catalogos = new List<Catalogo>();
+                }
+                else
+                {
+                    Catalogos = new List<Catalogo> { value };
+                }
+            }
+        }
+
+        public bool RegistroPendente { get; set; } = false;
+        public bool RegistroRegistrado { get; set; } = false;
         public string Container { get; set; } = string.Empty;
         public bool PresencaDeCarga { get; set; } = false;
         public bool CapaOK { get; set; } = false;
         public bool SIGVIGLiberado { get; set; } = false;
         public bool SIGVIGSelecionado { get; set; } = false;
         public bool ResultadoLab { get; set; } = false;
-
-        // Relacionamentos (Agora o C# sabe onde buscar porque estão no mesmo Namespace)
         public List<LicencaImportacao> LI { get; set; } = new List<LicencaImportacao>();
         public Capa Capa { get; set; } = new Capa();
-
         public string LocalDeDesembaraco { get; set; } = string.Empty;
         public string DI { get; set; } = string.Empty;
         public string RascunhoDI { get; set; } = string.Empty;
@@ -65,22 +88,18 @@ namespace CLUSA.Models
         public DateTime? DataCarregamentoDI { get; set; }
         public DateTime? DataMinutaDI { get; set; }
         public string ParametrizacaoDI { get; set; } = string.Empty;
-
         public DateTime? DataDeAtracacao { get; set; }
         public DateTime? Inspecao { get; set; }
         public DateTime? DataEmbarque { get; set; }
-
         public DateTime? DataRecebOriginais { get; set; }
         public string FormaRecOriginais { get; set; } = string.Empty;
         public string[] DocRecebidos { get; set; } = Array.Empty<string>();
         public string Origem { get; set; } = string.Empty;
-
         public bool Amostra { get; set; } = false;
         public bool Desovado { get; set; } = false;
         public bool Redestinacao { get; set; } = false;
         public bool Numerario { get; set; } = false;
         public bool SigVig { get; set; } = false;
-
         public string HistoricoDoProcesso { get; set; } = string.Empty;
         public string Pendencia { get; set; } = string.Empty;
         public string Status { get; set; } = "Aguardando embarque";

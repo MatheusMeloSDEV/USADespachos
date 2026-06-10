@@ -333,13 +333,22 @@ namespace CLUSA.Repositories
 
         public async Task<List<string>> ObterValoresUnicosAsync(string campo)
         {
+            // --- TRADUÇÃO DE CAMPOS COMPLEXOS PARA O MONGODB ---
+            if (campo == "Catalogos") campo = "Catalogos.NCM";
+            if (campo == "LI") campo = "LI.Numero";
+            // ---------------------------------------------------
+
             // Distinct é muito rápido com índice
             return await _colecao.Distinct<string>(campo, FilterDefinition<Processo>.Empty).ToListAsync();
         }
 
         public async Task<List<Processo>> PesquisarAsync(string campo, string pesquisa)
         {
-            // Adicionado limite para não travar se a busca for muito ampla
+            // --- TRADUÇÃO DE CAMPOS COMPLEXOS PARA O MONGODB ---
+            if (campo == "Catalogos") campo = "Catalogos.NCM";
+            if (campo == "LI") campo = "LI.Numero";
+            // ---------------------------------------------------
+
             var filter = Builders<Processo>.Filter.Regex(campo, new BsonRegularExpression(new Regex(pesquisa, RegexOptions.IgnoreCase)));
             return await _colecao.Find(filter).Limit(200).ToListAsync();
         }

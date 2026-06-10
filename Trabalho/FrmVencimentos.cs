@@ -73,7 +73,7 @@ namespace Trabalho
                                    $"Itens a vencer:<br>{avisos.Replace("\n", "<br>")}<br>" +
                                    $"Por favor, verifique no sistema.";
 
-                    await EmailService.EnviarFollowUpTextoAsync(assunto, corpo);
+                    await EmailService.EnviarNotificacaoVencimentoAsync(assunto, corpo);
                     await _repoLog.RegistrarLogAsync("Notificação", _logadoNome, $"E-mail automático enviado para {item.Importador}");
 
                     item.DataUltimaNotificacao = hoje;

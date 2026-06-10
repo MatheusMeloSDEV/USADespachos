@@ -99,10 +99,19 @@ namespace Trabalho
                 var grid = (DataGridView)sender;
 
                 // Se a coluna for "LI", formata a lista de licenças
-                if (grid.Columns[e.ColumnIndex].DataPropertyName == "LI" && e.Value is List<LicencaImportacao> lista)
+                if (grid.Columns[e.ColumnIndex].DataPropertyName == "LI" && e.Value is List<LicencaImportacao> listaLi)
                 {
-                    e.Value = string.Join(", ", lista
+                    e.Value = string.Join(", ", listaLi
                         .Select(x => x.Numero)
+                        .Where(n => !string.IsNullOrWhiteSpace(n)));
+                    e.FormattingApplied = true;
+                }
+
+                // ✅ NOVA LÓGICA: Se a coluna for "Catalogos", formata a lista extraindo os NCMs separados por vírgula
+                if (grid.Columns[e.ColumnIndex].DataPropertyName == "Catalogos" && e.Value is List<Catalogo> listaCatalogos)
+                {
+                    e.Value = string.Join(", ", listaCatalogos
+                        .Select(x => x.NCM)
                         .Where(n => !string.IsNullOrWhiteSpace(n)));
                     e.FormattingApplied = true;
                 }
@@ -268,7 +277,8 @@ namespace Trabalho
             new("Pendencia", "Pendência", minimumWidth: 200),
             new("Status", "Status"),
             new("CondicaoProcesso", "Condição Processo"),
-            new("OrgaosAnuentesString", "Órgãos Anuentes")
+            new("OrgaosAnuentesString", "Órgãos Anuentes"),
+            new("Catalogos", "NCM (Catálogos)", minimumWidth: 150, somenteLeitura: true)
         };
 
             string[] gridsProcesso =

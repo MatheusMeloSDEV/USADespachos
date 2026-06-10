@@ -1,6 +1,6 @@
 ﻿namespace Trabalho
 {
-    partial class FrmModificaProcesso
+    partial class Form1
     {
         /// <summary>
         /// Required designer variable.
@@ -29,12 +29,6 @@
         private void InitializeComponent()
         {
             components = new System.ComponentModel.Container();
-            DataGridViewCellStyle dataGridViewCellStyle10 = new DataGridViewCellStyle();
-            DataGridViewCellStyle dataGridViewCellStyle11 = new DataGridViewCellStyle();
-            DataGridViewCellStyle dataGridViewCellStyle12 = new DataGridViewCellStyle();
-            DataGridViewCellStyle dataGridViewCellStyle7 = new DataGridViewCellStyle();
-            DataGridViewCellStyle dataGridViewCellStyle8 = new DataGridViewCellStyle();
-            DataGridViewCellStyle dataGridViewCellStyle9 = new DataGridViewCellStyle();
             groupBox2 = new GroupBox();
             TxtRascunhoDI = new TextBox();
             BsModificaProcesso = new BindingSource(components);
@@ -98,6 +92,7 @@
             numMarca = new NumericUpDown();
             btnCapa = new Button();
             btnRelatorio = new Button();
+            TCLi = new TabControl();
             label32 = new Label();
             CbStatus = new ComboBox();
             LBLdatadeatracacao = new Label();
@@ -130,26 +125,14 @@
             flowLayoutPanel1 = new FlowLayoutPanel();
             groupBox8 = new GroupBox();
             groupBox9 = new GroupBox();
+            groupBox10 = new GroupBox();
+            tableLayoutPanel1 = new TableLayoutPanel();
+            BtnExcluirLI = new Button();
+            BtnLI = new Button();
             groupBox5 = new GroupBox();
             CbSigVig = new CheckBox();
             checkBox1 = new CheckBox();
             checkBox2 = new CheckBox();
-            tcCat_LI = new TabControl();
-            tabCatalogo = new TabPage();
-            groupBox12 = new GroupBox();
-            RbRegistroRegistrado = new RadioButton();
-            RbRegistroPendente = new RadioButton();
-            BtnExcluirCatalogo = new Button();
-            BtnEditarCatalogo = new Button();
-            groupBox13 = new GroupBox();
-            DGVOrgaoCatalogo = new DataGridView();
-            DGVCatalogo = new DataGridView();
-            BtnAdicionarCatalogo = new Button();
-            TabLI_LPCO = new TabPage();
-            tableLayoutPanel1 = new TableLayoutPanel();
-            BtnExcluirLI = new Button();
-            BtnLI = new Button();
-            TCLi = new TabControl();
             groupBox2.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)BsModificaProcesso).BeginInit();
             ((System.ComponentModel.ISupportInitialize)NUMfreetime).BeginInit();
@@ -161,15 +144,9 @@
             groupBox7.SuspendLayout();
             groupBox8.SuspendLayout();
             groupBox9.SuspendLayout();
-            groupBox5.SuspendLayout();
-            tcCat_LI.SuspendLayout();
-            tabCatalogo.SuspendLayout();
-            groupBox12.SuspendLayout();
-            groupBox13.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)DGVOrgaoCatalogo).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)DGVCatalogo).BeginInit();
-            TabLI_LPCO.SuspendLayout();
+            groupBox10.SuspendLayout();
             tableLayoutPanel1.SuspendLayout();
+            groupBox5.SuspendLayout();
             SuspendLayout();
             // 
             // groupBox2
@@ -197,7 +174,7 @@
             groupBox2.Size = new Size(318, 228);
             groupBox2.TabIndex = 17;
             groupBox2.TabStop = false;
-            groupBox2.Text = "DI / DUIMP";
+            groupBox2.Text = "DI";
             // 
             // TxtRascunhoDI
             // 
@@ -384,7 +361,7 @@
             CBamostra.AutoSize = true;
             CBamostra.DataBindings.Add(new Binding("Checked", BsModificaProcesso, "Amostra", true));
             CBamostra.Font = new Font("Microsoft Sans Serif", 9.75F);
-            CBamostra.Location = new Point(78, 32);
+            CBamostra.Location = new Point(81, 47);
             CBamostra.Name = "CBamostra";
             CBamostra.Size = new Size(76, 20);
             CBamostra.TabIndex = 133;
@@ -397,7 +374,7 @@
             CBdesovado.AutoSize = true;
             CBdesovado.DataBindings.Add(new Binding("Checked", BsModificaProcesso, "Desovado", true));
             CBdesovado.Font = new Font("Microsoft Sans Serif", 9.75F);
-            CBdesovado.Location = new Point(78, 58);
+            CBdesovado.Location = new Point(81, 73);
             CBdesovado.Name = "CBdesovado";
             CBdesovado.Size = new Size(90, 20);
             CBdesovado.TabIndex = 100;
@@ -408,13 +385,12 @@
             // 
             btnAdiciona.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             btnAdiciona.Cursor = Cursors.Hand;
-            btnAdiciona.Location = new Point(9, 102);
+            btnAdiciona.Location = new Point(10, 134);
             btnAdiciona.Name = "btnAdiciona";
-            btnAdiciona.Size = new Size(203, 26);
+            btnAdiciona.Size = new Size(200, 29);
             btnAdiciona.TabIndex = 28;
             btnAdiciona.Text = "Salvar";
             btnAdiciona.UseVisualStyleBackColor = true;
-            btnAdiciona.Click += btnAdiciona_Click;
             // 
             // NUMfreetime
             // 
@@ -667,7 +643,6 @@
             checkedListBox2.Name = "checkedListBox2";
             checkedListBox2.Size = new Size(79, 92);
             checkedListBox2.TabIndex = 309;
-            checkedListBox2.ItemCheck += checkedListBox2_ItemCheck;
             // 
             // label24
             // 
@@ -853,32 +828,40 @@
             // 
             btnCapa.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             btnCapa.Cursor = Cursors.Hand;
-            btnCapa.Location = new Point(116, 70);
+            btnCapa.Location = new Point(10, 65);
             btnCapa.Name = "btnCapa";
-            btnCapa.Size = new Size(96, 29);
+            btnCapa.Size = new Size(200, 29);
             btnCapa.TabIndex = 404;
             btnCapa.Text = "Capa";
             btnCapa.UseVisualStyleBackColor = true;
-            btnCapa.Click += btnCapa_Click;
             // 
             // btnRelatorio
             // 
             btnRelatorio.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             btnRelatorio.Cursor = Cursors.Hand;
-            btnRelatorio.Location = new Point(9, 70);
+            btnRelatorio.Location = new Point(10, 99);
             btnRelatorio.Name = "btnRelatorio";
-            btnRelatorio.Size = new Size(96, 29);
+            btnRelatorio.Size = new Size(200, 29);
             btnRelatorio.TabIndex = 405;
             btnRelatorio.Text = "Relatório";
             btnRelatorio.UseVisualStyleBackColor = true;
-            btnRelatorio.Click += btnRelatorio_Click;
+            // 
+            // TCLi
+            // 
+            TCLi.Dock = DockStyle.Fill;
+            TCLi.Location = new Point(3, 19);
+            TCLi.Name = "TCLi";
+            TCLi.SelectedIndex = 0;
+            TCLi.Size = new Size(744, 261);
+            TCLi.SizeMode = TabSizeMode.Fixed;
+            TCLi.TabIndex = 801;
             // 
             // label32
             // 
             label32.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             label32.AutoSize = true;
             label32.Font = new Font("Microsoft Sans Serif", 9.75F);
-            label32.Location = new Point(88, 19);
+            label32.Location = new Point(89, 17);
             label32.Name = "label32";
             label32.Size = new Size(44, 16);
             label32.TabIndex = 802;
@@ -892,9 +875,9 @@
             CbStatus.DataBindings.Add(new Binding("Text", BsModificaProcesso, "Status", true));
             CbStatus.FormattingEnabled = true;
             CbStatus.Items.AddRange(new object[] { "", "Aguardando embarque", "Aguardando atracação", "Aguardando presença de carga", "Aguardando Correção CE", "Aguardando a TCA Definitivo", "Aguardando SIGVIG", "Aguardando avarias", "Providenciando LI", "Providenciando Protocolo de LPCO", "Aguardando documentos finais para LPCO", "Aguardando parametrização LI/LPCO", "Aguardando inspeção/coleta LI/LPCO", "Aguardando deferimento LI/LPCO", "Aguardando registro DI/DUIMP", "Aguardando parametrização DI/DUIMP", "Aguardando desembaraço", "Aguardando Etiquetagem", "Aguardando data de Carregamento", "Aguardando emissão de CII", "Aguardando análise MAPA e/ou ANVISA", "Aguardando Desova", "Aguardando análise RF", "Aguardando inspeção DI/DUIMP", "Aguardando Nota/Transportadora", "Aguardando desbloqueio Siscomex Carga", "Aguardando Liberação Sefaz", "Aguardando minuta devolução container vazio", "Aguardando resultado laboratório ", "Finalizado" });
-            CbStatus.Location = new Point(9, 41);
+            CbStatus.Location = new Point(10, 36);
             CbStatus.Name = "CbStatus";
-            CbStatus.Size = new Size(203, 23);
+            CbStatus.Size = new Size(200, 23);
             CbStatus.TabIndex = 803;
             // 
             // LBLdatadeatracacao
@@ -1097,7 +1080,7 @@
             CbCapa.AutoSize = true;
             CbCapa.DataBindings.Add(new Binding("Checked", BsModificaProcesso, "CapaOK", true));
             CbCapa.Font = new Font("Microsoft Sans Serif", 9.75F);
-            CbCapa.Location = new Point(343, 110);
+            CbCapa.Location = new Point(346, 125);
             CbCapa.Name = "CbCapa";
             CbCapa.Size = new Size(59, 20);
             CbCapa.TabIndex = 804;
@@ -1109,9 +1092,9 @@
             groupBox4.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             groupBox4.Controls.Add(CbLiberado);
             groupBox4.Controls.Add(CbSelecionado);
-            groupBox4.Location = new Point(105, 84);
+            groupBox4.Location = new Point(108, 99);
             groupBox4.Name = "groupBox4";
-            groupBox4.Size = new Size(198, 41);
+            groupBox4.Size = new Size(198, 50);
             groupBox4.TabIndex = 803;
             groupBox4.TabStop = false;
             groupBox4.Text = "SIGVIG";
@@ -1122,7 +1105,7 @@
             CbLiberado.AutoSize = true;
             CbLiberado.DataBindings.Add(new Binding("Checked", BsModificaProcesso, "SIGVIGLiberado", true));
             CbLiberado.Font = new Font("Microsoft Sans Serif", 8F);
-            CbLiberado.Location = new Point(110, 18);
+            CbLiberado.Location = new Point(110, 23);
             CbLiberado.Name = "CbLiberado";
             CbLiberado.Size = new Size(67, 17);
             CbLiberado.TabIndex = 804;
@@ -1135,7 +1118,7 @@
             CbSelecionado.AutoSize = true;
             CbSelecionado.DataBindings.Add(new Binding("Checked", BsModificaProcesso, "SIGVIGSelecionado", true));
             CbSelecionado.Font = new Font("Microsoft Sans Serif", 8F);
-            CbSelecionado.Location = new Point(24, 18);
+            CbSelecionado.Location = new Point(24, 23);
             CbSelecionado.Name = "CbSelecionado";
             CbSelecionado.Size = new Size(85, 17);
             CbSelecionado.TabIndex = 805;
@@ -1148,7 +1131,7 @@
             CbResultadoLaboratorial.AutoSize = true;
             CbResultadoLaboratorial.DataBindings.Add(new Binding("Checked", BsModificaProcesso, "ResultadoLab", true));
             CbResultadoLaboratorial.Font = new Font("Microsoft Sans Serif", 9.75F);
-            CbResultadoLaboratorial.Location = new Point(174, 32);
+            CbResultadoLaboratorial.Location = new Point(177, 47);
             CbResultadoLaboratorial.Name = "CbResultadoLaboratorial";
             CbResultadoLaboratorial.Size = new Size(163, 20);
             CbResultadoLaboratorial.TabIndex = 801;
@@ -1161,7 +1144,7 @@
             CbPresencaCarga.AutoSize = true;
             CbPresencaCarga.DataBindings.Add(new Binding("Checked", BsModificaProcesso, "PresencaDeCarga", true));
             CbPresencaCarga.Font = new Font("Microsoft Sans Serif", 9.75F);
-            CbPresencaCarga.Location = new Point(174, 58);
+            CbPresencaCarga.Location = new Point(177, 73);
             CbPresencaCarga.Name = "CbPresencaCarga";
             CbPresencaCarga.Size = new Size(143, 20);
             CbPresencaCarga.TabIndex = 802;
@@ -1268,9 +1251,9 @@
             groupBox8.Controls.Add(btnRelatorio);
             groupBox8.Controls.Add(btnCapa);
             groupBox8.Controls.Add(CbStatus);
-            groupBox8.Location = new Point(888, 498);
+            groupBox8.Location = new Point(888, 461);
             groupBox8.Name = "groupBox8";
-            groupBox8.Size = new Size(219, 134);
+            groupBox8.Size = new Size(219, 171);
             groupBox8.TabIndex = 821;
             groupBox8.TabStop = false;
             // 
@@ -1297,6 +1280,53 @@
             groupBox9.TabIndex = 822;
             groupBox9.TabStop = false;
             // 
+            // groupBox10
+            // 
+            groupBox10.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            groupBox10.AutoSizeMode = AutoSizeMode.GrowAndShrink;
+            groupBox10.Controls.Add(tableLayoutPanel1);
+            groupBox10.Controls.Add(TCLi);
+            groupBox10.Location = new Point(357, 182);
+            groupBox10.Name = "groupBox10";
+            groupBox10.Size = new Size(750, 283);
+            groupBox10.TabIndex = 823;
+            groupBox10.TabStop = false;
+            // 
+            // tableLayoutPanel1
+            // 
+            tableLayoutPanel1.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Right;
+            tableLayoutPanel1.ColumnCount = 2;
+            tableLayoutPanel1.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
+            tableLayoutPanel1.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
+            tableLayoutPanel1.Controls.Add(BtnExcluirLI, 1, 0);
+            tableLayoutPanel1.Controls.Add(BtnLI, 0, 0);
+            tableLayoutPanel1.Location = new Point(452, 0);
+            tableLayoutPanel1.Name = "tableLayoutPanel1";
+            tableLayoutPanel1.RowCount = 1;
+            tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
+            tableLayoutPanel1.Size = new Size(298, 30);
+            tableLayoutPanel1.TabIndex = 824;
+            // 
+            // BtnExcluirLI
+            // 
+            BtnExcluirLI.Dock = DockStyle.Fill;
+            BtnExcluirLI.Location = new Point(152, 3);
+            BtnExcluirLI.Name = "BtnExcluirLI";
+            BtnExcluirLI.Size = new Size(143, 24);
+            BtnExcluirLI.TabIndex = 819;
+            BtnExcluirLI.Text = "Excluir LI";
+            BtnExcluirLI.UseVisualStyleBackColor = true;
+            // 
+            // BtnLI
+            // 
+            BtnLI.Dock = DockStyle.Fill;
+            BtnLI.Location = new Point(3, 3);
+            BtnLI.Name = "BtnLI";
+            BtnLI.Size = new Size(143, 24);
+            BtnLI.TabIndex = 818;
+            BtnLI.Text = "Novo LI";
+            BtnLI.UseVisualStyleBackColor = true;
+            // 
             // groupBox5
             // 
             groupBox5.Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
@@ -1309,9 +1339,9 @@
             groupBox5.Controls.Add(CbPresencaCarga);
             groupBox5.Controls.Add(CbResultadoLaboratorial);
             groupBox5.Controls.Add(groupBox4);
-            groupBox5.Location = new Point(357, 490);
+            groupBox5.Location = new Point(357, 461);
             groupBox5.Name = "groupBox5";
-            groupBox5.Size = new Size(525, 142);
+            groupBox5.Size = new Size(525, 171);
             groupBox5.TabIndex = 824;
             groupBox5.TabStop = false;
             groupBox5.Text = "Campos Seletores";
@@ -1322,7 +1352,7 @@
             CbSigVig.AutoSize = true;
             CbSigVig.DataBindings.Add(new Binding("Checked", BsModificaProcesso, "SigVig", true));
             CbSigVig.Font = new Font("Microsoft Sans Serif", 9.75F);
-            CbSigVig.Location = new Point(343, 84);
+            CbSigVig.Location = new Point(346, 99);
             CbSigVig.Name = "CbSigVig";
             CbSigVig.Size = new Size(66, 20);
             CbSigVig.TabIndex = 806;
@@ -1335,7 +1365,7 @@
             checkBox1.AutoSize = true;
             checkBox1.DataBindings.Add(new Binding("Checked", BsModificaProcesso, "Redestinacao", true));
             checkBox1.Font = new Font("Microsoft Sans Serif", 9.75F);
-            checkBox1.Location = new Point(343, 32);
+            checkBox1.Location = new Point(346, 47);
             checkBox1.Name = "checkBox1";
             checkBox1.Size = new Size(104, 20);
             checkBox1.TabIndex = 805;
@@ -1348,249 +1378,18 @@
             checkBox2.AutoSize = true;
             checkBox2.DataBindings.Add(new Binding("Checked", BsModificaProcesso, "Numerario", true));
             checkBox2.Font = new Font("Microsoft Sans Serif", 9.75F);
-            checkBox2.Location = new Point(343, 58);
+            checkBox2.Location = new Point(346, 73);
             checkBox2.Name = "checkBox2";
             checkBox2.Size = new Size(89, 20);
             checkBox2.TabIndex = 804;
             checkBox2.Text = "Numerário";
             checkBox2.UseVisualStyleBackColor = true;
             // 
-            // tcCat_LI
-            // 
-            tcCat_LI.Controls.Add(tabCatalogo);
-            tcCat_LI.Controls.Add(TabLI_LPCO);
-            tcCat_LI.Location = new Point(357, 182);
-            tcCat_LI.Name = "tcCat_LI";
-            tcCat_LI.SelectedIndex = 0;
-            tcCat_LI.Size = new Size(750, 309);
-            tcCat_LI.TabIndex = 825;
-            // 
-            // tabCatalogo
-            // 
-            tabCatalogo.Controls.Add(groupBox12);
-            tabCatalogo.Controls.Add(BtnExcluirCatalogo);
-            tabCatalogo.Controls.Add(BtnEditarCatalogo);
-            tabCatalogo.Controls.Add(groupBox13);
-            tabCatalogo.Controls.Add(DGVCatalogo);
-            tabCatalogo.Controls.Add(BtnAdicionarCatalogo);
-            tabCatalogo.Location = new Point(4, 24);
-            tabCatalogo.Name = "tabCatalogo";
-            tabCatalogo.Padding = new Padding(3);
-            tabCatalogo.Size = new Size(742, 281);
-            tabCatalogo.TabIndex = 0;
-            tabCatalogo.Text = "Catálogo";
-            tabCatalogo.UseVisualStyleBackColor = true;
-            // 
-            // groupBox12
-            // 
-            groupBox12.Controls.Add(RbRegistroRegistrado);
-            groupBox12.Controls.Add(RbRegistroPendente);
-            groupBox12.Location = new Point(513, 28);
-            groupBox12.Name = "groupBox12";
-            groupBox12.Size = new Size(222, 133);
-            groupBox12.TabIndex = 14;
-            groupBox12.TabStop = false;
-            groupBox12.Text = "Catálogo de Produtos - Registro";
-            // 
-            // RbRegistroRegistrado
-            // 
-            RbRegistroRegistrado.AutoSize = true;
-            RbRegistroRegistrado.Location = new Point(69, 71);
-            RbRegistroRegistrado.Name = "RbRegistroRegistrado";
-            RbRegistroRegistrado.Size = new Size(81, 19);
-            RbRegistroRegistrado.TabIndex = 5;
-            RbRegistroRegistrado.TabStop = true;
-            RbRegistroRegistrado.Text = "Registrado";
-            RbRegistroRegistrado.UseVisualStyleBackColor = true;
-            RbRegistroRegistrado.CheckedChanged += RbRegistroRegistrado_CheckedChanged;
-            // 
-            // RbRegistroPendente
-            // 
-            RbRegistroPendente.AutoSize = true;
-            RbRegistroPendente.Location = new Point(71, 45);
-            RbRegistroPendente.Name = "RbRegistroPendente";
-            RbRegistroPendente.Size = new Size(75, 19);
-            RbRegistroPendente.TabIndex = 4;
-            RbRegistroPendente.TabStop = true;
-            RbRegistroPendente.Text = "Pendente";
-            RbRegistroPendente.UseVisualStyleBackColor = true;
-            RbRegistroPendente.CheckedChanged += RbRegistroPendente_CheckedChanged;
-            // 
-            // BtnExcluirCatalogo
-            // 
-            BtnExcluirCatalogo.Location = new Point(170, 6);
-            BtnExcluirCatalogo.Name = "BtnExcluirCatalogo";
-            BtnExcluirCatalogo.Size = new Size(75, 23);
-            BtnExcluirCatalogo.TabIndex = 13;
-            BtnExcluirCatalogo.Text = "Excluir";
-            BtnExcluirCatalogo.UseVisualStyleBackColor = true;
-            BtnExcluirCatalogo.Click += BtnExcluirCatalogo_Click;
-            // 
-            // BtnEditarCatalogo
-            // 
-            BtnEditarCatalogo.Location = new Point(89, 6);
-            BtnEditarCatalogo.Name = "BtnEditarCatalogo";
-            BtnEditarCatalogo.Size = new Size(75, 23);
-            BtnEditarCatalogo.TabIndex = 12;
-            BtnEditarCatalogo.Text = "Editar";
-            BtnEditarCatalogo.UseVisualStyleBackColor = true;
-            BtnEditarCatalogo.Click += BtnEditarCatalogo_Click;
-            // 
-            // groupBox13
-            // 
-            groupBox13.Controls.Add(DGVOrgaoCatalogo);
-            groupBox13.Location = new Point(8, 161);
-            groupBox13.Name = "groupBox13";
-            groupBox13.Size = new Size(727, 114);
-            groupBox13.TabIndex = 11;
-            groupBox13.TabStop = false;
-            groupBox13.Text = "Informacional Orgão Anuente";
-            // 
-            // DGVOrgaoCatalogo
-            // 
-            DGVOrgaoCatalogo.AllowUserToDeleteRows = false;
-            DGVOrgaoCatalogo.AllowUserToResizeRows = false;
-            dataGridViewCellStyle10.BackColor = Color.WhiteSmoke;
-            DGVOrgaoCatalogo.AlternatingRowsDefaultCellStyle = dataGridViewCellStyle10;
-            DGVOrgaoCatalogo.BackgroundColor = Color.White;
-            dataGridViewCellStyle11.Alignment = DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle11.BackColor = Color.DarkGray;
-            dataGridViewCellStyle11.Font = new Font("Segoe UI", 8.25F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            dataGridViewCellStyle11.ForeColor = Color.White;
-            dataGridViewCellStyle11.SelectionBackColor = SystemColors.Highlight;
-            dataGridViewCellStyle11.SelectionForeColor = SystemColors.HighlightText;
-            dataGridViewCellStyle11.WrapMode = DataGridViewTriState.True;
-            DGVOrgaoCatalogo.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle11;
-            DGVOrgaoCatalogo.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            dataGridViewCellStyle12.Alignment = DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle12.BackColor = Color.White;
-            dataGridViewCellStyle12.Font = new Font("Segoe UI", 9.75F, FontStyle.Regular, GraphicsUnit.Point, 0);
-            dataGridViewCellStyle12.ForeColor = Color.Black;
-            dataGridViewCellStyle12.SelectionBackColor = Color.LightBlue;
-            dataGridViewCellStyle12.SelectionForeColor = Color.Black;
-            dataGridViewCellStyle12.WrapMode = DataGridViewTriState.False;
-            DGVOrgaoCatalogo.DefaultCellStyle = dataGridViewCellStyle12;
-            DGVOrgaoCatalogo.EnableHeadersVisualStyles = false;
-            DGVOrgaoCatalogo.Location = new Point(6, 18);
-            DGVOrgaoCatalogo.Name = "DGVOrgaoCatalogo";
-            DGVOrgaoCatalogo.ReadOnly = true;
-            DGVOrgaoCatalogo.RowHeadersVisible = false;
-            DGVOrgaoCatalogo.RowTemplate.Height = 20;
-            DGVOrgaoCatalogo.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
-            DGVOrgaoCatalogo.Size = new Size(715, 89);
-            DGVOrgaoCatalogo.TabIndex = 4;
-            // 
-            // DGVCatalogo
-            // 
-            DGVCatalogo.AllowUserToAddRows = false;
-            DGVCatalogo.AllowUserToDeleteRows = false;
-            DGVCatalogo.AllowUserToResizeRows = false;
-            dataGridViewCellStyle7.BackColor = Color.WhiteSmoke;
-            DGVCatalogo.AlternatingRowsDefaultCellStyle = dataGridViewCellStyle7;
-            DGVCatalogo.BackgroundColor = Color.White;
-            dataGridViewCellStyle8.Alignment = DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle8.BackColor = Color.DarkGray;
-            dataGridViewCellStyle8.Font = new Font("Segoe UI", 9.75F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            dataGridViewCellStyle8.ForeColor = Color.White;
-            dataGridViewCellStyle8.SelectionBackColor = SystemColors.Highlight;
-            dataGridViewCellStyle8.SelectionForeColor = SystemColors.HighlightText;
-            dataGridViewCellStyle8.WrapMode = DataGridViewTriState.True;
-            DGVCatalogo.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle8;
-            DGVCatalogo.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            dataGridViewCellStyle9.Alignment = DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle9.BackColor = Color.White;
-            dataGridViewCellStyle9.Font = new Font("Segoe UI", 9.75F, FontStyle.Regular, GraphicsUnit.Point, 0);
-            dataGridViewCellStyle9.ForeColor = Color.Black;
-            dataGridViewCellStyle9.SelectionBackColor = Color.LightBlue;
-            dataGridViewCellStyle9.SelectionForeColor = Color.Black;
-            dataGridViewCellStyle9.WrapMode = DataGridViewTriState.False;
-            DGVCatalogo.DefaultCellStyle = dataGridViewCellStyle9;
-            DGVCatalogo.EnableHeadersVisualStyles = false;
-            DGVCatalogo.Location = new Point(8, 35);
-            DGVCatalogo.Name = "DGVCatalogo";
-            DGVCatalogo.ReadOnly = true;
-            DGVCatalogo.RowHeadersVisible = false;
-            DGVCatalogo.RowTemplate.Height = 20;
-            DGVCatalogo.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
-            DGVCatalogo.Size = new Size(495, 123);
-            DGVCatalogo.TabIndex = 10;
-            DGVCatalogo.SelectionChanged += DGVCatalogo_SelectionChanged;
-            // 
-            // BtnAdicionarCatalogo
-            // 
-            BtnAdicionarCatalogo.Location = new Point(8, 6);
-            BtnAdicionarCatalogo.Name = "BtnAdicionarCatalogo";
-            BtnAdicionarCatalogo.Size = new Size(75, 23);
-            BtnAdicionarCatalogo.TabIndex = 9;
-            BtnAdicionarCatalogo.Text = "Adicionar";
-            BtnAdicionarCatalogo.UseVisualStyleBackColor = true;
-            BtnAdicionarCatalogo.Click += BtnAdicionarCatalogo_Click;
-            // 
-            // TabLI_LPCO
-            // 
-            TabLI_LPCO.Controls.Add(tableLayoutPanel1);
-            TabLI_LPCO.Controls.Add(TCLi);
-            TabLI_LPCO.Location = new Point(4, 24);
-            TabLI_LPCO.Name = "TabLI_LPCO";
-            TabLI_LPCO.Padding = new Padding(3);
-            TabLI_LPCO.Size = new Size(742, 281);
-            TabLI_LPCO.TabIndex = 1;
-            TabLI_LPCO.Text = "LI/LPCO";
-            TabLI_LPCO.UseVisualStyleBackColor = true;
-            // 
-            // tableLayoutPanel1
-            // 
-            tableLayoutPanel1.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Right;
-            tableLayoutPanel1.ColumnCount = 2;
-            tableLayoutPanel1.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
-            tableLayoutPanel1.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
-            tableLayoutPanel1.Controls.Add(BtnExcluirLI, 1, 0);
-            tableLayoutPanel1.Controls.Add(BtnLI, 0, 0);
-            tableLayoutPanel1.Location = new Point(444, 0);
-            tableLayoutPanel1.Name = "tableLayoutPanel1";
-            tableLayoutPanel1.RowCount = 1;
-            tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
-            tableLayoutPanel1.Size = new Size(298, 30);
-            tableLayoutPanel1.TabIndex = 825;
-            // 
-            // BtnExcluirLI
-            // 
-            BtnExcluirLI.Dock = DockStyle.Fill;
-            BtnExcluirLI.Location = new Point(152, 3);
-            BtnExcluirLI.Name = "BtnExcluirLI";
-            BtnExcluirLI.Size = new Size(143, 24);
-            BtnExcluirLI.TabIndex = 819;
-            BtnExcluirLI.Text = "Excluir LI";
-            BtnExcluirLI.UseVisualStyleBackColor = true;
-            BtnExcluirLI.Click += BtnExcluirLi_Click;
-            // 
-            // BtnLI
-            // 
-            BtnLI.Dock = DockStyle.Fill;
-            BtnLI.Location = new Point(3, 3);
-            BtnLI.Name = "BtnLI";
-            BtnLI.Size = new Size(143, 24);
-            BtnLI.TabIndex = 818;
-            BtnLI.Text = "Novo LI";
-            BtnLI.UseVisualStyleBackColor = true;
-            BtnLI.Click += BtnLI_Click;
-            // 
-            // TCLi
-            // 
-            TCLi.Dock = DockStyle.Fill;
-            TCLi.Location = new Point(3, 3);
-            TCLi.Name = "TCLi";
-            TCLi.SelectedIndex = 0;
-            TCLi.Size = new Size(736, 275);
-            TCLi.SizeMode = TabSizeMode.Fixed;
-            TCLi.TabIndex = 802;
-            // 
-            // FrmModificaProcesso
+            // Form1
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(1443, 639);
-            Controls.Add(tcCat_LI);
             Controls.Add(groupBox5);
             Controls.Add(groupBox7);
             Controls.Add(groupBox3);
@@ -1600,12 +1399,11 @@
             Controls.Add(flowLayoutPanel1);
             Controls.Add(groupBox8);
             Controls.Add(groupBox9);
+            Controls.Add(groupBox10);
             FormBorderStyle = FormBorderStyle.FixedSingle;
             MaximizeBox = false;
-            Name = "FrmModificaProcesso";
+            Name = "Form1";
             Text = "Processo";
-            FormClosing += frmModificaProcesso_FormClosing;
-            Load += FrmModificaProcesso_Load;
             groupBox2.ResumeLayout(false);
             groupBox2.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)BsModificaProcesso).EndInit();
@@ -1625,17 +1423,10 @@
             groupBox8.PerformLayout();
             groupBox9.ResumeLayout(false);
             groupBox9.PerformLayout();
+            groupBox10.ResumeLayout(false);
+            tableLayoutPanel1.ResumeLayout(false);
             groupBox5.ResumeLayout(false);
             groupBox5.PerformLayout();
-            tcCat_LI.ResumeLayout(false);
-            tabCatalogo.ResumeLayout(false);
-            groupBox12.ResumeLayout(false);
-            groupBox12.PerformLayout();
-            groupBox13.ResumeLayout(false);
-            ((System.ComponentModel.ISupportInitialize)DGVOrgaoCatalogo).EndInit();
-            ((System.ComponentModel.ISupportInitialize)DGVCatalogo).EndInit();
-            TabLI_LPCO.ResumeLayout(false);
-            tableLayoutPanel1.ResumeLayout(false);
             ResumeLayout(false);
             PerformLayout();
         }
@@ -1701,6 +1492,7 @@
         private NumericUpDown numMarca;
         private Button btnCapa;
         private Button btnRelatorio;
+        private TabControl TCLi;
         private Label label32;
         private ComboBox CbStatus;
         private Label LBLdatadeatracacao;
@@ -1725,6 +1517,10 @@
         private FlowLayoutPanel flowLayoutPanel1;
         private GroupBox groupBox8;
         private GroupBox groupBox9;
+        private GroupBox groupBox10;
+        private TableLayoutPanel tableLayoutPanel1;
+        private Button BtnExcluirLI;
+        private Button BtnLI;
         private GroupBox groupBox5;
         private TextBox TxtRascunhoDI;
         private Label label10;
@@ -1740,21 +1536,5 @@
         private ComboBox comboBox3;
         private ComboBox comboBox2;
         private ComboBox cbTipo;
-        private TabControl tcCat_LI;
-        private TabPage tabCatalogo;
-        private TabPage TabLI_LPCO;
-        private GroupBox groupBox12;
-        private RadioButton RbRegistroRegistrado;
-        private RadioButton RbRegistroPendente;
-        private Button BtnExcluirCatalogo;
-        private Button BtnEditarCatalogo;
-        private GroupBox groupBox13;
-        private DataGridView DGVOrgaoCatalogo;
-        private DataGridView DGVCatalogo;
-        private Button BtnAdicionarCatalogo;
-        private TabControl TCLi;
-        private TableLayoutPanel tableLayoutPanel1;
-        private Button BtnExcluirLI;
-        private Button BtnLI;
     }
 }
