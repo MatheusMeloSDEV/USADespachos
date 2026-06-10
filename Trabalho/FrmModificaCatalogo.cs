@@ -22,13 +22,13 @@ namespace Trabalho
         // Quando em modo Editar, o chamador pode passar um catálogo para carregar
         public CLUSA.Models.Catalogo? CatalogoInicial { get; set; }
 
-            private bool _catalogoInteragido = false;
+        private bool _catalogoInteragido = false;
         public FrmModificaCatalogo()
         {
             InitializeComponent();
             // Anexa o evento do botão de adicionar órgão
-            BtnAdicionarOrgao.Click += BtnAdicionarOrgao_Click; 
-                this.Load += FrmModificaCatalogo_Load;
+            BtnAdicionarOrgao.Click += BtnAdicionarOrgao_Click;
+            this.Load += FrmModificaCatalogo_Load;
 
         }
 
@@ -383,6 +383,70 @@ namespace Trabalho
             {
                 BtnRemoverCatalogo.Visible = false;
                 BtnRemoverCatalogo.Enabled = false;
+            }
+        }
+
+        private bool _formatandoNCM = false;
+
+        private void txtNCM_TextChanged(object sender, EventArgs e)
+        {
+            if (_formatandoNCM) return; // Evita loop infinito
+            _formatandoNCM = true;
+
+            // Extrai só os números
+            string raw = new string(txtNCM.Text.Where(char.IsDigit).ToArray());
+            if (raw.Length > 8) raw = raw.Substring(0, 8); // Limita a 8 dígitos
+
+            // Monta a máscara 0000.00.00 progressivamente
+            string formatted = raw;
+            if (raw.Length > 6)
+                formatted = raw.Substring(0, 4) + "." + raw.Substring(4, 2) + "." + raw.Substring(6);
+            else if (raw.Length > 4)
+                formatted = raw.Substring(0, 4) + "." + raw.Substring(4);
+
+            txtNCM.Text = formatted;
+
+            // Joga o cursor para o final para você continuar digitando
+            txtNCM.SelectionStart = txtNCM.Text.Length;
+
+            _formatandoNCM = false;
+        }
+
+        private bool _formatandoClass = false;
+
+        private void txtcClassTrib_TextChanged(object sender, EventArgs e)
+        {
+            if (_formatandoClass) return; // Evita loop infinito
+            _formatandoClass = true;
+
+            // Pega os números e remove zeros à esquerda velhos para simular a "empurrada"
+            string raw = new string(txtcClassTrib.Text.Where(char.IsDigit).ToArray()).TrimStart('0');
+
+            if (raw.Length > 6) raw = raw.Substring(raw.Length - 6); // Limite de 6 dígitos
+
+            if (raw.Length > 0)
+            {
+                // Preenche com os zeros e envolve nos colchetes
+                txtcClassTrib.Text = $"[{raw.PadLeft(6, '0')}]";
+
+                // Joga o cursor para ANTES do colchete final "]"
+                txtcClassTrib.SelectionStart = txtcClassTrib.Text.Length - 1;
+            }
+            else
+            {
+                txtcClassTrib.Text = "";
+            }
+
+            _formatandoClass = false;
+        }
+
+        // --- PROTEÇÃO CONTRA LETRAS (MANTENHA ESTE MÉTODO) ---
+        private void ApenasNumeros_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            // Permite apenas números e a tecla Backspace
+            if (!char.IsControl(e.KeyChar) && !char.IsDigit(e.KeyChar))
+            {
+                e.Handled = true;
             }
         }
     }

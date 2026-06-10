@@ -1188,11 +1188,6 @@ namespace Trabalho
             _overlay = null;
         }
 
-        private void dataGridView1_CellContentClick(object sender, DataGridViewCellEventArgs e)
-        {
-
-        }
-
         private void BtnAdicionarCatalogo_Click(object sender, EventArgs e)
         {
             try
@@ -1435,6 +1430,20 @@ namespace Trabalho
             }
         }
 
+        private void DGVOrgaoCatalogo_CellFormatting(object sender, DataGridViewCellFormattingEventArgs e)
+        {
+            // Se o valor for uma data...
+            if (e.Value is DateTime data)
+            {
+                // Se for nulo ou ano 0001, transforma em vazio ("") visualmente
+                if (data == DateTime.MinValue || data.Year < 1753)
+                {
+                    e.Value = "";
+                    e.FormattingApplied = true;
+                }
+            }
+        }
+
         private void RbRegistroPendente_CheckedChanged(object sender, EventArgs e)
         {
             // O .Focused garante que isso só dispare pelo clique do usuário
@@ -1473,6 +1482,59 @@ namespace Trabalho
             prompt.Controls.Add(textLabel);
 
             return prompt.ShowDialog(this) == DialogResult.OK ? textBox.Text : string.Empty;
+        }
+
+        private void DGVCatalogo_CellClick(object sender, DataGridViewCellEventArgs e)
+        {
+            // === 1. GUARDA DE SEGURANÇA CONTRA ERRO DE CURRENCYMANAGER ===
+            if (DGVCatalogo.DataSource == null || DGVCatalogo.Rows.Count == 0)
+            {
+                DGVOrgaoCatalogo.DataSource = null;
+                return; // Sai do método antes de tentar ler o CurrentRow e causar o erro
+            }
+
+            // === 2. LÓGICA NORMAL PROTEGIDA ===
+            if (DGVCatalogo.CurrentRow != null && DGVCatalogo.CurrentRow.Index >= 0)
+            {
+                var catalogoSelecionado = DGVCatalogo.CurrentRow.DataBoundItem as Catalogo;
+
+                if (catalogoSelecionado != null)
+                {
+                    var listaOrgaos = catalogoSelecionado.Orgaos;
+                    DGVOrgaoCatalogo.DataSource = null;
+
+                    if (listaOrgaos != null && listaOrgaos.Count > 0)
+                    {
+                        DGVOrgaoCatalogo.DataSource = listaOrgaos;
+
+                        // --- FORMATAÇÃO VISUAL DO DGVOrgaoCatalogo ---
+                        if (DGVOrgaoCatalogo.Columns.Contains("Inspecao"))
+                        {
+                            DGVOrgaoCatalogo.Columns["Inspecao"].DefaultCellStyle.Format = "d";
+                            DGVOrgaoCatalogo.Columns["Inspecao"].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
+                        }
+
+                        if (DGVOrgaoCatalogo.Columns.Contains("Coleta"))
+                        {
+                            DGVOrgaoCatalogo.Columns["Coleta"].DefaultCellStyle.Format = "d";
+                            DGVOrgaoCatalogo.Columns["Coleta"].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
+                        }
+
+                        if (DGVOrgaoCatalogo.Columns.Contains("Parametrizacao"))
+                        {
+                            DGVOrgaoCatalogo.Columns["Parametrizacao"].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
+                        }
+                    }
+                }
+                else
+                {
+                    DGVOrgaoCatalogo.DataSource = null;
+                }
+            }
+            else
+            {
+                DGVOrgaoCatalogo.DataSource = null;
+            }
         }
     }
 }

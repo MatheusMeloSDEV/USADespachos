@@ -89,6 +89,7 @@
             TbOrgao.Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             TbOrgao.Location = new Point(8, 41);
             TbOrgao.Name = "TbOrgao";
+            TbOrgao.SelectedIndex = 0;
             TbOrgao.Size = new Size(428, 79);
             TbOrgao.TabIndex = 17;
             // 
@@ -200,6 +201,7 @@
             txtcClassTrib.PlaceholderText = "cClassTrib";
             txtcClassTrib.Size = new Size(100, 23);
             txtcClassTrib.TabIndex = 15;
+            txtcClassTrib.TextChanged += txtcClassTrib_TextChanged;
             // 
             // txtNCM
             // 
@@ -208,6 +210,7 @@
             txtNCM.PlaceholderText = "NCM";
             txtNCM.Size = new Size(140, 23);
             txtNCM.TabIndex = 14;
+            txtNCM.TextChanged += txtNCM_TextChanged;
             // 
             // BtnSalvar
             // 
