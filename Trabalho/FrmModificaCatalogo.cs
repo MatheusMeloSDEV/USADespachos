@@ -262,6 +262,7 @@ namespace Trabalho
 
             var catalogo = new Catalogo
             {
+                Mercadoria = txtMercadoria.Text ?? string.Empty,
                 NCM = txtNCM.Text ?? string.Empty,
                 cClassTrib = txtcClassTrib.Text ?? string.Empty,
                 Orgaos = Orgaos
@@ -318,6 +319,7 @@ namespace Trabalho
                 {
                     txtNCM.Text = CatalogoInicial.NCM;
                     txtcClassTrib.Text = CatalogoInicial.cClassTrib;
+                    txtMercadoria.Text = CatalogoInicial.Mercadoria;
 
                     foreach (var org in CatalogoInicial.Orgaos)
                     {

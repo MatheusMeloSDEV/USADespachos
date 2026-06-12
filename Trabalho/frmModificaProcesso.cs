@@ -130,7 +130,7 @@ namespace Trabalho
             // 1. Compara todas as propriedades simples do PROCESSO (String, Int, Date, Bool...)
             // Ignora: Listas e Objetos complexos que faremos separadamente
             // IMPORTANTE: "Catalogos" foi adicionado aqui para o Reflection não bugar
-            var ignorar = new HashSet<string> { "Id", "_id", "LI", "Capa", "DocRecebidos", "Catalogos" };
+            var ignorar = new HashSet<string> { "Id", "_id", "LI", "Capa", "DocRecebidos", "Catalogos", "CatalogoLegacy" };
             mudancas.AddRange(CompararPropriedades(_processoOriginal, processo, ignorar));
 
             // 2. Compara a CAPA (se existir)
@@ -705,9 +705,7 @@ namespace Trabalho
             var updates = new List<UpdateDefinition<Processo>>();
             var builder = Builders<Processo>.Update;
 
-            // 1. Verifica propriedades simples via Reflection
-            // IMPORTANTE: Adicionei "Catalogos" na lista de ignorar para o Reflection não bugar
-            var ignorar = new HashSet<string> { "Id", "_id", "LI", "Capa", "DocRecebidos", "OrgaosAnuentesString", "Catalogos" };
+            var ignorar = new HashSet<string> { "Id", "_id", "LI", "Capa", "DocRecebidos", "OrgaosAnuentesString", "Catalogos", "CatalogoLegacy" };
             PropertyInfo[] propriedades = _processoOriginal.GetType().GetProperties();
 
             foreach (var prop in propriedades)
@@ -739,8 +737,19 @@ namespace Trabalho
             if (logsLi.Any()) updates.Add(builder.Set(p => p.LI, processo.LI));
 
             // 5. COMPARAÇÃO DA NOVA LISTA DE CATÁLOGOS
+            // Suporte a documentos legados: se o objeto original/usado tiver o campo singular 'catalogo',
+            // converte para a lista para comparação/migração correta.
             var listaCatAntiga = _processoOriginal.Catalogos ?? new List<Catalogo>();
+            if ((listaCatAntiga == null || listaCatAntiga.Count == 0) && _processoOriginal.CatalogoLegacy != null)
+            {
+                listaCatAntiga = new List<Catalogo> { _processoOriginal.CatalogoLegacy };
+            }
+
             var listaCatNova = processo.Catalogos ?? new List<Catalogo>();
+            if ((listaCatNova == null || listaCatNova.Count == 0) && processo.CatalogoLegacy != null)
+            {
+                listaCatNova = new List<Catalogo> { processo.CatalogoLegacy };
+            }
 
             bool catalogosMudou = false;
 
@@ -764,7 +773,28 @@ namespace Trabalho
 
             if (catalogosMudou)
             {
-                updates.Add(builder.Set(p => p.Catalogos, processo.Catalogos));
+                // Se os catálogos antigos são um prefixo idêntico dos novos (usuário apenas adicionou no final),
+                // fazemos um PushEach (append) para evitar sobrescrever/zerar por engano.
+                var oldList = listaCatAntiga;
+                var newList = listaCatNova;
+
+                bool antigoEhPrefixo = oldList.Count > 0 && newList.Count > oldList.Count &&
+                    oldList.Count == newList.Take(oldList.Count).Count() &&
+                    oldList.Select(c => (c.NCM, c.cClassTrib)).SequenceEqual(newList.Take(oldList.Count).Select(c => (c.NCM, c.cClassTrib)));
+
+                if (antigoEhPrefixo)
+                {
+                    var itensParaAdicionar = newList.Skip(oldList.Count).ToList();
+                    if (itensParaAdicionar.Count > 0)
+                    {
+                        updates.Add(builder.PushEach(p => p.Catalogos, itensParaAdicionar));
+                    }
+                }
+                else
+                {
+                    // Caso contrário, substitui a lista completa (comportamento anterior)
+                    updates.Add(builder.Set(p => p.Catalogos, processo.Catalogos));
+                }
             }
 
             return updates;
@@ -1384,6 +1414,9 @@ namespace Trabalho
                     // --- FORMATAÇÃO VISUAL DO DGVCatalogo ---
                     if (DGVCatalogo.Columns.Contains("Id"))
                         DGVCatalogo.Columns["Id"].Visible = false;
+
+                    if (DGVCatalogo.Columns.Contains("Mercadoria"))
+                        DGVCatalogo.Columns["Mercadoria"].AutoSizeMode = DataGridViewAutoSizeColumnMode.DisplayedCells;
 
                     if (DGVCatalogo.Columns.Contains("NCM"))
                         DGVCatalogo.Columns["NCM"].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;

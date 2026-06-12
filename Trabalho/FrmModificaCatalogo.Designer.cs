@@ -45,6 +45,7 @@
             txtcClassTrib = new TextBox();
             txtNCM = new TextBox();
             BtnSalvar = new Button();
+            txtMercadoria = new TextBox();
             MAPA.SuspendLayout();
             SuspendLayout();
             // 
@@ -87,7 +88,7 @@
             // TbOrgao
             // 
             TbOrgao.Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
-            TbOrgao.Location = new Point(8, 41);
+            TbOrgao.Location = new Point(8, 70);
             TbOrgao.Name = "TbOrgao";
             TbOrgao.SelectedIndex = 0;
             TbOrgao.Size = new Size(428, 79);
@@ -216,7 +217,7 @@
             // 
             BtnSalvar.Anchor = AnchorStyles.Top | AnchorStyles.Right;
             BtnSalvar.FlatAppearance.BorderSize = 0;
-            BtnSalvar.Location = new Point(359, 41);
+            BtnSalvar.Location = new Point(360, 74);
             BtnSalvar.Margin = new Padding(0);
             BtnSalvar.Name = "BtnSalvar";
             BtnSalvar.Size = new Size(75, 22);
@@ -225,11 +226,20 @@
             BtnSalvar.UseVisualStyleBackColor = true;
             BtnSalvar.Click += BtnSalvar_Click;
             // 
+            // txtMercadoria
+            // 
+            txtMercadoria.Location = new Point(12, 41);
+            txtMercadoria.Name = "txtMercadoria";
+            txtMercadoria.PlaceholderText = "Mercadoria";
+            txtMercadoria.Size = new Size(424, 23);
+            txtMercadoria.TabIndex = 22;
+            // 
             // FrmModificaCatalogo
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(442, 125);
+            ClientSize = new Size(442, 154);
+            Controls.Add(txtMercadoria);
             Controls.Add(BtnSalvar);
             Controls.Add(BtnRemoverCatalogo);
             Controls.Add(BtnRemoverOrgao);
@@ -265,5 +275,6 @@
         private TextBox txtcClassTrib;
         private TextBox txtNCM;
         private Button BtnSalvar;
+        private TextBox txtMercadoria;
     }
 }

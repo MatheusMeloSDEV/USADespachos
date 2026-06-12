@@ -46,28 +46,27 @@ namespace CLUSA.Models
         public string Armador { get; set; } = string.Empty;
         public string CE { get; set; } = string.Empty;
 
-        // Catálogo
+        // Catálogos (lista embutida no documento Processo)
+        [MongoDB.Bson.Serialization.Attributes.BsonElement("Catalogos")]
+        [MongoDB.Bson.Serialization.Attributes.BsonIgnoreIfNull]
         public List<Catalogo> Catalogos { get; set; } = new List<Catalogo>();
 
-        // Compatibilidade com documentos antigos que tinham o campo singular 'catalogo'.
-        // Ao desserializar um documento com 'catalogo', o BSON irá popular esta propriedade
-        // e o setter migrará para a nova lista 'Catalogos'.
         [BsonElement("catalogo")]
         [System.Obsolete("Use Catalogos (lista) em vez de catalogo singular.")]
         public Catalogo? CatalogoLegacy
         {
-            get => (Catalogos != null && Catalogos.Count > 0) ? Catalogos[0] : null;
+            get => (Catalogos != null && Catalogos.Count == 1) ? Catalogos[0] : null;
             set
             {
-                if (value == null)
-                {
-                    Catalogos = new List<Catalogo>();
-                }
-                else
+                if (value != null && (Catalogos == null || Catalogos.Count == 0))
                 {
                     Catalogos = new List<Catalogo> { value };
                 }
             }
+        }
+        public bool ShouldSerializeCatalogoLegacy()
+        {
+            return false;
         }
 
         public bool RegistroPendente { get; set; } = false;
