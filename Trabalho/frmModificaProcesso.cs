@@ -31,6 +31,8 @@ namespace Trabalho
         private readonly RepositorioNotificacao _notificacaoRepo;
         private readonly RepositorioLog _logRepo;
         private bool _dadosForamAlterados = false;
+        // Flag para suprimir marcação de alteração durante o carregamento/inicialização
+        private bool _inicializando = true;
 
         public FrmModificaProcesso()
         {
@@ -43,6 +45,7 @@ namespace Trabalho
 
         private void FrmModificaProcesso_Load(object? sender, EventArgs e)
         {
+            _inicializando = true;
             if (Modo == "Editar" && processo != null)
             {
                 var settings = new JsonSerializerSettings();
@@ -77,6 +80,9 @@ namespace Trabalho
             ConfigurarFormularioPeloModo();
             AnexarEventoDeAlteracao(this);
             AtualizarEstadoBotoesLI();
+
+            // Finaliza a inicialização: alterações de controles a partir daqui serão tratadas
+            _inicializando = false;
         }
         private void AtualizarEstadoBotoesLI()
         {
@@ -94,6 +100,8 @@ namespace Trabalho
         }
         private void MarcarComoAlterado(object? sender, EventArgs e)
         {
+            // Ignora alterações disparadas automaticamente durante o carregamento inicial
+            if (_inicializando) return;
             // Uma vez que algo muda, a bandeira é levantada e permanece assim até salvarmos.
             if (!_dadosForamAlterados)
             {
@@ -1568,6 +1576,21 @@ namespace Trabalho
             {
                 DGVOrgaoCatalogo.DataSource = null;
             }
+        }
+
+        private void comboBox2_SelectedIndexChanged(object sender, EventArgs e)
+        {
+
+        }
+
+        private void checkedListBox1_SelectedIndexChanged(object sender, EventArgs e)
+        {
+
+        }
+
+        private void tableLayoutPanel6_Paint(object sender, PaintEventArgs e)
+        {
+
         }
     }
 }

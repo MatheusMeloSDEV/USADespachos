@@ -41,7 +41,6 @@
             CBOrgaoAnuente = new ComboBox();
             tabControl2 = new TabControl();
             MAPA = new TabPage();
-            lpcoEditControl1 = new LpcoEditControl();
             label28 = new Label();
             dateTimePicker3 = new DateTimePicker();
             label29 = new Label();
@@ -50,28 +49,31 @@
             DECEX = new TabPage();
             IBAMA = new TabPage();
             IMETRO = new TabPage();
+            tableLayoutPanel2 = new TableLayoutPanel();
+            lpcoEditControl1 = new LpcoEditControl();
             groupBox5.SuspendLayout();
             tableLayoutPanel1.SuspendLayout();
             tabControl2.SuspendLayout();
             MAPA.SuspendLayout();
+            tableLayoutPanel2.SuspendLayout();
             SuspendLayout();
             // 
             // btnExcluirLpco
             // 
-            btnExcluirLpco.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
-            btnExcluirLpco.Location = new Point(610, 113);
+            btnExcluirLpco.Dock = DockStyle.Bottom;
+            btnExcluirLpco.Location = new Point(616, 115);
             btnExcluirLpco.Name = "btnExcluirLpco";
-            btnExcluirLpco.Size = new Size(129, 23);
+            btnExcluirLpco.Size = new Size(127, 23);
             btnExcluirLpco.TabIndex = 823;
             btnExcluirLpco.Text = "Excluir LPCO";
             btnExcluirLpco.UseVisualStyleBackColor = true;
             // 
             // BtnNovoOrgaoAnuente
             // 
-            BtnNovoOrgaoAnuente.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
-            BtnNovoOrgaoAnuente.Location = new Point(610, 70);
+            BtnNovoOrgaoAnuente.Dock = DockStyle.Bottom;
+            BtnNovoOrgaoAnuente.Location = new Point(616, 68);
             BtnNovoOrgaoAnuente.Name = "BtnNovoOrgaoAnuente";
-            BtnNovoOrgaoAnuente.Size = new Size(129, 23);
+            BtnNovoOrgaoAnuente.Size = new Size(127, 23);
             BtnNovoOrgaoAnuente.TabIndex = 820;
             BtnNovoOrgaoAnuente.Text = "Novo LPCO";
             BtnNovoOrgaoAnuente.UseVisualStyleBackColor = true;
@@ -79,10 +81,11 @@
             // groupBox5
             // 
             groupBox5.Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            tableLayoutPanel2.SetColumnSpan(groupBox5, 2);
             groupBox5.Controls.Add(tableLayoutPanel1);
-            groupBox5.Location = new Point(3, 142);
+            groupBox5.Location = new Point(3, 144);
             groupBox5.Name = "groupBox5";
-            groupBox5.Size = new Size(736, 83);
+            groupBox5.Size = new Size(740, 83);
             groupBox5.TabIndex = 819;
             groupBox5.TabStop = false;
             groupBox5.Text = "Dados LI";
@@ -107,7 +110,7 @@
             tableLayoutPanel1.RowCount = 2;
             tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Percent, 43.85965F));
             tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Percent, 56.14035F));
-            tableLayoutPanel1.Size = new Size(730, 61);
+            tableLayoutPanel1.Size = new Size(734, 61);
             tableLayoutPanel1.TabIndex = 424;
             // 
             // label40
@@ -117,7 +120,7 @@
             label40.Font = new Font("Segoe UI", 12F);
             label40.Location = new Point(5, 2);
             label40.Name = "label40";
-            label40.Size = new Size(236, 25);
+            label40.Size = new Size(237, 25);
             label40.TabIndex = 420;
             label40.Text = "LI";
             label40.TextAlign = ContentAlignment.MiddleCenter;
@@ -128,17 +131,17 @@
             TxtLi.Location = new Point(7, 32);
             TxtLi.Margin = new Padding(5);
             TxtLi.Name = "TxtLi";
-            TxtLi.Size = new Size(232, 23);
+            TxtLi.Size = new Size(233, 23);
             TxtLi.TabIndex = 418;
             // 
             // DtpDataRegistro
             // 
             DtpDataRegistro.Dock = DockStyle.Fill;
             DtpDataRegistro.Format = DateTimePickerFormat.Short;
-            DtpDataRegistro.Location = new Point(491, 32);
+            DtpDataRegistro.Location = new Point(493, 32);
             DtpDataRegistro.Margin = new Padding(5);
             DtpDataRegistro.Name = "DtpDataRegistro";
-            DtpDataRegistro.Size = new Size(232, 23);
+            DtpDataRegistro.Size = new Size(234, 23);
             DtpDataRegistro.TabIndex = 418;
             // 
             // label39
@@ -146,9 +149,9 @@
             label39.AutoSize = true;
             label39.Dock = DockStyle.Fill;
             label39.Font = new Font("Segoe UI", 11F);
-            label39.Location = new Point(489, 2);
+            label39.Location = new Point(491, 2);
             label39.Name = "label39";
-            label39.Size = new Size(236, 25);
+            label39.Size = new Size(238, 25);
             label39.TabIndex = 419;
             label39.Text = "Data Registro";
             label39.TextAlign = ContentAlignment.MiddleCenter;
@@ -158,9 +161,9 @@
             label41.AutoSize = true;
             label41.Dock = DockStyle.Fill;
             label41.Font = new Font("Segoe UI", 12F);
-            label41.Location = new Point(247, 2);
+            label41.Location = new Point(248, 2);
             label41.Name = "label41";
-            label41.Size = new Size(236, 25);
+            label41.Size = new Size(237, 25);
             label41.TabIndex = 421;
             label41.Text = "NCM";
             label41.TextAlign = ContentAlignment.MiddleCenter;
@@ -168,20 +171,20 @@
             // TxtNCM
             // 
             TxtNCM.Dock = DockStyle.Fill;
-            TxtNCM.Location = new Point(249, 32);
+            TxtNCM.Location = new Point(250, 32);
             TxtNCM.Margin = new Padding(5);
             TxtNCM.Name = "TxtNCM";
-            TxtNCM.Size = new Size(232, 23);
+            TxtNCM.Size = new Size(233, 23);
             TxtNCM.TabIndex = 419;
             // 
             // CBOrgaoAnuente
             // 
-            CBOrgaoAnuente.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+            CBOrgaoAnuente.Dock = DockStyle.Bottom;
             CBOrgaoAnuente.FormattingEnabled = true;
             CBOrgaoAnuente.Items.AddRange(new object[] { "MAPA", "DECEX", "ANVISA", "IBAMA", "INMETRO" });
-            CBOrgaoAnuente.Location = new Point(610, 27);
+            CBOrgaoAnuente.Location = new Point(616, 24);
             CBOrgaoAnuente.Name = "CBOrgaoAnuente";
-            CBOrgaoAnuente.Size = new Size(129, 23);
+            CBOrgaoAnuente.Size = new Size(127, 23);
             CBOrgaoAnuente.TabIndex = 821;
             // 
             // tabControl2
@@ -191,10 +194,12 @@
             tabControl2.Controls.Add(DECEX);
             tabControl2.Controls.Add(IBAMA);
             tabControl2.Controls.Add(IMETRO);
+            tabControl2.Dock = DockStyle.Fill;
             tabControl2.Location = new Point(3, 3);
             tabControl2.Name = "tabControl2";
+            tableLayoutPanel2.SetRowSpan(tabControl2, 3);
             tabControl2.SelectedIndex = 0;
-            tabControl2.Size = new Size(601, 137);
+            tabControl2.Size = new Size(607, 135);
             tabControl2.TabIndex = 822;
             // 
             // MAPA
@@ -206,25 +211,17 @@
             MAPA.Controls.Add(dateTimePicker2);
             MAPA.Location = new Point(4, 24);
             MAPA.Name = "MAPA";
-            MAPA.Size = new Size(593, 109);
+            MAPA.Size = new Size(599, 107);
             MAPA.TabIndex = 0;
             MAPA.Text = "MAPA";
             MAPA.UseVisualStyleBackColor = true;
-            // 
-            // lpcoEditControl1
-            // 
-            lpcoEditControl1.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left;
-            lpcoEditControl1.Location = new Point(0, 0);
-            lpcoEditControl1.Name = "lpcoEditControl1";
-            lpcoEditControl1.Size = new Size(593, 109);
-            lpcoEditControl1.TabIndex = 426;
             // 
             // label28
             // 
             label28.Anchor = AnchorStyles.Top | AnchorStyles.Right;
             label28.AutoSize = true;
             label28.Font = new Font("Segoe UI", 11F);
-            label28.Location = new Point(2642, 30);
+            label28.Location = new Point(2648, 30);
             label28.Name = "label28";
             label28.Size = new Size(129, 20);
             label28.TabIndex = 425;
@@ -234,7 +231,7 @@
             // 
             dateTimePicker3.Anchor = AnchorStyles.Top | AnchorStyles.Right;
             dateTimePicker3.Format = DateTimePickerFormat.Short;
-            dateTimePicker3.Location = new Point(2639, 54);
+            dateTimePicker3.Location = new Point(2645, 54);
             dateTimePicker3.Name = "dateTimePicker3";
             dateTimePicker3.Size = new Size(135, 23);
             dateTimePicker3.TabIndex = 424;
@@ -244,7 +241,7 @@
             label29.Anchor = AnchorStyles.Top | AnchorStyles.Right;
             label29.AutoSize = true;
             label29.Font = new Font("Segoe UI", 11F);
-            label29.Location = new Point(2507, 30);
+            label29.Location = new Point(2513, 30);
             label29.Name = "label29";
             label29.Size = new Size(100, 20);
             label29.TabIndex = 423;
@@ -254,7 +251,7 @@
             // 
             dateTimePicker2.Anchor = AnchorStyles.Top | AnchorStyles.Right;
             dateTimePicker2.Format = DateTimePickerFormat.Short;
-            dateTimePicker2.Location = new Point(2490, 54);
+            dateTimePicker2.Location = new Point(2496, 54);
             dateTimePicker2.Name = "dateTimePicker2";
             dateTimePicker2.Size = new Size(135, 23);
             dateTimePicker2.TabIndex = 422;
@@ -263,7 +260,7 @@
             // 
             ANVISA.Location = new Point(4, 24);
             ANVISA.Name = "ANVISA";
-            ANVISA.Size = new Size(593, 109);
+            ANVISA.Size = new Size(599, 107);
             ANVISA.TabIndex = 1;
             ANVISA.Text = "ANVISA";
             ANVISA.UseVisualStyleBackColor = true;
@@ -272,7 +269,7 @@
             // 
             DECEX.Location = new Point(4, 24);
             DECEX.Name = "DECEX";
-            DECEX.Size = new Size(593, 109);
+            DECEX.Size = new Size(599, 107);
             DECEX.TabIndex = 2;
             DECEX.Text = "DECEX";
             DECEX.UseVisualStyleBackColor = true;
@@ -281,7 +278,7 @@
             // 
             IBAMA.Location = new Point(4, 24);
             IBAMA.Name = "IBAMA";
-            IBAMA.Size = new Size(593, 109);
+            IBAMA.Size = new Size(599, 107);
             IBAMA.TabIndex = 3;
             IBAMA.Text = "IBAMA";
             IBAMA.UseVisualStyleBackColor = true;
@@ -290,20 +287,45 @@
             // 
             IMETRO.Location = new Point(4, 24);
             IMETRO.Name = "IMETRO";
-            IMETRO.Size = new Size(593, 109);
+            IMETRO.Size = new Size(599, 107);
             IMETRO.TabIndex = 4;
             IMETRO.Text = "IMETRO";
             IMETRO.UseVisualStyleBackColor = true;
+            // 
+            // tableLayoutPanel2
+            // 
+            tableLayoutPanel2.ColumnCount = 2;
+            tableLayoutPanel2.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 82.19178F));
+            tableLayoutPanel2.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 17.80822F));
+            tableLayoutPanel2.Controls.Add(tabControl2, 0, 0);
+            tableLayoutPanel2.Controls.Add(groupBox5, 0, 3);
+            tableLayoutPanel2.Controls.Add(btnExcluirLpco, 1, 2);
+            tableLayoutPanel2.Controls.Add(BtnNovoOrgaoAnuente, 1, 1);
+            tableLayoutPanel2.Controls.Add(CBOrgaoAnuente, 1, 0);
+            tableLayoutPanel2.Dock = DockStyle.Fill;
+            tableLayoutPanel2.Location = new Point(0, 0);
+            tableLayoutPanel2.Name = "tableLayoutPanel2";
+            tableLayoutPanel2.RowCount = 4;
+            tableLayoutPanel2.RowStyles.Add(new RowStyle(SizeType.Percent, 21.73913F));
+            tableLayoutPanel2.RowStyles.Add(new RowStyle(SizeType.Percent, 19.130434F));
+            tableLayoutPanel2.RowStyles.Add(new RowStyle(SizeType.Percent, 20.434782F));
+            tableLayoutPanel2.RowStyles.Add(new RowStyle(SizeType.Percent, 38.695652F));
+            tableLayoutPanel2.Size = new Size(746, 230);
+            tableLayoutPanel2.TabIndex = 824;
+            // 
+            // lpcoEditControl1
+            // 
+            lpcoEditControl1.Dock = DockStyle.Fill;
+            lpcoEditControl1.Location = new Point(0, 0);
+            lpcoEditControl1.Name = "lpcoEditControl1";
+            lpcoEditControl1.Size = new Size(599, 107);
+            lpcoEditControl1.TabIndex = 426;
             // 
             // LIEditControl
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            Controls.Add(btnExcluirLpco);
-            Controls.Add(BtnNovoOrgaoAnuente);
-            Controls.Add(groupBox5);
-            Controls.Add(CBOrgaoAnuente);
-            Controls.Add(tabControl2);
+            Controls.Add(tableLayoutPanel2);
             Name = "LIEditControl";
             Size = new Size(746, 230);
             groupBox5.ResumeLayout(false);
@@ -312,6 +334,7 @@
             tabControl2.ResumeLayout(false);
             MAPA.ResumeLayout(false);
             MAPA.PerformLayout();
+            tableLayoutPanel2.ResumeLayout(false);
             ResumeLayout(false);
         }
 
@@ -329,7 +352,6 @@
         private ComboBox CBOrgaoAnuente;
         private TabControl tabControl2;
         private TabPage MAPA;
-        private LpcoEditControl lpcoEditControl1;
         private Label label28;
         private DateTimePicker dateTimePicker3;
         private Label label29;
@@ -339,5 +361,7 @@
         private TabPage IBAMA;
         private TabPage IMETRO;
         private TableLayoutPanel tableLayoutPanel1;
+        private TableLayoutPanel tableLayoutPanel2;
+        private LpcoEditControl lpcoEditControl1;
     }
 }
