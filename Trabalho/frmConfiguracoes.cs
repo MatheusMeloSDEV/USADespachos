@@ -29,7 +29,8 @@ namespace Trabalho
             { "DGVItajai", "🚢 Processos Itajaí" },
             { "DGVFinalizados", "✅ Finalizados" },
             { "DgvOrgaoAnuente", "🏛️ Órgãos Anuentes" },
-            { "DGVVistorias", "🔍 Vistorias" }
+            { "DGVVistorias", "🔍 Vistorias" },
+            { "DGVVistoriasDUIMP", "🔍 Vistorias DUIMP" },
         };
 
         // CONSTRUTOR OTIMIZADO: Recebe as preferências já prontas da tela principal

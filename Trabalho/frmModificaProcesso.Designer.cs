@@ -149,6 +149,7 @@
             RbRegistroRegistrado = new RadioButton();
             RbRegistroPendente = new RadioButton();
             TabLI_LPCO = new TabPage();
+            HubAddDelLI = new TableLayoutPanel();
             tableLayoutPanel1 = new TableLayoutPanel();
             BtnExcluirLI = new Button();
             BtnLI = new Button();
@@ -184,6 +185,7 @@
             ((System.ComponentModel.ISupportInitialize)DGVCatalogo).BeginInit();
             gbCatalogoRegistro.SuspendLayout();
             TabLI_LPCO.SuspendLayout();
+            HubAddDelLI.SuspendLayout();
             tableLayoutPanel1.SuspendLayout();
             tlPrincipal.SuspendLayout();
             gbPendencia.SuspendLayout();
@@ -970,7 +972,7 @@
             CbStatus.DataBindings.Add(new Binding("Text", BsModificaProcesso, "Status", true));
             CbStatus.Dock = DockStyle.Fill;
             CbStatus.FormattingEnabled = true;
-            CbStatus.Items.AddRange(new object[] { "", "Aguardando embarque", "Aguardando atracação", "Aguardando presença de carga", "Aguardando Correção CE", "Aguardando a TCA Definitivo", "Aguardando SIGVIG", "Aguardando avarias", "Providenciando LI", "Providenciando Protocolo de LPCO", "Aguardando documentos finais para LPCO", "Aguardando parametrização LI/LPCO", "Aguardando inspeção/coleta LI/LPCO", "Aguardando deferimento LI/LPCO", "Aguardando registro DI/DUIMP", "Aguardando parametrização DI/DUIMP", "Aguardando desembaraço", "Aguardando Etiquetagem", "Aguardando data de Carregamento", "Aguardando emissão de CII", "Aguardando análise MAPA e/ou ANVISA", "Aguardando Desova", "Aguardando análise RF", "Aguardando inspeção DI/DUIMP", "Aguardando Nota/Transportadora", "Aguardando desbloqueio Siscomex Carga", "Aguardando Liberação Sefaz", "Aguardando minuta devolução container vazio", "Aguardando resultado laboratório ", "Finalizado" });
+            CbStatus.Items.AddRange(new object[] { "", "Aguardando embarque", "Aguardando atracação", "Aguardando presença de carga", "Aguardando Correção CE", "Aguardando a TCA Definitivo", "Aguardando SIGVIG", "Aguardando avarias", "Providenciando LI", "Providenciando Protocolo de LPCO", "Aguardando registro no Catálogo e/ou Comunicado ANVISA", "Aguardando documentos finais para LPCO", "Aguardando parametrização LI/LPCO", "Aguardando inspeção/coleta LI/LPCO", "Aguardando deferimento LI/LPCO", "Aguardando registro DI/DUIMP", "Aguardando parametrização DI/DUIMP", "Aguardando desembaraço", "Aguardando Etiquetagem", "Aguardando data de Carregamento", "Aguardando emissão de CII", "Aguardando análise MAPA e/ou ANVISA", "Aguardando Desova", "Aguardando análise RF", "Aguardando inspeção DI/DUIMP", "Aguardando Nota/Transportadora", "Aguardando desbloqueio Siscomex Carga", "Aguardando Liberação Sefaz", "Aguardando minuta devolução container vazio", "Aguardando resultado laboratório ", "Finalizado" });
             CbStatus.Location = new Point(3, 27);
             CbStatus.Name = "CbStatus";
             CbStatus.Size = new Size(216, 23);
@@ -1718,8 +1720,7 @@
             // 
             // TabLI_LPCO
             // 
-            TabLI_LPCO.Controls.Add(tableLayoutPanel1);
-            TabLI_LPCO.Controls.Add(TCLi);
+            TabLI_LPCO.Controls.Add(HubAddDelLI);
             TabLI_LPCO.Location = new Point(4, 24);
             TabLI_LPCO.Name = "TabLI_LPCO";
             TabLI_LPCO.Padding = new Padding(3);
@@ -1727,6 +1728,22 @@
             TabLI_LPCO.TabIndex = 1;
             TabLI_LPCO.Text = "LI/LPCO";
             TabLI_LPCO.UseVisualStyleBackColor = true;
+            // 
+            // HubAddDelLI
+            // 
+            HubAddDelLI.ColumnCount = 2;
+            HubAddDelLI.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 74.0056839F));
+            HubAddDelLI.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 25.994318F));
+            HubAddDelLI.Controls.Add(tableLayoutPanel1, 1, 0);
+            HubAddDelLI.Controls.Add(TCLi, 0, 1);
+            HubAddDelLI.Dock = DockStyle.Fill;
+            HubAddDelLI.Location = new Point(3, 3);
+            HubAddDelLI.Name = "HubAddDelLI";
+            HubAddDelLI.RowCount = 2;
+            HubAddDelLI.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
+            HubAddDelLI.RowStyles.Add(new RowStyle(SizeType.Absolute, 293F));
+            HubAddDelLI.Size = new Size(704, 320);
+            HubAddDelLI.TabIndex = 826;
             // 
             // tableLayoutPanel1
             // 
@@ -1736,19 +1753,20 @@
             tableLayoutPanel1.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
             tableLayoutPanel1.Controls.Add(BtnExcluirLI, 1, 0);
             tableLayoutPanel1.Controls.Add(BtnLI, 0, 0);
-            tableLayoutPanel1.Location = new Point(410, 0);
+            tableLayoutPanel1.Location = new Point(524, 3);
             tableLayoutPanel1.Name = "tableLayoutPanel1";
             tableLayoutPanel1.RowCount = 1;
             tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
-            tableLayoutPanel1.Size = new Size(298, 0);
+            tableLayoutPanel1.Size = new Size(177, 21);
             tableLayoutPanel1.TabIndex = 825;
             // 
             // BtnExcluirLI
             // 
-            BtnExcluirLI.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-            BtnExcluirLI.Location = new Point(152, 3);
+            BtnExcluirLI.Dock = DockStyle.Fill;
+            BtnExcluirLI.Location = new Point(88, 0);
+            BtnExcluirLI.Margin = new Padding(0);
             BtnExcluirLI.Name = "BtnExcluirLI";
-            BtnExcluirLI.Size = new Size(143, 1);
+            BtnExcluirLI.Size = new Size(89, 21);
             BtnExcluirLI.TabIndex = 819;
             BtnExcluirLI.Text = "Excluir LI";
             BtnExcluirLI.UseVisualStyleBackColor = true;
@@ -1756,10 +1774,11 @@
             // 
             // BtnLI
             // 
-            BtnLI.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-            BtnLI.Location = new Point(3, 3);
+            BtnLI.Dock = DockStyle.Fill;
+            BtnLI.Location = new Point(0, 0);
+            BtnLI.Margin = new Padding(0);
             BtnLI.Name = "BtnLI";
-            BtnLI.Size = new Size(143, 1);
+            BtnLI.Size = new Size(88, 21);
             BtnLI.TabIndex = 818;
             BtnLI.Text = "Novo LI";
             BtnLI.UseVisualStyleBackColor = true;
@@ -1767,11 +1786,12 @@
             // 
             // TCLi
             // 
+            HubAddDelLI.SetColumnSpan(TCLi, 2);
             TCLi.Dock = DockStyle.Fill;
-            TCLi.Location = new Point(3, 3);
+            TCLi.Location = new Point(3, 30);
             TCLi.Name = "TCLi";
             TCLi.SelectedIndex = 0;
-            TCLi.Size = new Size(704, 320);
+            TCLi.Size = new Size(698, 287);
             TCLi.SizeMode = TabSizeMode.Fixed;
             TCLi.TabIndex = 802;
             // 
@@ -1916,6 +1936,7 @@
             gbCatalogoRegistro.ResumeLayout(false);
             gbCatalogoRegistro.PerformLayout();
             TabLI_LPCO.ResumeLayout(false);
+            HubAddDelLI.ResumeLayout(false);
             tableLayoutPanel1.ResumeLayout(false);
             tlPrincipal.ResumeLayout(false);
             gbPendencia.ResumeLayout(false);
@@ -2051,5 +2072,6 @@
         private GroupBox gbSalvar;
         private GroupBox gbPendencia;
         private TextBox TXTpendencia;
+        private TableLayoutPanel HubAddDelLI;
     }
 }

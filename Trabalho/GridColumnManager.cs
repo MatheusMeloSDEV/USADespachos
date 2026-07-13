@@ -222,6 +222,7 @@ namespace Trabalho
             RegistrarCatalogosProcesso();
             RegistrarCatalogoOrgaoAnuente();
             RegistrarCatalogoVistorias();
+            RegistrarCatalogoVistoriasDUIMP();
         }
 
         private static void RegistrarCatalogosProcesso()
@@ -352,6 +353,31 @@ namespace Trabalho
         };
 
             RegistrarCatalogo("DGVVistorias", colunasVistoria);
+        }
+
+        private static void RegistrarCatalogoVistoriasDUIMP()
+        {
+            var colunasDUIMP = new List<DefinicaoColuna>
+            {
+                new("DUIMP", "DUIMP", autoSizeMode: DataGridViewAutoSizeColumnMode.AllCells),
+                new("Ref_USA", "Ref. USA", autoSizeMode: DataGridViewAutoSizeColumnMode.DisplayedCells, centralizar: true),
+                new("Importador", "Importador", minimumWidth: 200),
+                new("Container", "Container"),
+                new("Produto", "Produto", minimumWidth: 150),
+                new("Terminal", "Terminal"),
+                // Lista legível de órgãos anuentes (ex: "MAPA, ANVISA, DECEX")
+                new("OrgaosAnuentesString", "Órgãos Anuentes", minimumWidth: 200),
+                // Manter a contagem como informação adicional
+                new("ContagemOrgaosAnuentes", "Qtd. Órgãos", autoSizeMode: DataGridViewAutoSizeColumnMode.ColumnHeader, centralizar: true),
+                new("DataRegistro", "Registro DUIMP", formato: "dd/MM/yyyy", autoSizeMode: DataGridViewAutoSizeColumnMode.AllCells),
+                new("DataDeAtracacao", "Atracação", formato: "dd/MM/yyyy HH:mm"),
+                // Data em que a DUIMP foi deferida (editável apenas no TabDUIMP)
+                new("Deferido", "Deferido", formato: "dd/MM/yyyy", autoSizeMode: DataGridViewAutoSizeColumnMode.AllCells),
+                new("Notas", "Notas", minimumWidth: 150),
+                new("Status", "Status")
+            };
+
+            RegistrarCatalogo("DGVVistoriasDUIMP", colunasDUIMP);
         }
     }
 

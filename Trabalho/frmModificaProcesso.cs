@@ -29,6 +29,7 @@ namespace Trabalho
         private readonly RepositorioProcesso _repositorio;
         private readonly RepositorioNotifUrgente _repoNotifUrgente;
         private readonly RepositorioNotificacao _notificacaoRepo;
+        private readonly RepositorioVistoriaDUIMP _repositorioVistoriaDUIMP;
         private readonly RepositorioLog _logRepo;
         private bool _dadosForamAlterados = false;
         // Flag para suprimir marcação de alteração durante o carregamento/inicialização
@@ -41,6 +42,7 @@ namespace Trabalho
             _notificacaoRepo = new RepositorioNotificacao();
             _repoNotifUrgente = new RepositorioNotifUrgente();
             _logRepo = new RepositorioLog();
+            _repositorioVistoriaDUIMP = new RepositorioVistoriaDUIMP();
         }
 
         private void FrmModificaProcesso_Load(object? sender, EventArgs e)
@@ -385,6 +387,7 @@ namespace Trabalho
             this.ValidateChildren();
 
             // 1. Salva dados gerais (Capa, Datas, CheckBoxes)
+            processo.DI = TXTdi.Text;
             processo.DocRecebidos = ObterItensSelecionados(checkedListBox1);
             processo.FormaRecOriginais = checkedListBox2.CheckedItems.Count > 0 ? checkedListBox2.CheckedItems[0]?.ToString() ?? "" : "";
             processo.Marca = (new[] { "Sacos", "Caixas", "Pallets" }.Contains(cbMarca.Text))
@@ -517,6 +520,8 @@ namespace Trabalho
                     var json = Newtonsoft.Json.JsonConvert.SerializeObject(processo, settings);
                     _processoOriginal = Newtonsoft.Json.JsonConvert.DeserializeObject<Processo>(json, settings) ?? new Processo();
 
+                    await CriarOuAtualizarVistoriaDUIMPAsync(processo);
+
                     Modo = "Editar";
                     TXTnr.Enabled = false;
 
@@ -532,6 +537,8 @@ namespace Trabalho
                     {
                         // Salva NO BANCO apenas as partes alteradas!
                         await _repositorio.UpdateParcialAsync(processo.Id, atualizacoes);
+
+                        await CriarOuAtualizarVistoriaDUIMPAsync(processo);
 
                         // Grava no log do sistema
                         await _logRepo.RegistrarLogAsync(
@@ -1576,6 +1583,114 @@ namespace Trabalho
             {
                 DGVOrgaoCatalogo.DataSource = null;
             }
+        }
+
+        private async Task CriarOuAtualizarVistoriaDUIMPAsync(Processo processo)
+        {
+            if (processo == null) return;
+
+            // Se antes havia uma DI/DUIMP e agora foi removida, exclui o registro antigo
+            try
+            {
+                if (!string.IsNullOrWhiteSpace(_processoOriginal?.DI) && string.IsNullOrWhiteSpace(processo.DI))
+                {
+                    var antigo = _processoOriginal.DI.Trim();
+                    if (!string.IsNullOrWhiteSpace(antigo) && antigo.Contains("BR"))
+                    {
+                        await _repositorioVistoriaDUIMP.DeleteByDUIMPAsync(antigo);
+                    }
+                    return;
+                }
+            }
+            catch
+            {
+                // falha silenciosa aqui não deve impedir o fluxo principal
+            }
+
+            if (string.IsNullOrWhiteSpace(processo.DI)) return;
+
+            // Só cria/atualiza se houver "BR" na string (ex: 26BR0000750066-2)
+            // Uso ToUpperInvariant() para checagem case-insensitive (evita falha quando "br" estiver em minúsculas)
+            if (!processo.DI.ToUpperInvariant().Contains("BR")) return;
+
+            // DUIMP exato (usamos a string DI inteira). Normaliza para uppercase/trim
+            string duimp = processo.DI.Trim().ToUpperInvariant();
+            // Se a DI antiga for diferente da nova, remove o registro antigo para evitar duplicatas
+            try
+            {
+                var antigo = _processoOriginal?.DI?.Trim().ToUpperInvariant();
+                if (!string.IsNullOrWhiteSpace(antigo) && antigo != duimp && antigo.Contains("BR"))
+                {
+                    await _repositorioVistoriaDUIMP.DeleteByDUIMPAsync(antigo);
+                }
+            }
+            catch
+            {
+                
+            }
+
+            // Contagem de órgãos anuentes dentro dos catálogos do processo (uso reflection para ser robusto)
+            int contagemOrgaos = 0;
+            string orgaosAnuentesString = string.Empty;
+            try
+            {
+                var nomes = processo.Catalogos?
+                    .Where(c => c != null)
+                    .SelectMany(c =>
+                    {
+                        var propOrgaos = c.GetType().GetProperty("Orgaos");
+                        if (propOrgaos == null) return Enumerable.Empty<object>();
+                        var valor = propOrgaos.GetValue(c) as System.Collections.IEnumerable;
+                        if (valor == null) return Enumerable.Empty<object>();
+                        return valor.Cast<object>();
+                    })
+                    .Select(o =>
+                    {
+                        // Tenta obter o nome legível do órgão: NomeOrgao, OrgaoNome ou OrgaoId como fallback
+                        var pNome = o.GetType().GetProperty("NomeOrgao") ?? o.GetType().GetProperty("OrgaoNome") ?? o.GetType().GetProperty("OrgaoId");
+                        return pNome?.GetValue(o)?.ToString() ?? string.Empty;
+                    })
+                    .Where(s => !string.IsNullOrWhiteSpace(s))
+                    .Select(s => s.Trim().ToUpperInvariant())
+                    .Distinct()
+                    .ToList() ?? new List<string>();
+
+                contagemOrgaos = nomes.Count;
+                if (nomes.Any())
+                {
+                    orgaosAnuentesString = string.Join(", ", nomes);
+                }
+            }
+            catch
+            {
+                contagemOrgaos = 0;
+                orgaosAnuentesString = string.Empty;
+            }
+
+            // Preservar Notas existentes se já houver registro no banco; não preencher automaticamente com HistoricoDoProcesso
+            var existente = await _repositorioVistoriaDUIMP.GetByDUIMPAsync(duimp);
+
+            var item = new CLUSA.Models.VistoriaDUIMP
+            {
+                DUIMP = duimp,
+                ContagemOrgaosAnuentes = contagemOrgaos,
+                OrgaosAnuentesString = orgaosAnuentesString,
+                DataRegistro = processo.DataRegistroDI,
+                // Preserve Deferido se já existir; só alteração de Deferido deve ocorrer via TabDUIMP
+                Deferido = existente?.Deferido,
+                Ref_USA = processo.Ref_USA ?? string.Empty,
+                Importador = processo.Importador ?? string.Empty,
+                Container = processo.Container ?? string.Empty,
+                Produto = processo.Produto ?? string.Empty,
+                Terminal = processo.Terminal ?? string.Empty,
+                DataDeAtracacao = processo.DataDeAtracacao,
+                // Não sobrescrever Notas automaticamente; preservar existente ou deixar vazio
+                Notas = existente?.Notas ?? string.Empty,
+                Status = processo.Status ?? string.Empty
+            };
+
+            // Envia para o repositório que fará o upsert no MongoDB
+            await _repositorioVistoriaDUIMP.UpsertAsync(item);
         }
 
         private void comboBox2_SelectedIndexChanged(object sender, EventArgs e)

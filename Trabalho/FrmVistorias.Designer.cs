@@ -35,18 +35,18 @@
             BtnRecarrega = new ToolStripButton();
             panel1 = new Panel();
             TableVistorias = new TableLayoutPanel();
-            DGVAguardandoDef = new DataGridView();
-            DGVVistoriaAgendada = new DataGridView();
-            LblVistoriaAgendada = new Label();
-            LblSolicitadoDataVistoria = new Label();
-            DGVSolicitadoDataVistoria = new DataGridView();
-            DGVAguardandoChegAgendVistoria = new DataGridView();
-            label4 = new Label();
-            LblAguardandoLaudo = new Label();
-            DGVLaudo = new DataGridView();
-            label6 = new Label();
-            DGVProcessosDadoEntrada = new DataGridView();
+            dgvProcessosDadoEntrada = new DataGridView();
+            lblProcessoDadoEntrada = new Label();
             BtnDefere = new PictureBox();
+            dgvLaudo = new DataGridView();
+            LblAguardandoLaudo = new Label();
+            lblAguardChegAgendarVistoria = new Label();
+            dgvAguardandoChegAgendVistoria = new DataGridView();
+            dgvSolicitadoDataVistoria = new DataGridView();
+            LblSolicitadoDataVistoria = new Label();
+            LblVistoriaAgendada = new Label();
+            dgvVistoriaAgendada = new DataGridView();
+            dgvAguardandoDef = new DataGridView();
             LblAguardandoDeferimento = new Label();
             BtnDesceDeferimento = new PictureBox();
             BtnDeferido = new PictureBox();
@@ -63,41 +63,41 @@
             tabLI = new TabPage();
             tabDUIMP = new TabPage();
             panel2 = new Panel();
-            tableLayoutPanel1 = new TableLayoutPanel();
-            dataGridView1 = new DataGridView();
-            label1 = new Label();
+            tlDUIMP = new TableLayoutPanel();
+            dgvDUIMPProcessosRegistrados = new DataGridView();
+            lblProcessosRegistrados = new Label();
             pictureBox1 = new PictureBox();
-            dataGridView2 = new DataGridView();
-            label2 = new Label();
+            dgvDLaudo = new DataGridView();
+            LblDAguardandoLaudo = new Label();
             label3 = new Label();
-            dataGridView3 = new DataGridView();
-            dataGridView4 = new DataGridView();
-            label5 = new Label();
-            label7 = new Label();
-            dataGridView5 = new DataGridView();
-            dataGridView6 = new DataGridView();
-            label8 = new Label();
-            pictureBox3 = new PictureBox();
+            dgvDUIMPAguardandoRIF = new DataGridView();
+            dgvDSolicitadoDataVistoria = new DataGridView();
+            LblDSolicitadoDataVistoria = new Label();
+            LblDVistoriaAgendada = new Label();
+            dgvDVistoriaAgendada = new DataGridView();
+            dgvDAguardandoDef = new DataGridView();
+            LblDAguardandoDeferimento = new Label();
+            BtnDDesceDeferimento = new PictureBox();
             pictureBox4 = new PictureBox();
-            pictureBox5 = new PictureBox();
-            pictureBox6 = new PictureBox();
-            pictureBox7 = new PictureBox();
-            pictureBox8 = new PictureBox();
-            pictureBox9 = new PictureBox();
-            pictureBox10 = new PictureBox();
-            pictureBox11 = new PictureBox();
+            btnDDesceParaAgendada = new PictureBox();
+            BtnDSobeLaudo = new PictureBox();
+            btnDDesceParaSolicitado = new PictureBox();
+            BtnDSobeAguardDef = new PictureBox();
+            btnDDesceParaAguardando = new PictureBox();
+            BtnDSobeAgendada = new PictureBox();
+            BtnDSobeSolicitado = new PictureBox();
             pictureBox12 = new PictureBox();
             pictureBox13 = new PictureBox();
             toolStrip1.SuspendLayout();
             panel1.SuspendLayout();
             TableVistorias.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)DGVAguardandoDef).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)DGVVistoriaAgendada).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)DGVSolicitadoDataVistoria).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)DGVAguardandoChegAgendVistoria).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)DGVLaudo).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)DGVProcessosDadoEntrada).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)dgvProcessosDadoEntrada).BeginInit();
             ((System.ComponentModel.ISupportInitialize)BtnDefere).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)dgvLaudo).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)dgvAguardandoChegAgendVistoria).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)dgvSolicitadoDataVistoria).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)dgvVistoriaAgendada).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)dgvAguardandoDef).BeginInit();
             ((System.ComponentModel.ISupportInitialize)BtnDesceDeferimento).BeginInit();
             ((System.ComponentModel.ISupportInitialize)BtnDeferido).BeginInit();
             ((System.ComponentModel.ISupportInitialize)btnDesceParaAgendada).BeginInit();
@@ -113,23 +113,23 @@
             tabLI.SuspendLayout();
             tabDUIMP.SuspendLayout();
             panel2.SuspendLayout();
-            tableLayoutPanel1.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)dataGridView1).BeginInit();
+            tlDUIMP.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)dgvDUIMPProcessosRegistrados).BeginInit();
             ((System.ComponentModel.ISupportInitialize)pictureBox1).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)dataGridView2).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)dataGridView3).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)dataGridView4).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)dataGridView5).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)dataGridView6).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)pictureBox3).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)dgvDLaudo).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)dgvDUIMPAguardandoRIF).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)dgvDSolicitadoDataVistoria).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)dgvDVistoriaAgendada).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)dgvDAguardandoDef).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)BtnDDesceDeferimento).BeginInit();
             ((System.ComponentModel.ISupportInitialize)pictureBox4).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)pictureBox5).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)pictureBox6).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)pictureBox7).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)pictureBox8).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)pictureBox9).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)pictureBox10).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)pictureBox11).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)btnDDesceParaAgendada).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)BtnDSobeLaudo).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)btnDDesceParaSolicitado).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)BtnDSobeAguardDef).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)btnDDesceParaAguardando).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)BtnDSobeAgendada).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)BtnDSobeSolicitado).BeginInit();
             ((System.ComponentModel.ISupportInitialize)pictureBox12).BeginInit();
             ((System.ComponentModel.ISupportInitialize)pictureBox13).BeginInit();
             SuspendLayout();
@@ -172,18 +172,18 @@
             TableVistorias.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 30F));
             TableVistorias.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 30F));
             TableVistorias.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 30F));
-            TableVistorias.Controls.Add(DGVProcessosDadoEntrada, 0, 11);
-            TableVistorias.Controls.Add(label6, 0, 10);
+            TableVistorias.Controls.Add(dgvProcessosDadoEntrada, 0, 11);
+            TableVistorias.Controls.Add(lblProcessoDadoEntrada, 0, 10);
             TableVistorias.Controls.Add(BtnDefere, 1, 2);
-            TableVistorias.Controls.Add(DGVLaudo, 0, 1);
+            TableVistorias.Controls.Add(dgvLaudo, 0, 1);
             TableVistorias.Controls.Add(LblAguardandoLaudo, 0, 0);
-            TableVistorias.Controls.Add(label4, 0, 8);
-            TableVistorias.Controls.Add(DGVAguardandoChegAgendVistoria, 0, 9);
-            TableVistorias.Controls.Add(DGVSolicitadoDataVistoria, 0, 7);
+            TableVistorias.Controls.Add(lblAguardChegAgendarVistoria, 0, 8);
+            TableVistorias.Controls.Add(dgvAguardandoChegAgendVistoria, 0, 9);
+            TableVistorias.Controls.Add(dgvSolicitadoDataVistoria, 0, 7);
             TableVistorias.Controls.Add(LblSolicitadoDataVistoria, 0, 6);
             TableVistorias.Controls.Add(LblVistoriaAgendada, 0, 4);
-            TableVistorias.Controls.Add(DGVVistoriaAgendada, 0, 5);
-            TableVistorias.Controls.Add(DGVAguardandoDef, 0, 3);
+            TableVistorias.Controls.Add(dgvVistoriaAgendada, 0, 5);
+            TableVistorias.Controls.Add(dgvAguardandoDef, 0, 3);
             TableVistorias.Controls.Add(LblAguardandoDeferimento, 0, 2);
             TableVistorias.Controls.Add(BtnDesceDeferimento, 3, 0);
             TableVistorias.Controls.Add(BtnDeferido, 2, 0);
@@ -216,95 +216,57 @@
             TableVistorias.Size = new Size(1104, 893);
             TableVistorias.TabIndex = 0;
             // 
-            // DGVAguardandoDef
+            // dgvProcessosDadoEntrada
             // 
-            DGVAguardandoDef.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
-            DGVAguardandoDef.BackgroundColor = Color.LightGray;
-            DGVAguardandoDef.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            TableVistorias.SetColumnSpan(DGVAguardandoDef, 4);
-            DGVAguardandoDef.Location = new Point(3, 122);
-            DGVAguardandoDef.Name = "DGVAguardandoDef";
-            DGVAguardandoDef.ScrollBars = ScrollBars.None;
-            DGVAguardandoDef.Size = new Size(1098, 51);
-            DGVAguardandoDef.TabIndex = 3;
+            dgvProcessosDadoEntrada.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            dgvProcessosDadoEntrada.BackgroundColor = Color.LightGray;
+            dgvProcessosDadoEntrada.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            TableVistorias.SetColumnSpan(dgvProcessosDadoEntrada, 4);
+            dgvProcessosDadoEntrada.Location = new Point(3, 713);
+            dgvProcessosDadoEntrada.Name = "dgvProcessosDadoEntrada";
+            dgvProcessosDadoEntrada.ScrollBars = ScrollBars.None;
+            dgvProcessosDadoEntrada.Size = new Size(1098, 177);
+            dgvProcessosDadoEntrada.TabIndex = 29;
             // 
-            // DGVVistoriaAgendada
+            // lblProcessoDadoEntrada
             // 
-            DGVVistoriaAgendada.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
-            DGVVistoriaAgendada.BackgroundColor = Color.LightGray;
-            DGVVistoriaAgendada.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            TableVistorias.SetColumnSpan(DGVVistoriaAgendada, 4);
-            DGVVistoriaAgendada.Location = new Point(3, 209);
-            DGVVistoriaAgendada.Name = "DGVVistoriaAgendada";
-            DGVVistoriaAgendada.ScrollBars = ScrollBars.None;
-            DGVVistoriaAgendada.Size = new Size(1098, 51);
-            DGVVistoriaAgendada.TabIndex = 2;
+            lblProcessoDadoEntrada.AutoSize = true;
+            lblProcessoDadoEntrada.BackColor = SystemColors.Control;
+            TableVistorias.SetColumnSpan(lblProcessoDadoEntrada, 2);
+            lblProcessoDadoEntrada.Dock = DockStyle.Fill;
+            lblProcessoDadoEntrada.Font = new Font("Segoe UI", 11F, FontStyle.Bold);
+            lblProcessoDadoEntrada.Location = new Point(3, 680);
+            lblProcessoDadoEntrada.Name = "lblProcessoDadoEntrada";
+            lblProcessoDadoEntrada.Size = new Size(1038, 30);
+            lblProcessoDadoEntrada.TabIndex = 26;
+            lblProcessoDadoEntrada.Text = "Processos Dado Entrada";
+            lblProcessoDadoEntrada.TextAlign = ContentAlignment.MiddleCenter;
             // 
-            // LblVistoriaAgendada
+            // BtnDefere
             // 
-            LblVistoriaAgendada.AutoSize = true;
-            LblVistoriaAgendada.BackColor = SystemColors.ActiveBorder;
-            TableVistorias.SetColumnSpan(LblVistoriaAgendada, 2);
-            LblVistoriaAgendada.Dock = DockStyle.Fill;
-            LblVistoriaAgendada.Font = new Font("Segoe UI", 11F, FontStyle.Bold);
-            LblVistoriaAgendada.Location = new Point(3, 176);
-            LblVistoriaAgendada.Name = "LblVistoriaAgendada";
-            LblVistoriaAgendada.Size = new Size(1038, 30);
-            LblVistoriaAgendada.TabIndex = 7;
-            LblVistoriaAgendada.Text = "Vistoria Agendada";
-            LblVistoriaAgendada.TextAlign = ContentAlignment.MiddleCenter;
+            BtnDefere.BackColor = SystemColors.Control;
+            BtnDefere.BackgroundImage = (Image)resources.GetObject("BtnDefere.BackgroundImage");
+            BtnDefere.BackgroundImageLayout = ImageLayout.Stretch;
+            BtnDefere.Dock = DockStyle.Fill;
+            BtnDefere.Location = new Point(1014, 89);
+            BtnDefere.Margin = new Padding(0);
+            BtnDefere.Name = "BtnDefere";
+            BtnDefere.Size = new Size(30, 30);
+            BtnDefere.TabIndex = 25;
+            BtnDefere.TabStop = false;
+            BtnDefere.Click += BtnDeferido_Click;
             // 
-            // LblSolicitadoDataVistoria
+            // dgvLaudo
             // 
-            LblSolicitadoDataVistoria.AutoSize = true;
-            LblSolicitadoDataVistoria.BackColor = SystemColors.Control;
-            TableVistorias.SetColumnSpan(LblSolicitadoDataVistoria, 2);
-            LblSolicitadoDataVistoria.Dock = DockStyle.Fill;
-            LblSolicitadoDataVistoria.Font = new Font("Segoe UI", 11F, FontStyle.Bold);
-            LblSolicitadoDataVistoria.Location = new Point(3, 263);
-            LblSolicitadoDataVistoria.Name = "LblSolicitadoDataVistoria";
-            LblSolicitadoDataVistoria.Size = new Size(1038, 30);
-            LblSolicitadoDataVistoria.TabIndex = 8;
-            LblSolicitadoDataVistoria.Text = "Solicitado Data de Vistoria";
-            LblSolicitadoDataVistoria.TextAlign = ContentAlignment.MiddleCenter;
-            // 
-            // DGVSolicitadoDataVistoria
-            // 
-            DGVSolicitadoDataVistoria.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
-            DGVSolicitadoDataVistoria.BackgroundColor = Color.LightGray;
-            DGVSolicitadoDataVistoria.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            TableVistorias.SetColumnSpan(DGVSolicitadoDataVistoria, 4);
-            DGVSolicitadoDataVistoria.Location = new Point(3, 296);
-            DGVSolicitadoDataVistoria.Name = "DGVSolicitadoDataVistoria";
-            DGVSolicitadoDataVistoria.ScrollBars = ScrollBars.None;
-            DGVSolicitadoDataVistoria.Size = new Size(1098, 161);
-            DGVSolicitadoDataVistoria.TabIndex = 0;
-            // 
-            // DGVAguardandoChegAgendVistoria
-            // 
-            DGVAguardandoChegAgendVistoria.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
-            DGVAguardandoChegAgendVistoria.BackgroundColor = Color.LightGray;
-            DGVAguardandoChegAgendVistoria.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            TableVistorias.SetColumnSpan(DGVAguardandoChegAgendVistoria, 4);
-            DGVAguardandoChegAgendVistoria.Location = new Point(3, 493);
-            DGVAguardandoChegAgendVistoria.Name = "DGVAguardandoChegAgendVistoria";
-            DGVAguardandoChegAgendVistoria.ScrollBars = ScrollBars.None;
-            DGVAguardandoChegAgendVistoria.Size = new Size(1098, 184);
-            DGVAguardandoChegAgendVistoria.TabIndex = 1;
-            // 
-            // label4
-            // 
-            label4.AutoSize = true;
-            label4.BackColor = SystemColors.ActiveBorder;
-            TableVistorias.SetColumnSpan(label4, 3);
-            label4.Dock = DockStyle.Fill;
-            label4.Font = new Font("Segoe UI", 11F, FontStyle.Bold);
-            label4.Location = new Point(3, 460);
-            label4.Name = "label4";
-            label4.Size = new Size(1068, 30);
-            label4.TabIndex = 9;
-            label4.Text = "Aguardando Chegada para Agendar Vistoria";
-            label4.TextAlign = ContentAlignment.MiddleCenter;
+            dgvLaudo.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            dgvLaudo.BackgroundColor = Color.LightGray;
+            dgvLaudo.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            TableVistorias.SetColumnSpan(dgvLaudo, 4);
+            dgvLaudo.Location = new Point(3, 35);
+            dgvLaudo.Name = "dgvLaudo";
+            dgvLaudo.ScrollBars = ScrollBars.None;
+            dgvLaudo.Size = new Size(1098, 51);
+            dgvLaudo.TabIndex = 24;
             // 
             // LblAguardandoLaudo
             // 
@@ -320,57 +282,95 @@
             LblAguardandoLaudo.Text = "Aguardando Laudo";
             LblAguardandoLaudo.TextAlign = ContentAlignment.MiddleCenter;
             // 
-            // DGVLaudo
+            // lblAguardChegAgendarVistoria
             // 
-            DGVLaudo.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
-            DGVLaudo.BackgroundColor = Color.LightGray;
-            DGVLaudo.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            TableVistorias.SetColumnSpan(DGVLaudo, 4);
-            DGVLaudo.Location = new Point(3, 35);
-            DGVLaudo.Name = "DGVLaudo";
-            DGVLaudo.ScrollBars = ScrollBars.None;
-            DGVLaudo.Size = new Size(1098, 51);
-            DGVLaudo.TabIndex = 24;
+            lblAguardChegAgendarVistoria.AutoSize = true;
+            lblAguardChegAgendarVistoria.BackColor = SystemColors.ActiveBorder;
+            TableVistorias.SetColumnSpan(lblAguardChegAgendarVistoria, 3);
+            lblAguardChegAgendarVistoria.Dock = DockStyle.Fill;
+            lblAguardChegAgendarVistoria.Font = new Font("Segoe UI", 11F, FontStyle.Bold);
+            lblAguardChegAgendarVistoria.Location = new Point(3, 460);
+            lblAguardChegAgendarVistoria.Name = "lblAguardChegAgendarVistoria";
+            lblAguardChegAgendarVistoria.Size = new Size(1068, 30);
+            lblAguardChegAgendarVistoria.TabIndex = 9;
+            lblAguardChegAgendarVistoria.Text = "Aguardando Chegada para Agendar Vistoria";
+            lblAguardChegAgendarVistoria.TextAlign = ContentAlignment.MiddleCenter;
             // 
-            // label6
+            // dgvAguardandoChegAgendVistoria
             // 
-            label6.AutoSize = true;
-            label6.BackColor = SystemColors.Control;
-            TableVistorias.SetColumnSpan(label6, 2);
-            label6.Dock = DockStyle.Fill;
-            label6.Font = new Font("Segoe UI", 11F, FontStyle.Bold);
-            label6.Location = new Point(3, 680);
-            label6.Name = "label6";
-            label6.Size = new Size(1038, 30);
-            label6.TabIndex = 26;
-            label6.Text = "Processos Dado Entrada";
-            label6.TextAlign = ContentAlignment.MiddleCenter;
+            dgvAguardandoChegAgendVistoria.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            dgvAguardandoChegAgendVistoria.BackgroundColor = Color.LightGray;
+            dgvAguardandoChegAgendVistoria.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            TableVistorias.SetColumnSpan(dgvAguardandoChegAgendVistoria, 4);
+            dgvAguardandoChegAgendVistoria.Location = new Point(3, 493);
+            dgvAguardandoChegAgendVistoria.Name = "dgvAguardandoChegAgendVistoria";
+            dgvAguardandoChegAgendVistoria.ScrollBars = ScrollBars.None;
+            dgvAguardandoChegAgendVistoria.Size = new Size(1098, 184);
+            dgvAguardandoChegAgendVistoria.TabIndex = 1;
             // 
-            // DGVProcessosDadoEntrada
+            // dgvSolicitadoDataVistoria
             // 
-            DGVProcessosDadoEntrada.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
-            DGVProcessosDadoEntrada.BackgroundColor = Color.LightGray;
-            DGVProcessosDadoEntrada.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            TableVistorias.SetColumnSpan(DGVProcessosDadoEntrada, 4);
-            DGVProcessosDadoEntrada.Location = new Point(3, 713);
-            DGVProcessosDadoEntrada.Name = "DGVProcessosDadoEntrada";
-            DGVProcessosDadoEntrada.ScrollBars = ScrollBars.None;
-            DGVProcessosDadoEntrada.Size = new Size(1098, 177);
-            DGVProcessosDadoEntrada.TabIndex = 29;
+            dgvSolicitadoDataVistoria.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            dgvSolicitadoDataVistoria.BackgroundColor = Color.LightGray;
+            dgvSolicitadoDataVistoria.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            TableVistorias.SetColumnSpan(dgvSolicitadoDataVistoria, 4);
+            dgvSolicitadoDataVistoria.Location = new Point(3, 296);
+            dgvSolicitadoDataVistoria.Name = "dgvSolicitadoDataVistoria";
+            dgvSolicitadoDataVistoria.ScrollBars = ScrollBars.None;
+            dgvSolicitadoDataVistoria.Size = new Size(1098, 161);
+            dgvSolicitadoDataVistoria.TabIndex = 0;
             // 
-            // BtnDefere
+            // LblSolicitadoDataVistoria
             // 
-            BtnDefere.BackColor = SystemColors.Control;
-            BtnDefere.BackgroundImage = (Image)resources.GetObject("BtnDefere.BackgroundImage");
-            BtnDefere.BackgroundImageLayout = ImageLayout.Stretch;
-            BtnDefere.Dock = DockStyle.Fill;
-            BtnDefere.Location = new Point(1014, 89);
-            BtnDefere.Margin = new Padding(0);
-            BtnDefere.Name = "BtnDefere";
-            BtnDefere.Size = new Size(30, 30);
-            BtnDefere.TabIndex = 25;
-            BtnDefere.TabStop = false;
-            BtnDefere.Click += BtnDeferido_Click;
+            LblSolicitadoDataVistoria.AutoSize = true;
+            LblSolicitadoDataVistoria.BackColor = SystemColors.Control;
+            TableVistorias.SetColumnSpan(LblSolicitadoDataVistoria, 2);
+            LblSolicitadoDataVistoria.Dock = DockStyle.Fill;
+            LblSolicitadoDataVistoria.Font = new Font("Segoe UI", 11F, FontStyle.Bold);
+            LblSolicitadoDataVistoria.Location = new Point(3, 263);
+            LblSolicitadoDataVistoria.Name = "LblSolicitadoDataVistoria";
+            LblSolicitadoDataVistoria.Size = new Size(1038, 30);
+            LblSolicitadoDataVistoria.TabIndex = 8;
+            LblSolicitadoDataVistoria.Text = "Solicitado Data de Vistoria";
+            LblSolicitadoDataVistoria.TextAlign = ContentAlignment.MiddleCenter;
+            // 
+            // LblVistoriaAgendada
+            // 
+            LblVistoriaAgendada.AutoSize = true;
+            LblVistoriaAgendada.BackColor = SystemColors.ActiveBorder;
+            TableVistorias.SetColumnSpan(LblVistoriaAgendada, 2);
+            LblVistoriaAgendada.Dock = DockStyle.Fill;
+            LblVistoriaAgendada.Font = new Font("Segoe UI", 11F, FontStyle.Bold);
+            LblVistoriaAgendada.Location = new Point(3, 176);
+            LblVistoriaAgendada.Name = "LblVistoriaAgendada";
+            LblVistoriaAgendada.Size = new Size(1038, 30);
+            LblVistoriaAgendada.TabIndex = 7;
+            LblVistoriaAgendada.Text = "Vistoria Agendada";
+            LblVistoriaAgendada.TextAlign = ContentAlignment.MiddleCenter;
+            // 
+            // dgvVistoriaAgendada
+            // 
+            dgvVistoriaAgendada.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            dgvVistoriaAgendada.BackgroundColor = Color.LightGray;
+            dgvVistoriaAgendada.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            TableVistorias.SetColumnSpan(dgvVistoriaAgendada, 4);
+            dgvVistoriaAgendada.Location = new Point(3, 209);
+            dgvVistoriaAgendada.Name = "dgvVistoriaAgendada";
+            dgvVistoriaAgendada.ScrollBars = ScrollBars.None;
+            dgvVistoriaAgendada.Size = new Size(1098, 51);
+            dgvVistoriaAgendada.TabIndex = 2;
+            // 
+            // dgvAguardandoDef
+            // 
+            dgvAguardandoDef.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            dgvAguardandoDef.BackgroundColor = Color.LightGray;
+            dgvAguardandoDef.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            TableVistorias.SetColumnSpan(dgvAguardandoDef, 4);
+            dgvAguardandoDef.Location = new Point(3, 122);
+            dgvAguardandoDef.Name = "dgvAguardandoDef";
+            dgvAguardandoDef.ScrollBars = ScrollBars.None;
+            dgvAguardandoDef.Size = new Size(1098, 51);
+            dgvAguardandoDef.TabIndex = 3;
             // 
             // LblAguardandoDeferimento
             // 
@@ -575,92 +575,92 @@
             // panel2
             // 
             panel2.AutoScroll = true;
-            panel2.Controls.Add(tableLayoutPanel1);
+            panel2.Controls.Add(tlDUIMP);
             panel2.Dock = DockStyle.Fill;
             panel2.Location = new Point(3, 3);
             panel2.Name = "panel2";
             panel2.Size = new Size(1104, 893);
             panel2.TabIndex = 3;
             // 
-            // tableLayoutPanel1
+            // tlDUIMP
             // 
-            tableLayoutPanel1.AutoSize = true;
-            tableLayoutPanel1.AutoSizeMode = AutoSizeMode.GrowAndShrink;
-            tableLayoutPanel1.BackColor = SystemColors.ActiveBorder;
-            tableLayoutPanel1.ColumnCount = 4;
-            tableLayoutPanel1.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
-            tableLayoutPanel1.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 30F));
-            tableLayoutPanel1.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 30F));
-            tableLayoutPanel1.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 30F));
-            tableLayoutPanel1.Controls.Add(dataGridView1, 0, 11);
-            tableLayoutPanel1.Controls.Add(label1, 0, 10);
-            tableLayoutPanel1.Controls.Add(pictureBox1, 1, 2);
-            tableLayoutPanel1.Controls.Add(dataGridView2, 0, 1);
-            tableLayoutPanel1.Controls.Add(label2, 0, 0);
-            tableLayoutPanel1.Controls.Add(label3, 0, 8);
-            tableLayoutPanel1.Controls.Add(dataGridView3, 0, 9);
-            tableLayoutPanel1.Controls.Add(dataGridView4, 0, 7);
-            tableLayoutPanel1.Controls.Add(label5, 0, 6);
-            tableLayoutPanel1.Controls.Add(label7, 0, 4);
-            tableLayoutPanel1.Controls.Add(dataGridView5, 0, 5);
-            tableLayoutPanel1.Controls.Add(dataGridView6, 0, 3);
-            tableLayoutPanel1.Controls.Add(label8, 0, 2);
-            tableLayoutPanel1.Controls.Add(pictureBox3, 3, 0);
-            tableLayoutPanel1.Controls.Add(pictureBox4, 2, 0);
-            tableLayoutPanel1.Controls.Add(pictureBox5, 3, 2);
-            tableLayoutPanel1.Controls.Add(pictureBox6, 2, 2);
-            tableLayoutPanel1.Controls.Add(pictureBox7, 3, 4);
-            tableLayoutPanel1.Controls.Add(pictureBox8, 2, 4);
-            tableLayoutPanel1.Controls.Add(pictureBox9, 3, 6);
-            tableLayoutPanel1.Controls.Add(pictureBox10, 2, 6);
-            tableLayoutPanel1.Controls.Add(pictureBox11, 3, 8);
-            tableLayoutPanel1.Controls.Add(pictureBox12, 2, 10);
-            tableLayoutPanel1.Controls.Add(pictureBox13, 3, 10);
-            tableLayoutPanel1.Dock = DockStyle.Top;
-            tableLayoutPanel1.Location = new Point(0, 0);
-            tableLayoutPanel1.Name = "tableLayoutPanel1";
-            tableLayoutPanel1.RowCount = 12;
-            tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Absolute, 32F));
-            tableLayoutPanel1.RowStyles.Add(new RowStyle());
-            tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Absolute, 30F));
-            tableLayoutPanel1.RowStyles.Add(new RowStyle());
-            tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Absolute, 30F));
-            tableLayoutPanel1.RowStyles.Add(new RowStyle());
-            tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Absolute, 30F));
-            tableLayoutPanel1.RowStyles.Add(new RowStyle());
-            tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Absolute, 30F));
-            tableLayoutPanel1.RowStyles.Add(new RowStyle());
-            tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Absolute, 30F));
-            tableLayoutPanel1.RowStyles.Add(new RowStyle());
-            tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Absolute, 20F));
-            tableLayoutPanel1.Size = new Size(1087, 927);
-            tableLayoutPanel1.TabIndex = 0;
+            tlDUIMP.AutoSize = true;
+            tlDUIMP.AutoSizeMode = AutoSizeMode.GrowAndShrink;
+            tlDUIMP.BackColor = SystemColors.ActiveBorder;
+            tlDUIMP.ColumnCount = 4;
+            tlDUIMP.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
+            tlDUIMP.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 30F));
+            tlDUIMP.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 30F));
+            tlDUIMP.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 30F));
+            tlDUIMP.Controls.Add(dgvDUIMPProcessosRegistrados, 0, 11);
+            tlDUIMP.Controls.Add(lblProcessosRegistrados, 0, 10);
+            tlDUIMP.Controls.Add(pictureBox1, 1, 2);
+            tlDUIMP.Controls.Add(dgvDLaudo, 0, 1);
+            tlDUIMP.Controls.Add(LblDAguardandoLaudo, 0, 0);
+            tlDUIMP.Controls.Add(label3, 0, 8);
+            tlDUIMP.Controls.Add(dgvDUIMPAguardandoRIF, 0, 9);
+            tlDUIMP.Controls.Add(dgvDSolicitadoDataVistoria, 0, 7);
+            tlDUIMP.Controls.Add(LblDSolicitadoDataVistoria, 0, 6);
+            tlDUIMP.Controls.Add(LblDVistoriaAgendada, 0, 4);
+            tlDUIMP.Controls.Add(dgvDVistoriaAgendada, 0, 5);
+            tlDUIMP.Controls.Add(dgvDAguardandoDef, 0, 3);
+            tlDUIMP.Controls.Add(LblDAguardandoDeferimento, 0, 2);
+            tlDUIMP.Controls.Add(BtnDDesceDeferimento, 3, 0);
+            tlDUIMP.Controls.Add(pictureBox4, 2, 0);
+            tlDUIMP.Controls.Add(btnDDesceParaAgendada, 3, 2);
+            tlDUIMP.Controls.Add(BtnDSobeLaudo, 2, 2);
+            tlDUIMP.Controls.Add(btnDDesceParaSolicitado, 3, 4);
+            tlDUIMP.Controls.Add(BtnDSobeAguardDef, 2, 4);
+            tlDUIMP.Controls.Add(btnDDesceParaAguardando, 3, 6);
+            tlDUIMP.Controls.Add(BtnDSobeAgendada, 2, 6);
+            tlDUIMP.Controls.Add(BtnDSobeSolicitado, 3, 8);
+            tlDUIMP.Controls.Add(pictureBox12, 2, 10);
+            tlDUIMP.Controls.Add(pictureBox13, 3, 10);
+            tlDUIMP.Dock = DockStyle.Top;
+            tlDUIMP.Location = new Point(0, 0);
+            tlDUIMP.Name = "tlDUIMP";
+            tlDUIMP.RowCount = 12;
+            tlDUIMP.RowStyles.Add(new RowStyle(SizeType.Absolute, 32F));
+            tlDUIMP.RowStyles.Add(new RowStyle());
+            tlDUIMP.RowStyles.Add(new RowStyle(SizeType.Absolute, 30F));
+            tlDUIMP.RowStyles.Add(new RowStyle());
+            tlDUIMP.RowStyles.Add(new RowStyle(SizeType.Absolute, 30F));
+            tlDUIMP.RowStyles.Add(new RowStyle());
+            tlDUIMP.RowStyles.Add(new RowStyle(SizeType.Absolute, 30F));
+            tlDUIMP.RowStyles.Add(new RowStyle());
+            tlDUIMP.RowStyles.Add(new RowStyle(SizeType.Absolute, 30F));
+            tlDUIMP.RowStyles.Add(new RowStyle());
+            tlDUIMP.RowStyles.Add(new RowStyle(SizeType.Absolute, 30F));
+            tlDUIMP.RowStyles.Add(new RowStyle());
+            tlDUIMP.RowStyles.Add(new RowStyle(SizeType.Absolute, 20F));
+            tlDUIMP.Size = new Size(1087, 927);
+            tlDUIMP.TabIndex = 0;
             // 
-            // dataGridView1
+            // dgvDUIMPProcessosRegistrados
             // 
-            dataGridView1.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
-            dataGridView1.BackgroundColor = Color.LightGray;
-            dataGridView1.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            tableLayoutPanel1.SetColumnSpan(dataGridView1, 4);
-            dataGridView1.Location = new Point(3, 785);
-            dataGridView1.Name = "dataGridView1";
-            dataGridView1.ScrollBars = ScrollBars.None;
-            dataGridView1.Size = new Size(1081, 139);
-            dataGridView1.TabIndex = 29;
+            dgvDUIMPProcessosRegistrados.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            dgvDUIMPProcessosRegistrados.BackgroundColor = Color.LightGray;
+            dgvDUIMPProcessosRegistrados.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            tlDUIMP.SetColumnSpan(dgvDUIMPProcessosRegistrados, 4);
+            dgvDUIMPProcessosRegistrados.Location = new Point(3, 785);
+            dgvDUIMPProcessosRegistrados.Name = "dgvDUIMPProcessosRegistrados";
+            dgvDUIMPProcessosRegistrados.ScrollBars = ScrollBars.None;
+            dgvDUIMPProcessosRegistrados.Size = new Size(1081, 139);
+            dgvDUIMPProcessosRegistrados.TabIndex = 29;
             // 
-            // label1
+            // lblProcessosRegistrados
             // 
-            label1.AutoSize = true;
-            label1.BackColor = SystemColors.Control;
-            tableLayoutPanel1.SetColumnSpan(label1, 2);
-            label1.Dock = DockStyle.Fill;
-            label1.Font = new Font("Segoe UI", 11F, FontStyle.Bold);
-            label1.Location = new Point(3, 752);
-            label1.Name = "label1";
-            label1.Size = new Size(1021, 30);
-            label1.TabIndex = 26;
-            label1.Text = "Processos Dado Entrada";
-            label1.TextAlign = ContentAlignment.MiddleCenter;
+            lblProcessosRegistrados.AutoSize = true;
+            lblProcessosRegistrados.BackColor = SystemColors.Control;
+            tlDUIMP.SetColumnSpan(lblProcessosRegistrados, 2);
+            lblProcessosRegistrados.Dock = DockStyle.Fill;
+            lblProcessosRegistrados.Font = new Font("Segoe UI", 11F, FontStyle.Bold);
+            lblProcessosRegistrados.Location = new Point(3, 752);
+            lblProcessosRegistrados.Name = "lblProcessosRegistrados";
+            lblProcessosRegistrados.Size = new Size(1021, 30);
+            lblProcessosRegistrados.TabIndex = 26;
+            lblProcessosRegistrados.Text = "Processos Registrados";
+            lblProcessosRegistrados.TextAlign = ContentAlignment.MiddleCenter;
             // 
             // pictureBox1
             // 
@@ -675,147 +675,148 @@
             pictureBox1.TabIndex = 25;
             pictureBox1.TabStop = false;
             // 
-            // dataGridView2
+            // dgvDLaudo
             // 
-            dataGridView2.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
-            dataGridView2.BackgroundColor = Color.LightGray;
-            dataGridView2.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            tableLayoutPanel1.SetColumnSpan(dataGridView2, 4);
-            dataGridView2.Location = new Point(3, 35);
-            dataGridView2.Name = "dataGridView2";
-            dataGridView2.ScrollBars = ScrollBars.None;
-            dataGridView2.Size = new Size(1081, 51);
-            dataGridView2.TabIndex = 24;
+            dgvDLaudo.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            dgvDLaudo.BackgroundColor = Color.LightGray;
+            dgvDLaudo.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            tlDUIMP.SetColumnSpan(dgvDLaudo, 4);
+            dgvDLaudo.Location = new Point(3, 35);
+            dgvDLaudo.Name = "dgvDLaudo";
+            dgvDLaudo.ScrollBars = ScrollBars.None;
+            dgvDLaudo.Size = new Size(1081, 51);
+            dgvDLaudo.TabIndex = 24;
             // 
-            // label2
+            // LblDAguardandoLaudo
             // 
-            label2.AutoSize = true;
-            label2.BackColor = SystemColors.ActiveBorder;
-            tableLayoutPanel1.SetColumnSpan(label2, 2);
-            label2.Dock = DockStyle.Fill;
-            label2.Font = new Font("Segoe UI", 11F, FontStyle.Bold);
-            label2.Location = new Point(3, 0);
-            label2.Name = "label2";
-            label2.Size = new Size(1021, 32);
-            label2.TabIndex = 22;
-            label2.Text = "Aguardando Laudo";
-            label2.TextAlign = ContentAlignment.MiddleCenter;
+            LblDAguardandoLaudo.AutoSize = true;
+            LblDAguardandoLaudo.BackColor = SystemColors.ActiveBorder;
+            tlDUIMP.SetColumnSpan(LblDAguardandoLaudo, 2);
+            LblDAguardandoLaudo.Dock = DockStyle.Fill;
+            LblDAguardandoLaudo.Font = new Font("Segoe UI", 11F, FontStyle.Bold);
+            LblDAguardandoLaudo.Location = new Point(3, 0);
+            LblDAguardandoLaudo.Name = "LblDAguardandoLaudo";
+            LblDAguardandoLaudo.Size = new Size(1021, 32);
+            LblDAguardandoLaudo.TabIndex = 22;
+            LblDAguardandoLaudo.Text = "Aguardando Laudo";
+            LblDAguardandoLaudo.TextAlign = ContentAlignment.MiddleCenter;
             // 
             // label3
             // 
             label3.AutoSize = true;
             label3.BackColor = SystemColors.ActiveBorder;
-            tableLayoutPanel1.SetColumnSpan(label3, 3);
+            tlDUIMP.SetColumnSpan(label3, 3);
             label3.Dock = DockStyle.Fill;
             label3.Font = new Font("Segoe UI", 11F, FontStyle.Bold);
             label3.Location = new Point(3, 493);
             label3.Name = "label3";
             label3.Size = new Size(1051, 30);
             label3.TabIndex = 9;
-            label3.Text = "Aguardando Chegada para Agendar Vistoria";
+            label3.Text = "Aguardando RIF";
             label3.TextAlign = ContentAlignment.MiddleCenter;
             // 
-            // dataGridView3
+            // dgvDUIMPAguardandoRIF
             // 
-            dataGridView3.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
-            dataGridView3.BackgroundColor = Color.LightGray;
-            dataGridView3.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            tableLayoutPanel1.SetColumnSpan(dataGridView3, 4);
-            dataGridView3.Location = new Point(3, 526);
-            dataGridView3.Name = "dataGridView3";
-            dataGridView3.ScrollBars = ScrollBars.None;
-            dataGridView3.Size = new Size(1081, 223);
-            dataGridView3.TabIndex = 1;
+            dgvDUIMPAguardandoRIF.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            dgvDUIMPAguardandoRIF.BackgroundColor = Color.LightGray;
+            dgvDUIMPAguardandoRIF.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            tlDUIMP.SetColumnSpan(dgvDUIMPAguardandoRIF, 4);
+            dgvDUIMPAguardandoRIF.Location = new Point(3, 526);
+            dgvDUIMPAguardandoRIF.Name = "dgvDUIMPAguardandoRIF";
+            dgvDUIMPAguardandoRIF.ScrollBars = ScrollBars.None;
+            dgvDUIMPAguardandoRIF.Size = new Size(1081, 223);
+            dgvDUIMPAguardandoRIF.TabIndex = 1;
             // 
-            // dataGridView4
+            // dgvDSolicitadoDataVistoria
             // 
-            dataGridView4.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
-            dataGridView4.BackgroundColor = Color.LightGray;
-            dataGridView4.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            tableLayoutPanel1.SetColumnSpan(dataGridView4, 4);
-            dataGridView4.Location = new Point(3, 296);
-            dataGridView4.Name = "dataGridView4";
-            dataGridView4.ScrollBars = ScrollBars.None;
-            dataGridView4.Size = new Size(1081, 194);
-            dataGridView4.TabIndex = 0;
+            dgvDSolicitadoDataVistoria.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            dgvDSolicitadoDataVistoria.BackgroundColor = Color.LightGray;
+            dgvDSolicitadoDataVistoria.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            tlDUIMP.SetColumnSpan(dgvDSolicitadoDataVistoria, 4);
+            dgvDSolicitadoDataVistoria.Location = new Point(3, 296);
+            dgvDSolicitadoDataVistoria.Name = "dgvDSolicitadoDataVistoria";
+            dgvDSolicitadoDataVistoria.ScrollBars = ScrollBars.None;
+            dgvDSolicitadoDataVistoria.Size = new Size(1081, 194);
+            dgvDSolicitadoDataVistoria.TabIndex = 0;
             // 
-            // label5
+            // LblDSolicitadoDataVistoria
             // 
-            label5.AutoSize = true;
-            label5.BackColor = SystemColors.Control;
-            tableLayoutPanel1.SetColumnSpan(label5, 2);
-            label5.Dock = DockStyle.Fill;
-            label5.Font = new Font("Segoe UI", 11F, FontStyle.Bold);
-            label5.Location = new Point(3, 263);
-            label5.Name = "label5";
-            label5.Size = new Size(1021, 30);
-            label5.TabIndex = 8;
-            label5.Text = "Solicitado Data de Vistoria";
-            label5.TextAlign = ContentAlignment.MiddleCenter;
+            LblDSolicitadoDataVistoria.AutoSize = true;
+            LblDSolicitadoDataVistoria.BackColor = SystemColors.Control;
+            tlDUIMP.SetColumnSpan(LblDSolicitadoDataVistoria, 2);
+            LblDSolicitadoDataVistoria.Dock = DockStyle.Fill;
+            LblDSolicitadoDataVistoria.Font = new Font("Segoe UI", 11F, FontStyle.Bold);
+            LblDSolicitadoDataVistoria.Location = new Point(3, 263);
+            LblDSolicitadoDataVistoria.Name = "LblDSolicitadoDataVistoria";
+            LblDSolicitadoDataVistoria.Size = new Size(1021, 30);
+            LblDSolicitadoDataVistoria.TabIndex = 8;
+            LblDSolicitadoDataVistoria.Text = "Solicitado Data de Vistoria";
+            LblDSolicitadoDataVistoria.TextAlign = ContentAlignment.MiddleCenter;
             // 
-            // label7
+            // LblDVistoriaAgendada
             // 
-            label7.AutoSize = true;
-            label7.BackColor = SystemColors.ActiveBorder;
-            tableLayoutPanel1.SetColumnSpan(label7, 2);
-            label7.Dock = DockStyle.Fill;
-            label7.Font = new Font("Segoe UI", 11F, FontStyle.Bold);
-            label7.Location = new Point(3, 176);
-            label7.Name = "label7";
-            label7.Size = new Size(1021, 30);
-            label7.TabIndex = 7;
-            label7.Text = "Vistoria Agendada";
-            label7.TextAlign = ContentAlignment.MiddleCenter;
+            LblDVistoriaAgendada.AutoSize = true;
+            LblDVistoriaAgendada.BackColor = SystemColors.ActiveBorder;
+            tlDUIMP.SetColumnSpan(LblDVistoriaAgendada, 2);
+            LblDVistoriaAgendada.Dock = DockStyle.Fill;
+            LblDVistoriaAgendada.Font = new Font("Segoe UI", 11F, FontStyle.Bold);
+            LblDVistoriaAgendada.Location = new Point(3, 176);
+            LblDVistoriaAgendada.Name = "LblDVistoriaAgendada";
+            LblDVistoriaAgendada.Size = new Size(1021, 30);
+            LblDVistoriaAgendada.TabIndex = 7;
+            LblDVistoriaAgendada.Text = "Vistoria Agendada";
+            LblDVistoriaAgendada.TextAlign = ContentAlignment.MiddleCenter;
             // 
-            // dataGridView5
+            // dgvDVistoriaAgendada
             // 
-            dataGridView5.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
-            dataGridView5.BackgroundColor = Color.LightGray;
-            dataGridView5.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            tableLayoutPanel1.SetColumnSpan(dataGridView5, 4);
-            dataGridView5.Location = new Point(3, 209);
-            dataGridView5.Name = "dataGridView5";
-            dataGridView5.ScrollBars = ScrollBars.None;
-            dataGridView5.Size = new Size(1081, 51);
-            dataGridView5.TabIndex = 2;
+            dgvDVistoriaAgendada.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            dgvDVistoriaAgendada.BackgroundColor = Color.LightGray;
+            dgvDVistoriaAgendada.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            tlDUIMP.SetColumnSpan(dgvDVistoriaAgendada, 4);
+            dgvDVistoriaAgendada.Location = new Point(3, 209);
+            dgvDVistoriaAgendada.Name = "dgvDVistoriaAgendada";
+            dgvDVistoriaAgendada.ScrollBars = ScrollBars.None;
+            dgvDVistoriaAgendada.Size = new Size(1081, 51);
+            dgvDVistoriaAgendada.TabIndex = 2;
             // 
-            // dataGridView6
+            // dgvDAguardandoDef
             // 
-            dataGridView6.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
-            dataGridView6.BackgroundColor = Color.LightGray;
-            dataGridView6.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            tableLayoutPanel1.SetColumnSpan(dataGridView6, 4);
-            dataGridView6.Location = new Point(3, 122);
-            dataGridView6.Name = "dataGridView6";
-            dataGridView6.ScrollBars = ScrollBars.None;
-            dataGridView6.Size = new Size(1081, 51);
-            dataGridView6.TabIndex = 3;
+            dgvDAguardandoDef.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            dgvDAguardandoDef.BackgroundColor = Color.LightGray;
+            dgvDAguardandoDef.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            tlDUIMP.SetColumnSpan(dgvDAguardandoDef, 4);
+            dgvDAguardandoDef.Location = new Point(3, 122);
+            dgvDAguardandoDef.Name = "dgvDAguardandoDef";
+            dgvDAguardandoDef.ScrollBars = ScrollBars.None;
+            dgvDAguardandoDef.Size = new Size(1081, 51);
+            dgvDAguardandoDef.TabIndex = 3;
             // 
-            // label8
+            // LblDAguardandoDeferimento
             // 
-            label8.AutoSize = true;
-            label8.BackColor = SystemColors.Control;
-            label8.Dock = DockStyle.Fill;
-            label8.Font = new Font("Segoe UI", 11F, FontStyle.Bold);
-            label8.Location = new Point(3, 89);
-            label8.Name = "label8";
-            label8.Size = new Size(991, 30);
-            label8.TabIndex = 6;
-            label8.Text = "Aguardando Deferimento";
-            label8.TextAlign = ContentAlignment.MiddleCenter;
+            LblDAguardandoDeferimento.AutoSize = true;
+            LblDAguardandoDeferimento.BackColor = SystemColors.Control;
+            LblDAguardandoDeferimento.Dock = DockStyle.Fill;
+            LblDAguardandoDeferimento.Font = new Font("Segoe UI", 11F, FontStyle.Bold);
+            LblDAguardandoDeferimento.Location = new Point(3, 89);
+            LblDAguardandoDeferimento.Name = "LblDAguardandoDeferimento";
+            LblDAguardandoDeferimento.Size = new Size(991, 30);
+            LblDAguardandoDeferimento.TabIndex = 6;
+            LblDAguardandoDeferimento.Text = "Aguardando Deferimento";
+            LblDAguardandoDeferimento.TextAlign = ContentAlignment.MiddleCenter;
             // 
-            // pictureBox3
+            // BtnDDesceDeferimento
             // 
-            pictureBox3.BackColor = SystemColors.ActiveBorder;
-            pictureBox3.BackgroundImage = (Image)resources.GetObject("pictureBox3.BackgroundImage");
-            pictureBox3.BackgroundImageLayout = ImageLayout.Stretch;
-            pictureBox3.Dock = DockStyle.Fill;
-            pictureBox3.Location = new Point(1057, 0);
-            pictureBox3.Margin = new Padding(0);
-            pictureBox3.Name = "pictureBox3";
-            pictureBox3.Size = new Size(30, 32);
-            pictureBox3.TabIndex = 23;
-            pictureBox3.TabStop = false;
+            BtnDDesceDeferimento.BackColor = SystemColors.ActiveBorder;
+            BtnDDesceDeferimento.BackgroundImage = (Image)resources.GetObject("BtnDDesceDeferimento.BackgroundImage");
+            BtnDDesceDeferimento.BackgroundImageLayout = ImageLayout.Stretch;
+            BtnDDesceDeferimento.Dock = DockStyle.Fill;
+            BtnDDesceDeferimento.Location = new Point(1057, 0);
+            BtnDDesceDeferimento.Margin = new Padding(0);
+            BtnDDesceDeferimento.Name = "BtnDDesceDeferimento";
+            BtnDDesceDeferimento.Size = new Size(30, 32);
+            BtnDDesceDeferimento.TabIndex = 23;
+            BtnDDesceDeferimento.TabStop = false;
+            BtnDDesceDeferimento.Click += BtnDDesceDeferimento_Click;
             // 
             // pictureBox4
             // 
@@ -830,96 +831,103 @@
             pictureBox4.TabIndex = 17;
             pictureBox4.TabStop = false;
             // 
-            // pictureBox5
+            // btnDDesceParaAgendada
             // 
-            pictureBox5.BackColor = SystemColors.Control;
-            pictureBox5.BackgroundImage = (Image)resources.GetObject("pictureBox5.BackgroundImage");
-            pictureBox5.BackgroundImageLayout = ImageLayout.Stretch;
-            pictureBox5.Dock = DockStyle.Fill;
-            pictureBox5.Location = new Point(1057, 89);
-            pictureBox5.Margin = new Padding(0);
-            pictureBox5.Name = "pictureBox5";
-            pictureBox5.Size = new Size(30, 30);
-            pictureBox5.TabIndex = 18;
-            pictureBox5.TabStop = false;
+            btnDDesceParaAgendada.BackColor = SystemColors.Control;
+            btnDDesceParaAgendada.BackgroundImage = (Image)resources.GetObject("btnDDesceParaAgendada.BackgroundImage");
+            btnDDesceParaAgendada.BackgroundImageLayout = ImageLayout.Stretch;
+            btnDDesceParaAgendada.Dock = DockStyle.Fill;
+            btnDDesceParaAgendada.Location = new Point(1057, 89);
+            btnDDesceParaAgendada.Margin = new Padding(0);
+            btnDDesceParaAgendada.Name = "btnDDesceParaAgendada";
+            btnDDesceParaAgendada.Size = new Size(30, 30);
+            btnDDesceParaAgendada.TabIndex = 18;
+            btnDDesceParaAgendada.TabStop = false;
+            btnDDesceParaAgendada.Click += btnDDesceParaAgendada_Click;
             // 
-            // pictureBox6
+            // BtnDSobeLaudo
             // 
-            pictureBox6.BackColor = SystemColors.Control;
-            pictureBox6.BackgroundImage = (Image)resources.GetObject("pictureBox6.BackgroundImage");
-            pictureBox6.BackgroundImageLayout = ImageLayout.Stretch;
-            pictureBox6.Dock = DockStyle.Fill;
-            pictureBox6.Location = new Point(1027, 89);
-            pictureBox6.Margin = new Padding(0);
-            pictureBox6.Name = "pictureBox6";
-            pictureBox6.Size = new Size(30, 30);
-            pictureBox6.TabIndex = 21;
-            pictureBox6.TabStop = false;
+            BtnDSobeLaudo.BackColor = SystemColors.Control;
+            BtnDSobeLaudo.BackgroundImage = (Image)resources.GetObject("BtnDSobeLaudo.BackgroundImage");
+            BtnDSobeLaudo.BackgroundImageLayout = ImageLayout.Stretch;
+            BtnDSobeLaudo.Dock = DockStyle.Fill;
+            BtnDSobeLaudo.Location = new Point(1027, 89);
+            BtnDSobeLaudo.Margin = new Padding(0);
+            BtnDSobeLaudo.Name = "BtnDSobeLaudo";
+            BtnDSobeLaudo.Size = new Size(30, 30);
+            BtnDSobeLaudo.TabIndex = 21;
+            BtnDSobeLaudo.TabStop = false;
+            BtnDSobeLaudo.Click += BtnDSobeLaudo_Click;
             // 
-            // pictureBox7
+            // btnDDesceParaSolicitado
             // 
-            pictureBox7.BackColor = Color.Transparent;
-            pictureBox7.BackgroundImage = (Image)resources.GetObject("pictureBox7.BackgroundImage");
-            pictureBox7.BackgroundImageLayout = ImageLayout.Stretch;
-            pictureBox7.Dock = DockStyle.Fill;
-            pictureBox7.Location = new Point(1057, 176);
-            pictureBox7.Margin = new Padding(0);
-            pictureBox7.Name = "pictureBox7";
-            pictureBox7.Size = new Size(30, 30);
-            pictureBox7.TabIndex = 19;
-            pictureBox7.TabStop = false;
+            btnDDesceParaSolicitado.BackColor = Color.Transparent;
+            btnDDesceParaSolicitado.BackgroundImage = (Image)resources.GetObject("btnDDesceParaSolicitado.BackgroundImage");
+            btnDDesceParaSolicitado.BackgroundImageLayout = ImageLayout.Stretch;
+            btnDDesceParaSolicitado.Dock = DockStyle.Fill;
+            btnDDesceParaSolicitado.Location = new Point(1057, 176);
+            btnDDesceParaSolicitado.Margin = new Padding(0);
+            btnDDesceParaSolicitado.Name = "btnDDesceParaSolicitado";
+            btnDDesceParaSolicitado.Size = new Size(30, 30);
+            btnDDesceParaSolicitado.TabIndex = 19;
+            btnDDesceParaSolicitado.TabStop = false;
+            btnDDesceParaSolicitado.Click += btnDDesceParaSolicitado_Click;
             // 
-            // pictureBox8
+            // BtnDSobeAguardDef
             // 
-            pictureBox8.BackColor = Color.Transparent;
-            pictureBox8.BackgroundImage = (Image)resources.GetObject("pictureBox8.BackgroundImage");
-            pictureBox8.BackgroundImageLayout = ImageLayout.Stretch;
-            pictureBox8.Dock = DockStyle.Fill;
-            pictureBox8.Location = new Point(1027, 176);
-            pictureBox8.Margin = new Padding(0);
-            pictureBox8.Name = "pictureBox8";
-            pictureBox8.Size = new Size(30, 30);
-            pictureBox8.TabIndex = 14;
-            pictureBox8.TabStop = false;
+            BtnDSobeAguardDef.BackColor = Color.Transparent;
+            BtnDSobeAguardDef.BackgroundImage = (Image)resources.GetObject("BtnDSobeAguardDef.BackgroundImage");
+            BtnDSobeAguardDef.BackgroundImageLayout = ImageLayout.Stretch;
+            BtnDSobeAguardDef.Dock = DockStyle.Fill;
+            BtnDSobeAguardDef.Location = new Point(1027, 176);
+            BtnDSobeAguardDef.Margin = new Padding(0);
+            BtnDSobeAguardDef.Name = "BtnDSobeAguardDef";
+            BtnDSobeAguardDef.Size = new Size(30, 30);
+            BtnDSobeAguardDef.TabIndex = 14;
+            BtnDSobeAguardDef.TabStop = false;
+            BtnDSobeAguardDef.Click += BtnDSobeAguardDef_Click;
             // 
-            // pictureBox9
+            // btnDDesceParaAguardando
             // 
-            pictureBox9.BackColor = SystemColors.Control;
-            pictureBox9.BackgroundImage = (Image)resources.GetObject("pictureBox9.BackgroundImage");
-            pictureBox9.BackgroundImageLayout = ImageLayout.Stretch;
-            pictureBox9.Dock = DockStyle.Fill;
-            pictureBox9.Location = new Point(1057, 263);
-            pictureBox9.Margin = new Padding(0);
-            pictureBox9.Name = "pictureBox9";
-            pictureBox9.Size = new Size(30, 30);
-            pictureBox9.TabIndex = 20;
-            pictureBox9.TabStop = false;
+            btnDDesceParaAguardando.BackColor = SystemColors.Control;
+            btnDDesceParaAguardando.BackgroundImage = (Image)resources.GetObject("btnDDesceParaAguardando.BackgroundImage");
+            btnDDesceParaAguardando.BackgroundImageLayout = ImageLayout.Stretch;
+            btnDDesceParaAguardando.Dock = DockStyle.Fill;
+            btnDDesceParaAguardando.Location = new Point(1057, 263);
+            btnDDesceParaAguardando.Margin = new Padding(0);
+            btnDDesceParaAguardando.Name = "btnDDesceParaAguardando";
+            btnDDesceParaAguardando.Size = new Size(30, 30);
+            btnDDesceParaAguardando.TabIndex = 20;
+            btnDDesceParaAguardando.TabStop = false;
+            btnDDesceParaAguardando.Click += btnDDesceParaAguardando_Click;
             // 
-            // pictureBox10
+            // BtnDSobeAgendada
             // 
-            pictureBox10.BackColor = SystemColors.Control;
-            pictureBox10.BackgroundImage = (Image)resources.GetObject("pictureBox10.BackgroundImage");
-            pictureBox10.BackgroundImageLayout = ImageLayout.Stretch;
-            pictureBox10.Dock = DockStyle.Fill;
-            pictureBox10.Location = new Point(1027, 263);
-            pictureBox10.Margin = new Padding(0);
-            pictureBox10.Name = "pictureBox10";
-            pictureBox10.Size = new Size(30, 30);
-            pictureBox10.TabIndex = 15;
-            pictureBox10.TabStop = false;
+            BtnDSobeAgendada.BackColor = SystemColors.Control;
+            BtnDSobeAgendada.BackgroundImage = (Image)resources.GetObject("BtnDSobeAgendada.BackgroundImage");
+            BtnDSobeAgendada.BackgroundImageLayout = ImageLayout.Stretch;
+            BtnDSobeAgendada.Dock = DockStyle.Fill;
+            BtnDSobeAgendada.Location = new Point(1027, 263);
+            BtnDSobeAgendada.Margin = new Padding(0);
+            BtnDSobeAgendada.Name = "BtnDSobeAgendada";
+            BtnDSobeAgendada.Size = new Size(30, 30);
+            BtnDSobeAgendada.TabIndex = 15;
+            BtnDSobeAgendada.TabStop = false;
+            BtnDSobeAgendada.Click += BtnDSobeAgendada_Click;
             // 
-            // pictureBox11
+            // BtnDSobeSolicitado
             // 
-            pictureBox11.BackColor = Color.Transparent;
-            pictureBox11.BackgroundImage = (Image)resources.GetObject("pictureBox11.BackgroundImage");
-            pictureBox11.BackgroundImageLayout = ImageLayout.Stretch;
-            pictureBox11.Dock = DockStyle.Fill;
-            pictureBox11.Location = new Point(1057, 493);
-            pictureBox11.Margin = new Padding(0);
-            pictureBox11.Name = "pictureBox11";
-            pictureBox11.Size = new Size(30, 30);
-            pictureBox11.TabIndex = 16;
-            pictureBox11.TabStop = false;
+            BtnDSobeSolicitado.BackColor = Color.Transparent;
+            BtnDSobeSolicitado.BackgroundImage = (Image)resources.GetObject("BtnDSobeSolicitado.BackgroundImage");
+            BtnDSobeSolicitado.BackgroundImageLayout = ImageLayout.Stretch;
+            BtnDSobeSolicitado.Dock = DockStyle.Fill;
+            BtnDSobeSolicitado.Location = new Point(1057, 493);
+            BtnDSobeSolicitado.Margin = new Padding(0);
+            BtnDSobeSolicitado.Name = "BtnDSobeSolicitado";
+            BtnDSobeSolicitado.Size = new Size(30, 30);
+            BtnDSobeSolicitado.TabIndex = 16;
+            BtnDSobeSolicitado.TabStop = false;
+            BtnDSobeSolicitado.Click += BtnSobeSolicitado_Click;
             // 
             // pictureBox12
             // 
@@ -966,13 +974,13 @@
             panel1.PerformLayout();
             TableVistorias.ResumeLayout(false);
             TableVistorias.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)DGVAguardandoDef).EndInit();
-            ((System.ComponentModel.ISupportInitialize)DGVVistoriaAgendada).EndInit();
-            ((System.ComponentModel.ISupportInitialize)DGVSolicitadoDataVistoria).EndInit();
-            ((System.ComponentModel.ISupportInitialize)DGVAguardandoChegAgendVistoria).EndInit();
-            ((System.ComponentModel.ISupportInitialize)DGVLaudo).EndInit();
-            ((System.ComponentModel.ISupportInitialize)DGVProcessosDadoEntrada).EndInit();
+            ((System.ComponentModel.ISupportInitialize)dgvProcessosDadoEntrada).EndInit();
             ((System.ComponentModel.ISupportInitialize)BtnDefere).EndInit();
+            ((System.ComponentModel.ISupportInitialize)dgvLaudo).EndInit();
+            ((System.ComponentModel.ISupportInitialize)dgvAguardandoChegAgendVistoria).EndInit();
+            ((System.ComponentModel.ISupportInitialize)dgvSolicitadoDataVistoria).EndInit();
+            ((System.ComponentModel.ISupportInitialize)dgvVistoriaAgendada).EndInit();
+            ((System.ComponentModel.ISupportInitialize)dgvAguardandoDef).EndInit();
             ((System.ComponentModel.ISupportInitialize)BtnDesceDeferimento).EndInit();
             ((System.ComponentModel.ISupportInitialize)BtnDeferido).EndInit();
             ((System.ComponentModel.ISupportInitialize)btnDesceParaAgendada).EndInit();
@@ -989,24 +997,24 @@
             tabDUIMP.ResumeLayout(false);
             panel2.ResumeLayout(false);
             panel2.PerformLayout();
-            tableLayoutPanel1.ResumeLayout(false);
-            tableLayoutPanel1.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)dataGridView1).EndInit();
+            tlDUIMP.ResumeLayout(false);
+            tlDUIMP.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)dgvDUIMPProcessosRegistrados).EndInit();
             ((System.ComponentModel.ISupportInitialize)pictureBox1).EndInit();
-            ((System.ComponentModel.ISupportInitialize)dataGridView2).EndInit();
-            ((System.ComponentModel.ISupportInitialize)dataGridView3).EndInit();
-            ((System.ComponentModel.ISupportInitialize)dataGridView4).EndInit();
-            ((System.ComponentModel.ISupportInitialize)dataGridView5).EndInit();
-            ((System.ComponentModel.ISupportInitialize)dataGridView6).EndInit();
-            ((System.ComponentModel.ISupportInitialize)pictureBox3).EndInit();
+            ((System.ComponentModel.ISupportInitialize)dgvDLaudo).EndInit();
+            ((System.ComponentModel.ISupportInitialize)dgvDUIMPAguardandoRIF).EndInit();
+            ((System.ComponentModel.ISupportInitialize)dgvDSolicitadoDataVistoria).EndInit();
+            ((System.ComponentModel.ISupportInitialize)dgvDVistoriaAgendada).EndInit();
+            ((System.ComponentModel.ISupportInitialize)dgvDAguardandoDef).EndInit();
+            ((System.ComponentModel.ISupportInitialize)BtnDDesceDeferimento).EndInit();
             ((System.ComponentModel.ISupportInitialize)pictureBox4).EndInit();
-            ((System.ComponentModel.ISupportInitialize)pictureBox5).EndInit();
-            ((System.ComponentModel.ISupportInitialize)pictureBox6).EndInit();
-            ((System.ComponentModel.ISupportInitialize)pictureBox7).EndInit();
-            ((System.ComponentModel.ISupportInitialize)pictureBox8).EndInit();
-            ((System.ComponentModel.ISupportInitialize)pictureBox9).EndInit();
-            ((System.ComponentModel.ISupportInitialize)pictureBox10).EndInit();
-            ((System.ComponentModel.ISupportInitialize)pictureBox11).EndInit();
+            ((System.ComponentModel.ISupportInitialize)btnDDesceParaAgendada).EndInit();
+            ((System.ComponentModel.ISupportInitialize)BtnDSobeLaudo).EndInit();
+            ((System.ComponentModel.ISupportInitialize)btnDDesceParaSolicitado).EndInit();
+            ((System.ComponentModel.ISupportInitialize)BtnDSobeAguardDef).EndInit();
+            ((System.ComponentModel.ISupportInitialize)btnDDesceParaAguardando).EndInit();
+            ((System.ComponentModel.ISupportInitialize)BtnDSobeAgendada).EndInit();
+            ((System.ComponentModel.ISupportInitialize)BtnDSobeSolicitado).EndInit();
             ((System.ComponentModel.ISupportInitialize)pictureBox12).EndInit();
             ((System.ComponentModel.ISupportInitialize)pictureBox13).EndInit();
             ResumeLayout(false);
@@ -1020,18 +1028,18 @@
         private ToolStripButton BtnRecarrega;
         private Panel panel1;
         private TableLayoutPanel TableVistorias;
-        private DataGridView DGVProcessosDadoEntrada;
-        private Label label6;
+        private DataGridView dgvProcessosDadoEntrada;
+        private Label lblProcessoDadoEntrada;
         private PictureBox BtnDefere;
-        private DataGridView DGVLaudo;
+        private DataGridView dgvLaudo;
         private Label LblAguardandoLaudo;
-        private Label label4;
-        private DataGridView DGVAguardandoChegAgendVistoria;
-        private DataGridView DGVSolicitadoDataVistoria;
+        private Label lblAguardChegAgendarVistoria;
+        private DataGridView dgvAguardandoChegAgendVistoria;
+        private DataGridView dgvSolicitadoDataVistoria;
         private Label LblSolicitadoDataVistoria;
         private Label LblVistoriaAgendada;
-        private DataGridView DGVVistoriaAgendada;
-        private DataGridView DGVAguardandoDef;
+        private DataGridView dgvVistoriaAgendada;
+        private DataGridView dgvAguardandoDef;
         private Label LblAguardandoDeferimento;
         private PictureBox BtnDesceDeferimento;
         private PictureBox BtnDeferido;
@@ -1048,29 +1056,29 @@
         private TabPage tabLI;
         private TabPage tabDUIMP;
         private Panel panel2;
-        private TableLayoutPanel tableLayoutPanel1;
-        private DataGridView dataGridView1;
-        private Label label1;
+        private TableLayoutPanel tlDUIMP;
+        private DataGridView dgvDUIMPProcessosRegistrados;
+        private Label lblProcessosRegistrados;
         private PictureBox pictureBox1;
-        private DataGridView dataGridView2;
-        private Label label2;
+        private DataGridView dgvDLaudo;
+        private Label LblDAguardandoLaudo;
         private Label label3;
-        private DataGridView dataGridView3;
-        private DataGridView dataGridView4;
-        private Label label5;
-        private Label label7;
-        private DataGridView dataGridView5;
-        private DataGridView dataGridView6;
-        private Label label8;
-        private PictureBox pictureBox3;
+        private DataGridView dgvDUIMPAguardandoRIF;
+        private DataGridView dgvDSolicitadoDataVistoria;
+        private Label LblDSolicitadoDataVistoria;
+        private Label LblDVistoriaAgendada;
+        private DataGridView dgvDVistoriaAgendada;
+        private DataGridView dgvDAguardandoDef;
+        private Label LblDAguardandoDeferimento;
+        private PictureBox BtnDDesceDeferimento;
         private PictureBox pictureBox4;
-        private PictureBox pictureBox5;
-        private PictureBox pictureBox6;
-        private PictureBox pictureBox7;
-        private PictureBox pictureBox8;
-        private PictureBox pictureBox9;
-        private PictureBox pictureBox10;
-        private PictureBox pictureBox11;
+        private PictureBox btnDDesceParaAgendada;
+        private PictureBox BtnDSobeLaudo;
+        private PictureBox btnDDesceParaSolicitado;
+        private PictureBox BtnDSobeAguardDef;
+        private PictureBox btnDDesceParaAguardando;
+        private PictureBox BtnDSobeAgendada;
+        private PictureBox BtnDSobeSolicitado;
         private PictureBox pictureBox12;
         private PictureBox pictureBox13;
     }

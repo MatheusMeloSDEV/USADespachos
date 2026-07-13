@@ -13,7 +13,7 @@ namespace Trabalho
             // Linhas essenciais para inicializar o WinForms corretamente.
             ApplicationConfiguration.Initialize();
 
-            if (args != null && args.Contains("--rotina-10h"))
+            if (args != null && args.Contains("--rotina-leitesol"))
             {
                 try
                 {
@@ -29,7 +29,35 @@ namespace Trabalho
                 catch (Exception ex)
                 {
                     // Só mostra MessageBox se NÃO for a rotina automática
-                    if (!Environment.CommandLine.Contains("--rotina-10h"))
+                    if (!Environment.CommandLine.Contains("--rotina-leitesol"))
+                    {
+                        MessageBox.Show($"Erro: {ex.Message}");
+                    }
+
+                    // Escreve no console para você ler no log do GitHub
+                    Console.WriteLine($"[ERRO FATAL]: {ex.Message}");
+                    throw;
+                }
+                return; // Encerra a aplicação após a rotina automática
+            }
+
+            if (args != null && args.Contains("--rotina-casaflora"))
+            {
+                try
+                {
+                    // 1. Pegamos a logo que está AQUI no projeto Trabalho
+                    var minhaLogo = Trabalho.Properties.Resources.FollowUpLogo;
+
+                    // 2. Passamos a logo para o serviço que está LÁ na CLUSA
+                    var service = new FollowUpService(minhaLogo);
+
+                    // Esperamos o método assíncrono terminar de forma síncrona
+                    service.ExecutarFluxoAutomaticoAsync("CASA FLORA").GetAwaiter().GetResult();
+                }
+                catch (Exception ex)
+                {
+                    // Só mostra MessageBox se NÃO for a rotina automática
+                    if (!Environment.CommandLine.Contains("--rotina-casaflora"))
                     {
                         MessageBox.Show($"Erro: {ex.Message}");
                     }
