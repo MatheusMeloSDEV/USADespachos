@@ -1,4 +1,4 @@
-name: Rotina Diaria Follow-Up 7h
+name: Rotina Diaria Leitesol
 
 on:
   schedule:
@@ -61,7 +61,7 @@ jobs:
 
       - name: Compilando e Rodando a Automação
         # Adicionamos o parâmetro -p:DefineConstants=GITHUB_ACTIONS
-        run: dotnet run --project Trabalho/Trabalho.csproj -p:DefineConstants=GITHUB_ACTIONS --no-restore -- --rotina-10h
+        run: dotnet run --project Trabalho/Trabalho.csproj -p:DefineConstants=GITHUB_ACTIONS --no-restore -- --rotina-leitesol
         env:
           FOLLOW_USER: ${{ secrets.FOLLOW_USER }}
           FOLLOW_PASS: ${{ secrets.FOLLOW_PASS }}
