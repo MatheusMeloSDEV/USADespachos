@@ -43,9 +43,9 @@ jobs:
                   public const string Venc_Pass = "${{ secrets.FOLLOW_PASS }}";
                   public const string Venc_Host = "smtp.gmail.com";
                   public const int Venc_Port = 587;
-                  public const string Venc_Dest = "${{ secrets.FOLLOW_DEST }}";
-                  public const string Venc_Cc = "${{ secrets.FOLLOW_CC }}";
-                  public const string Venc_Bcc = "${{ secrets.FOLLOW_BCC }}";
+                  public const string Venc_Dest = "${{ secrets.FOLLOWCASAFLORA_DEST }}";
+                  public const string Venc_Cc = "${{ secrets.FOLLOWCASAFLORA_CC }}";
+                  public const string Venc_Bcc = "${{ secrets.FOLLOWCASAFLORA_BCC }}";
 
                   // --- BANCO DE DADOS ---
                   public const string MongoUriProducao = "${{ secrets.MONGODB_URI }}";
@@ -67,7 +67,7 @@ jobs:
           FOLLOW_PASS: ${{ secrets.FOLLOW_PASS }}
           FOLLOW_HOST: ${{ secrets.FOLLOW_HOST }}
           FOLLOW_PORT: ${{ secrets.FOLLOW_PORT }}
-          FOLLOW_DEST: ${{ secrets.FOLLOW_DEST }}
-          FOLLOW_CC: ${{ secrets.FOLLOW_CC }}
-          FOLLOW_BCC: ${{ secrets.FOLLOW_BCC }}
+          FOLLOW_DEST: ${{ secrets.FOLLOWCASAFLORA_DEST }}
+          FOLLOW_CC: ${{ secrets.FOLLOWCASAFLORA_CC }}
+          FOLLOW_BCC: ${{ secrets.FOLLOWCASAFLORA_BCC }}
           MONGODB_URI: ${{ secrets.MONGODB_URI }}
