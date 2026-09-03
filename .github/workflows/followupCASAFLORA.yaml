@@ -4,11 +4,10 @@ on:
   schedule:
     # 07:00 Horário de Brasília = 10:00 UTC
     - cron: '0 10 * * *'
-  workflow_dispatch: # Isso permite que você rode manualmente pelo site para testar
+  workflow_dispatch: # Permite rodar manualmente pelo site para testar
 
 jobs:
   envio-email:
-    # Usamos Windows porque o iText e o System.Drawing precisam do Windows para a Logo
     runs-on: windows-latest 
 
     steps:
@@ -18,9 +17,19 @@ jobs:
       - name: Instalando o .NET SDK
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '8.0.x' # Ajuste para a versão que você usa (6.0, 7.0, 8.0)
+          dotnet-version: '8.0.x'
+
       - name: Criando EmailConfig.cs dinamicamente
         shell: pwsh
+        env:
+          F_USER: ${{ secrets.FOLLOW_USER }}
+          F_PASS: ${{ secrets.FOLLOW_PASS }}
+          F_HOST: ${{ secrets.FOLLOW_HOST }}
+          F_PORT: ${{ secrets.FOLLOW_PORT }}
+          F_DEST: ${{ secrets.FOLLOWCASAFLORA_DEST }}
+          F_CC: ${{ secrets.FOLLOWCASAFLORA_CC }}
+          F_BCC: ${{ secrets.FOLLOWCASAFLORA_BCC }}
+          M_URI: ${{ secrets.MONGODB_URI }}
         run: |
           New-Item -ItemType Directory -Force -Path CLUSA/Helpers
           
@@ -30,37 +39,35 @@ jobs:
               public static class EmailConfig
               {
                   // --- PERFIL FOLLOW-UP ---
-                  public const string Follow_User = "${{ secrets.FOLLOW_USER }}";
-                  public const string Follow_Pass = "${{ secrets.FOLLOW_PASS }}";
-                  public const string Follow_Host = "${{ secrets.FOLLOW_HOST }}";
-                  public const int Follow_Port = ${{ secrets.FOLLOW_PORT }};
-                  public const string Follow_Dest = "${{ secrets.FOLLOWCASAFLORA_DEST }}";
-                  public const string Follow_Cc = "${{ secrets.FOLLOWCASAFLORA_CC }}";
-                  public const string Follow_Bcc = "${{ secrets.FOLLOWCASAFLORA_BCC }}";
+                  public const string Follow_User = "$($env:F_USER)";
+                  public const string Follow_Pass = "$($env:F_PASS)";
+                  public const string Follow_Host = "$($env:F_HOST)";
+                  public const int Follow_Port = $($env:F_PORT);
+                  public const string Follow_Dest = "$($env:F_DEST)";
+                  public const string Follow_Cc = "$($env:F_CC)";
+                  public const string Follow_Bcc = "$($env:F_BCC)";
 
-                  // --- PERFIL VENCIMENTO (ADICIONADOS PARA NÃO DAR ERRO) ---
-                  public const string Venc_User = "${{ secrets.FOLLOW_USER }}";
-                  public const string Venc_Pass = "${{ secrets.FOLLOW_PASS }}";
+                  // --- PERFIL VENCIMENTO ---
+                  public const string Venc_User = "$($env:F_USER)";
+                  public const string Venc_Pass = "$($env:F_PASS)";
                   public const string Venc_Host = "smtp.gmail.com";
                   public const int Venc_Port = 587;
-                  public const string Venc_Dest = "${{ secrets.FOLLOWCASAFLORA_DEST }}";
-                  public const string Venc_Cc = "${{ secrets.FOLLOWCASAFLORA_CC }}";
-                  public const string Venc_Bcc = "${{ secrets.FOLLOWCASAFLORA_BCC }}";
+                  public const string Venc_Dest = "$($env:F_DEST)";
+                  public const string Venc_Cc = "$($env:F_CC)";
+                  public const string Venc_Bcc = "$($env:F_BCC)";
 
                   // --- BANCO DE DADOS ---
-                  public const string MongoUriProducao = "${{ secrets.MONGODB_URI }}";
-                  public const string MongoUriTeste = "${{ secrets.MONGODB_URI }}";
+                  public const string MongoUriProducao = "$($env:M_URI)";
+                  public const string MongoUriTeste = "$($env:M_URI)";
               }
           }
           "@
           $content | Out-File -FilePath CLUSA/Helpers/EmailConfig.cs -Encoding utf8
         
       - name: Restaurando Dependencias (Nuget)
-        # Apontamos para o .csproj, ignorando o arquivo de solução (.sln) problemático
         run: dotnet restore Trabalho/Trabalho.csproj
 
       - name: Compilando e Rodando a Automação
-        # Adicionamos o parâmetro -p:DefineConstants=GITHUB_ACTIONS
         run: dotnet run --project Trabalho/Trabalho.csproj -p:DefineConstants=GITHUB_ACTIONS --no-restore -- --rotina-casaflora
         env:
           FOLLOW_USER: ${{ secrets.FOLLOW_USER }}
