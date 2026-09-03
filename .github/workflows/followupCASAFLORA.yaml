@@ -2,8 +2,8 @@ name: Rotina Diaria Casa Flora
 
 on:
   schedule:
-    # 08:00 Horário de Brasília = 11:00 UTC
-    - cron: '0 11 * * *'
+    # 07:00 Horário de Brasília = 10:00 UTC
+    - cron: '0 10 * * *'
   workflow_dispatch: # Isso permite que você rode manualmente pelo site para testar
 
 jobs:
