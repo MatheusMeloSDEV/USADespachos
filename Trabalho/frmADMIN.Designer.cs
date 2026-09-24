@@ -169,10 +169,6 @@
         private Button btnExcluir;
         private Button btnEditar;
         private BindingSource BSAdmin;
-        private DataGridViewTextBoxColumn iDDataGridViewTextBoxColumn;
-        private DataGridViewTextBoxColumn usernameDataGridViewTextBoxColumn;
-        private DataGridViewTextBoxColumn passwordDataGridViewTextBoxColumn;
-        private DataGridViewCheckBoxColumn adminDataGridViewCheckBoxColumn;
         private DataGridView dgvLogs;
     }
 }

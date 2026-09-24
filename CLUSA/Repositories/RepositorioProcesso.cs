@@ -570,5 +570,87 @@ namespace CLUSA.Repositories
             return (AcaoVistoria.Remover, StatusVistoria.AguardandoChegadaParaAgendar);
         }
         #endregion
+
+        #region Módulos de Automação e Sincronização CE
+
+        public async Task<List<Processo>> ListarProcessosParaSincronizacaoCEAsync()
+        {
+            var builder = Builders<Processo>.Filter;
+            // Busca processos ativos que ainda não finalizaram e possuem CE ou Container para rastrear
+            var filtro = builder.And(
+                builder.Ne(p => p.Status, "Finalizado"),
+                builder.Or(
+                    builder.Ne(p => p.Conhecimento, string.Empty),
+                    builder.Ne(p => p.Container, string.Empty)
+                )
+            );
+
+            return await _colecao.Find(filtro)
+                .Limit(100)
+                .ToListAsync();
+        }
+
+        public async Task<bool> RegistrarVerificacaoCEAsync(string refUsa, string logHistorico)
+        {
+            if (string.IsNullOrWhiteSpace(refUsa)) return false;
+
+            var builder = Builders<Processo>.Filter;
+            var filtro = builder.Eq(p => p.Ref_USA, refUsa);
+
+            var processo = await _colecao.Find(filtro).FirstOrDefaultAsync();
+            if (processo == null) return false;
+
+            string historicoAtual = processo.HistoricoDoProcesso ?? string.Empty;
+            string novoHistorico = string.IsNullOrWhiteSpace(historicoAtual) 
+                ? logHistorico 
+                : $"{historicoAtual}\r\n{logHistorico}";
+
+            var update = Builders<Processo>.Update.Set(p => p.HistoricoDoProcesso, novoHistorico);
+            var result = await _colecao.UpdateOneAsync(filtro, update);
+            return result.ModifiedCount > 0;
+        }
+
+        public async Task<bool> AtualizarDadosCEAsync(
+            string refUsa, 
+            string? ce = null, 
+            DateTime? dataAtracacao = null, 
+            string? terminal = null, 
+            string? navio = null, 
+            string? logHistorico = null)
+        {
+            if (string.IsNullOrWhiteSpace(refUsa)) return false;
+
+            var builder = Builders<Processo>.Filter;
+            var filtro = builder.Eq(p => p.Ref_USA, refUsa);
+
+            var updates = new List<UpdateDefinition<Processo>>();
+            var updateBuilder = Builders<Processo>.Update;
+
+            if (!string.IsNullOrWhiteSpace(ce)) updates.Add(updateBuilder.Set(p => p.Conhecimento, ce));
+            if (dataAtracacao.HasValue) updates.Add(updateBuilder.Set(p => p.DataDeAtracacao, dataAtracacao.Value));
+            if (!string.IsNullOrWhiteSpace(terminal)) updates.Add(updateBuilder.Set(p => p.Terminal, terminal));
+            if (!string.IsNullOrWhiteSpace(navio)) updates.Add(updateBuilder.Set(p => p.Veiculo, navio));
+
+            if (!string.IsNullOrWhiteSpace(logHistorico))
+            {
+                var processo = await _colecao.Find(filtro).FirstOrDefaultAsync();
+                if (processo != null)
+                {
+                    string historicoAtual = processo.HistoricoDoProcesso ?? string.Empty;
+                    string novoHistorico = string.IsNullOrWhiteSpace(historicoAtual) 
+                        ? logHistorico 
+                        : $"{historicoAtual}\r\n{logHistorico}";
+                    updates.Add(updateBuilder.Set(p => p.HistoricoDoProcesso, novoHistorico));
+                }
+            }
+
+            if (updates.Count == 0) return false;
+
+            var combinedUpdate = updateBuilder.Combine(updates);
+            var result = await _colecao.UpdateOneAsync(filtro, combinedUpdate);
+            return result.ModifiedCount > 0;
+        }
+
+        #endregion
     }
 }

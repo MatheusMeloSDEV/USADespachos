@@ -1,4 +1,4 @@
-using MongoDB.Driver;
+Ôªøusing MongoDB.Driver;
 using CLUSA.Services;
 using CLUSA.Helpers;
 using System;
@@ -7,10 +7,10 @@ namespace CLUSA.Repositories
 {
     public static class ConfigDatabase
     {
-        // Agora o IsProducao pode ser controlado por uma vari·vel de ambiente ou ficar true por padr„o
+        // Agora o IsProducao pode ser controlado por uma vari√°vel de ambiente ou ficar true por padr√£o
         private static bool IsProducao = true;
 
-        // LÛgica HÌbrida: 
+        // L√≥gica H√≠brida: 
         // 1. Tenta ler "MONGODB_URI" da Nuvem (GitHub).
         // 2. Se for nulo, usa o EmailConfig local baseado no IsProducao.
         public static string MongoConnectionString
@@ -21,13 +21,12 @@ namespace CLUSA.Repositories
                 var uriNuvem = Environment.GetEnvironmentVariable("MONGODB_URI");
                 if (!string.IsNullOrEmpty(uriNuvem)) return uriNuvem;
 
-                // 2. Se n„o estiver na nuvem, usa a lÛgica local
+                // 2. Se n√£o estiver na nuvem, usa a l√≥gica local
                 #if GITHUB_ACTIONS
                     return "mongodb://localhost:27017"; 
                 #else
-                // No seu PC, ele vai usar o seu arquivo privado normalmente
-                bool IsProducao = true;
-                return IsProducao ? CLUSA.Helpers.EmailConfig.MongoUriProducao : CLUSA.Helpers.EmailConfig.MongoUriTeste;
+                // Prefira a configura√ß√£o localizada em CLUSA.ConfigDatabaseSettings (arquivo espec√≠fico do desenvolvedor)
+                return IsProducao ? CLUSA.ConfigDatabaseSettings.MongoUriProducao : CLUSA.ConfigDatabaseSettings.MongoUriTeste;
                 #endif
             }
         }
@@ -37,10 +36,12 @@ namespace CLUSA.Repositories
         private static MongoClient? _client;
         private static IMongoDatabase? _database;
         private static readonly object _lock = new object();
+
         public static void ConfigurarParaTeste()
         {
             IsProducao = false;
         }
+
         public static IMongoDatabase GetDatabase()
         {
             if (_database != null) return _database;
@@ -49,7 +50,7 @@ namespace CLUSA.Repositories
             {
                 if (_database == null)
                 {
-                    // O MongoClient agora usa a string din‚mica
+                    // O MongoClient agora usa a string din√¢mica
                     _client = new MongoClient(MongoConnectionString);
                     _database = _client.GetDatabase(MongoDatabaseName);
                 }

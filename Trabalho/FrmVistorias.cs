@@ -295,7 +295,7 @@ namespace Trabalho
             {
                 await _repositorioVistorias.UpsertAsync(vistoria);
             }
-            catch (MongoDB.Driver.MongoConnectionException ex)
+            catch (MongoDB.Driver.MongoConnectionException)
             {
                 _filaVistoriasPendentes.Enqueue(new OperacaoPendente<Vistoria>
                 {
@@ -364,7 +364,7 @@ namespace Trabalho
             {
                 await _repositorioVistorias.DeleteByLpcoAsync(lpco);
             }
-            catch (MongoDB.Driver.MongoConnectionException ex)
+            catch (MongoDB.Driver.MongoConnectionException)
             {
                 _filaVistoriasPendentes.Enqueue(new OperacaoPendente<Vistoria>
                 {
@@ -995,7 +995,7 @@ namespace Trabalho
 
         // O último botão é um pouco diferente, pois ele "finaliza" o processo.
 
-        private async Task FinalizarVistoriaAsync(Vistoria vistoria, string novoStatusMotivoExigencia, BindingSource bindingSource, bool adicionarNoHistorico = false, string forcarParametrizacao = null)
+        private async Task FinalizarVistoriaAsync(Vistoria vistoria, string novoStatusMotivoExigencia, BindingSource bindingSource, bool adicionarNoHistorico = false, string? forcarParametrizacao = null)
         {
             if (vistoria == null) return;
 
@@ -1010,7 +1010,7 @@ namespace Trabalho
             {
                 Cursor = Cursors.WaitCursor;
 
-                string textoHistorico = null;
+                string? textoHistorico = null;
                 if (adicionarNoHistorico)
                 {
                     textoHistorico = $"{DateTime.Now:dd/MM/yyyy} LPCO {vistoria.LPCO} foi deferido.";

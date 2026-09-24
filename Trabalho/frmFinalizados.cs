@@ -8,7 +8,6 @@ namespace Trabalho
     public partial class frmFinalizados : Form
     {
         private readonly RepositorioProcesso _repositorio;
-        private int _estadoOrdenacaoRefUsa = 0;
         private DataGridViewColumn? _colunaOrdenada;
         private ListSortDirection _direcaoOrdenacao;
         private List<Processo> _listaOriginal = new();

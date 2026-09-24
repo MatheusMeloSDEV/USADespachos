@@ -7,7 +7,7 @@ namespace Trabalho
 {
     public class ObjectIdConverter : JsonConverter
     {
-        public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
+        public override void WriteJson(JsonWriter writer, object? value, JsonSerializer serializer)
         {
             if (value is ObjectId objectId)
             {
@@ -20,7 +20,7 @@ namespace Trabalho
             }
         }
 
-        public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
+        public override object? ReadJson(JsonReader reader, Type objectType, object? existingValue, JsonSerializer serializer)
         {
             if (reader.TokenType != JsonToken.String)
             {
@@ -28,7 +28,7 @@ namespace Trabalho
                 return ObjectId.Empty;
             }
 
-            var objectIdString = (string)reader.Value;
+            var objectIdString = reader.Value?.ToString() ?? string.Empty;
             return new ObjectId(objectIdString);
         }
 

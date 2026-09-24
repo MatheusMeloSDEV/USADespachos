@@ -55,7 +55,6 @@ namespace Trabalho
             SolicitarNumerario,
             DIDUIMPParaDigitacao
         }
-        private BlocoExibido _blocoExibidoAtual = BlocoExibido.Nenhum;
 
         public FrmStatusProcessos(Logado logado)
         {

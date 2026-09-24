@@ -1,155 +1,135 @@
-# CLUSA - Sistema de Gestão de Processos
+﻿# USA Despachos (CLUSA) - Sistema de Gestão Aduaneira e Processos
 
-[![Language](https://img.shields.io/badge/language-C%23-blue.svg)](https://docs.microsoft.com/en-us/dotnet/csharp/)
-[![Version](https://img.shields.io/badge/version-1.2.2-green.svg)](https://github.com/MatheusMeloSDEV/Trabalho/releases)
-[![License](https://img.shields.io/badge/license-MIT-yellow.svg)](LICENSE)
+[![Language](https://img.shields.io/badge/Language-C%23%2012-blue.svg)](https://docs.microsoft.com/en-us/dotnet/csharp/)
+[![Framework](https://img.shields.io/badge/Framework-.NET%208.0%20(Windows%20Forms)-512BD4.svg)](https://dotnet.microsoft.com/)
+[![Database](https://img.shields.io/badge/Database-MongoDB-47A248.svg)](https://www.mongodb.com/)
+[![Version](https://img.shields.io/badge/Version-1.5.2.6-green.svg)](https://github.com/MatheusMeloSDEV/USADespachos)
+[![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
+---
 
 ## 📋 Sobre o Projeto
 
-CLUSA é uma aplicação desktop desenvolvida em **C# com Windows Forms** que oferece um sistema completo de gestão de processos administrativos. O projeto foi desenvolvido como parte do **TechChallenge da FIAP** e continua em evolução com novas funcionalidades.
+O **USA Despachos (CLUSA)** é um sistema desktop de alta performance desenvolvido em **C# / Windows Forms (.NET 8)** para a gestão completa de processos aduaneiros e despacho de comércio exterior. 
 
-O sistema permite gerenciar agências, processos, faturas, recibos, vencimentos e vistorias com uma interface intuitiva e funcionalidades robustas.
+O sistema centraliza operações portuárias (Santos e Itajaí), controle de Licenças de Importação (LI), LPCO, DUIMP, Catálogo de Produtos, Órgãos Anuentes, monitoramento de vistorias, faturamento, controle de vencimentos/free time e geração automatizada de relatórios e documentos fiscais em PDF e Excel.
+
+---
 
 ## 🎯 Funcionalidades Principais
 
-### 👥 Gerenciamento de Usuários
-- **Login Seguro**: Autenticação de usuários com suporte a diferentes perfis
-- **Gerenciamento de Senhas**: Funcionalidade de alteração de senha
-- **Controle de Perfis**: Sistema admin para gerenciamento de usuários
+### 🚢 Gestão de Processos Aduaneiros
+- **Operações Multilocal:** Telas dedicadas e otimizadas para processos de **Santos** e **Itajaí**.
+- **Ciclo de Vida do Processo:** Acompanhamento de status, CE Mercante, atracação, presença de carga, canal, conferência física e desembaraço.
+- **LIs e LPCOs:** Gestão granular de Licenças de Importação e vinculação de múltiplos LPCOs com histórico de exigências e parametrizações.
+- **Catálogo de Produtos & Órgãos Anuentes:** Cadastro de mercadorias, NCM, atributos e acompanhamento junto a órgãos reguladores (MAPA, ANVISA, DECEX, etc.).
 
-### 📊 Gestão de Processos
-- **Cadastro de Processos**: Criação e edição de novos processos
-- **Status de Processos**: Acompanhamento do status em tempo real
-- **Detalhes de Processo**: Visualização detalhada e histórico de alterações
-- **Modificação de Dados**: Edição segura de informações de processos
+### 🔍 Controle de Vistorias e DUIMP
+- **Fluxo Visual de Vistorias:** Pipeline de movimentação de status (Aguardando Chegada -> Solicitado -> Vistoria Agendada -> Aguardando Deferimento / Laudo -> Deferido / Cancelado).
+- **Tratamento Offline / Resiliência:** Fila de operações pendentes com sincronização automática em caso de oscilações de conexão com o banco.
+- **Suporte Integrado a DUIMP:** Gestão paralela de vistorias com sincronização visual de cabeçalhos e dados.
 
-### 🏢 Gestão de Agências
-- **Cadastro de Agências**: Gerenciamento de agências parceiras
-- **Detalhes de Agência**: Informações completas de cada agência
-- **Modificação de Órgão Anuente**: Atualização de dados administrativos
+### ⏰ Gestão de Vencimentos & Prazos
+- **Alertas de Prazos Críticos:** Monitoramento de vencimentos de *Free Time*, FMA, LIs, LPCOs e eventos personalizados.
+- **Filtros e Janelas Temporais:** Visão detalhada de processos dentro de faixas de atenção (3 dias, 7 dias, vencidos).
+- **Notificações Urgentes:** Sistema de comunicação interna e lembretes para tarefas críticas e urgentes.
 
-### 💰 Gestão Financeira
-- **Gerenciamento de Faturas**: Cadastro e acompanhamento de faturas
-- **Controle de Recibos**: Emissão e rastreamento de recibos
-- **Relatório Financeiro**: Dashboard financeiro com análises
-- **Vencimentos**: Acompanhamento de datas de vencimento
+### 💰 Faturamento & Documentos Fiscais
+- **Capas de Processo:** Geração e exportação automática da folha de rosto/capa de processo com dados consolidados.
+- **Faturas e Recibos:** Emissão, cálculo e controle de faturas e recibos aduaneiros.
+- **Exportação Multiformato:** Emissão de relatórios em **PDF** de alta fidelidade (via iText) e planilhas **Excel** dinâmicas (via Aspose.Cells e ClosedXML).
 
-### 📝 Funcionalidades Adicionais
-- **Vistorias**: Registro e gerenciamento de vistorias
-- **Importação de Dados**: Sistema de importação de dados em lote
-- **Notificações Urgentes**: Sistema de notificações para eventos importantes
-- **Documentos**: Gerenciamento de documentos associados
+### 🤖 Automação & Rastreio (Web Scraping)
+- Integrações automatizadas com armadores (ex.: **Maersk**, **CMA CGM**) utilizando **Playwright** para consulta e atualização de status de atracação e contêineres.
 
-## 🛠️ Tecnologias Utilizadas
+### 🔐 Segurança & Auditoria
+- **Autenticação e Perfis:** Acesso restrito por usuário com permissões administrativas e personalização de colunas por usuário.
+- **Trilha de Auditoria (Logs):** Registro detalhado em banco de dados de todas as criações, alterações, exclusões e acessos a processos.
+- **Atualização Automática:** Suporte a updates remotos via **AutoUpdater.NET**.
 
-```
-C#
-Windows Forms
-.NET Framework / .NET Core
-SQL Server
-Git & GitHub
-```
+---
 
-## 📁 Estrutura do Projeto
+## 🛠️ Tecnologias e Bibliotecas
 
-```
-Trabalho/
-├── CLUSA/                          # Biblioteca principal com lógica de negócio
-│   ├── Agencia.cs                  # Gerenciamento de agências
-│   ├── ConfigDatabase.cs           # Configuração de banco de dados
-│   ├── DataHelper.cs              # Auxiliar para operações de dados
-│   ├── Fatura.cs                  # Gerenciamento de faturas
-│   ├── IEntidadeBase.cs           # Interface base para entidades
-│   ├── LicencaImportacao.cs       # Importação de licenças
-│   ├── LpcoInfo.cs                # Informações de LPCO
-│   ├── NotifUrgente.cs            # Notificações urgentes
-│   └── ... (outras classes)
+| Categoria | Tecnologia / Biblioteca |
+|---|---|
+| **Linguagem & Runtime** | C# 12 / .NET 8.0 (`net8.0-windows`) |
+| **Interface Visual** | Windows Forms com ReaLTaiizor (Modern UI) |
+| **Banco de Dados** | MongoDB (Driver Oficial `MongoDB.Driver 3.8.0`) |
+| **Relatórios & PDF** | iText 9 (`itext`, `itext.bouncy-castle-adapter`) |
+| **Manipulação Excel** | Aspose.Cells, ClosedXML |
+| **Automação Web** | Microsoft Playwright |
+| **Serialização** | Newtonsoft.Json / System.Text.Json |
+| **Atualizador** | AutoUpdater.NET Official |
+
+---
+
+## 📁 Estrutura da Solução
+
+```text
+USADespachos/
+├── CLUSA/                          # Biblioteca de Classes (Regras de Negócio, Modelos e Serviços)
+│   ├── Helpers/                    # Utilitários, configurações de e-mail e scraping (CMA, Maersk)
+│   ├── Interfaces/                 # Contratos e interfaces base (IEntidadeBase)
+│   ├── Models/                     # Entidades de domínio (Processo, Capa, Fatura, Vistoria, etc.)
+│   ├── Repositories/               # Camada de persistência MongoDB (RepositorioProcesso, Users, etc.)
+│   └── Services/                   # Serviços de negócio (CapaService, Faturamento, Relatórios, etc.)
 │
-├── Trabalho/                        # Aplicação Windows Forms
-│   ├── FrmPrincipal.cs            # Tela principal
-│   ├── frmLogin.cs                # Tela de login
-│   ├── DetalhesForm.cs            # Tela de detalhes genérica
-│   ├── FrmFinanceiro.cs           # Dashboard financeiro
-│   ├── FrmStatusProcessos.cs      # Status dos processos
-│   ├── FrmVistorias.cs            # Gerenciamento de vistorias
-│   ├── FrmItajaí.cs               # Tela específica (Itajaí)
-│   ├── FrmModificaProcesso.cs     # Edição de processos
-│   ├── FrmOrgaoAnuente.cs         # Gerenciamento de órgão
-│   ├── FrmVencimentos.cs          # Controle de vencimentos
-│   ├── NotificacaoUrgente.cs      # Componente de notificação
-│   ├── LIEditControl.cs           # Controle customizado de edição
-│   ├── LiDisplayControl.cs        # Controle customizado de exibição
-│   └── ... (outras forms e controles)
+├── Trabalho/                       # Aplicação Principal Windows Forms
+│   ├── Imagens/ & Resources/       # Ícones, botões e ativos gráficos da interface
+│   ├── Controls/                   # UserControls customizados (LIEditControl, NotificacaoUrgente, etc.)
+│   ├── FrmPrincipal.cs             # Formulário MDI / Hub Principal
+│   ├── frmSantos.cs & FrmItajaí.cs # Visões operacionais por porto
+│   ├── frmModificaProcesso.cs      # Edição e ficha completa de processos
+│   ├── FrmVistorias.cs             # Gestão de vistorias e laudos
+│   ├── FrmStatusProcessos.cs       # Painel e filtros de status
+│   ├── FrmVencimentos.cs           # Painel de controle de prazos e Free Time
+│   ├── FrmFinanceiro.cs            # Módulo financeiro e faturamento
+│   ├── frmADMIN.cs                 # Administração de usuários e logs de auditoria
+│   └── Program.cs                  # Ponto de entrada e rotinas automatizadas
 │
-├── Icons/                           # Recursos visuais
-│   └── logo-removebg-preview.png   # Logo da aplicação
-│
-├── Trabalho.sln                    # Solution do Visual Studio
-└── testEnvironments.json           # Configuração de ambientes de teste
+└── Trabalho.sln                    # Solução .NET 8
 ```
 
-## 🚀 Como Usar
+---
+
+## 🚀 Como Executar o Projeto
 
 ### Pré-requisitos
-- **.NET Framework 4.7.2+** ou **.NET 6.0+**
-- **Visual Studio 2019+** (para desenvolvimento)
-- **SQL Server 2019+** (ou SQL Server Express)
+* [.NET 8.0 SDK](https://dotnet.microsoft.com/download/dotnet/8.0) instalado
+* Acesso a uma instância do **MongoDB** (Local ou Nuvem via MongoDB Atlas)
+* [Visual Studio 2022+](https://visualstudio.microsoft.com/) ou editor compatível com .NET (Antigravity IDE / VS Code)
 
-### Instalação
+### Passo a Passo
 
-1. **Clone o repositório**
+1. **Clone o repositório:**
    ```bash
-   git clone https://github.com/MatheusMeloSDEV/Trabalho.git
-   cd Trabalho
+   git clone https://github.com/MatheusMeloSDEV/USADespachos.git
+   cd USADespachos
    ```
 
-2. **Abra a solution no Visual Studio**
-   ```bash
-   start Trabalho.sln
-   ```
-
-3. **Restaure os pacotes NuGet**
+2. **Restaurar as dependências NuGet:**
    ```bash
    dotnet restore
    ```
 
-4. **Configure o banco de dados**
-   - Edite o arquivo `CLUSA/ConfigDatabase.cs` com suas credenciais
-   - Execute as migrações necessárias
+3. **Configurar a Conexão com o Banco:**
+   - O sistema suporta variável de ambiente `MONGODB_URI` para deploy/CI ou configuração local em `CLUSA/ConfigDatabaseSettings.cs`.
 
-5. **Compile e execute**
-   - Pressione `F5` no Visual Studio ou execute via linha de comando:
+4. **Compilar e Executar:**
    ```bash
-   dotnet run
+   dotnet build
+   dotnet run --project Trabalho/Trabalho.csproj
    ```
 
-## 📝 Notas de Versão
-
-### v1.2.2 (Atual)
-- Melhorias na interface de usuário
-- Otimizações de performance
-- Correção de bugs
-
-### v1.2.0
-- Novo sistema de notificações urgentes
-- Melhorias no gerenciamento de processos
-- Interface redesenhada
-
-### v1.0.1
-- Versão inicial estável
-- Funcionalidades básicas implementadas
-
-## 👥 Contribuidores
-
-- **MatheusMeloSDEV** - Desenvolvedor
-
-## 📧 Contato
-
-- GitHub: [@MatheusMeloSDEV](https://github.com/MatheusMeloSDEV)
-- Email: [matheusmvsj@gmail.com]
+---
 
 ## 📄 Licença
 
-Este projeto está licenciado sob a Licença MIT - veja o arquivo [LICENSE](LICENSE) para detalhes.
+Este projeto está sob a licença [MIT](LICENSE).
+
 ---
 
+<p align="center">
+  Desenvolvido por <b>Matheus Melo</b> — <a href="https://github.com/MatheusMeloSDEV">GitHub</a>
+</p>

@@ -1022,7 +1022,6 @@
         }
 
         #endregion
-        private PictureBox pictureBox2;
         private System.Windows.Forms.Timer _timer;
         private ToolStrip toolStrip1;
         private ToolStripButton BtnRecarrega;

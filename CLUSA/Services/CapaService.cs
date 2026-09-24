@@ -51,7 +51,7 @@ namespace CLUSA.Services
             return caminhoPdf;
         }
 
-        private async Task<Processo> BuscarProcessoAsync(string refUsa)
+        private static async Task<Processo> BuscarProcessoAsync(string refUsa)
         {
             var db = ConfigDatabase.GetDatabase();
             var collection = db.GetCollection<Processo>(Colecao);
@@ -303,7 +303,7 @@ namespace CLUSA.Services
             wb.SaveAs(caminho);
         }
 
-        private void SetVal(IXLWorksheet ws, int r, int c, string label, string val, int mergeExtra = 0)
+        private static void SetVal(IXLWorksheet ws, int r, int c, string label, string val, int mergeExtra = 0)
         {
             ws.Cell(r, c).Value = label;
             ws.Cell(r, c).Style.Font.Bold = true;
@@ -313,8 +313,8 @@ namespace CLUSA.Services
             valCell.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Left;
             if (mergeExtra > 0) ws.Range(r, c + 1, r, c + 1 + mergeExtra).Merge();
         }
-        private string DataStr(DateTime? d) => d.HasValue ? d.Value.ToString("dd/MM/yyyy") : "";
-        private string Check(bool b) => b ? "[ X ]" : "[   ]";
+        private static string DataStr(DateTime? d) => d.HasValue ? d.Value.ToString("dd/MM/yyyy") : "";
+        private static string Check(bool b) => b ? "[ X ]" : "[   ]";
 
         #endregion
 
@@ -544,7 +544,7 @@ namespace CLUSA.Services
         }
 
         // Helpers PDF
-        private Cell CriarCellTexto(string texto, int rowspan, int colspan, PdfFont font, int fontSize = 10, bool center = false, Color bg = null)
+        private static Cell CriarCellTexto(string texto, int rowspan, int colspan, PdfFont font, int fontSize = 10, bool center = false, Color bg = null)
         {
             var p = new Paragraph(texto ?? "").SetFont(font).SetFontSize(fontSize);
             var cell = new Cell(rowspan, colspan).Add(p).SetPadding(2);

@@ -754,17 +754,8 @@ namespace Trabalho
             // 5. COMPARAÇÃO DA NOVA LISTA DE CATÁLOGOS
             // Suporte a documentos legados: se o objeto original/usado tiver o campo singular 'catalogo',
             // converte para a lista para comparação/migração correta.
-            var listaCatAntiga = _processoOriginal.Catalogos ?? new List<Catalogo>();
-            if ((listaCatAntiga == null || listaCatAntiga.Count == 0) && _processoOriginal.CatalogoLegacy != null)
-            {
-                listaCatAntiga = new List<Catalogo> { _processoOriginal.CatalogoLegacy };
-            }
-
-            var listaCatNova = processo.Catalogos ?? new List<Catalogo>();
-            if ((listaCatNova == null || listaCatNova.Count == 0) && processo.CatalogoLegacy != null)
-            {
-                listaCatNova = new List<Catalogo> { processo.CatalogoLegacy };
-            }
+            var listaCatAntiga = _processoOriginal.Catalogos ?? [];
+            var listaCatNova = processo.Catalogos ?? [];
 
             bool catalogosMudou = false;
 
@@ -1361,6 +1352,8 @@ namespace Trabalho
         // Este evento deve ser atrelado ao evento 'SelectionChanged' do seu DGVCatalogo
         private void DGVCatalogo_SelectionChanged(object sender, EventArgs e)
         {
+            if (_atualizandoGridCatalogo) return;
+
             // === 1. GUARDA DE SEGURANÇA CONTRA ERRO DE CURRENCYMANAGER ===
             if (DGVCatalogo.DataSource == null || DGVCatalogo.Rows.Count == 0)
             {

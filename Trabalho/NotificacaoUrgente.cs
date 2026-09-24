@@ -53,9 +53,9 @@ namespace Trabalho
 
             BtnEditar.Click += (s, e) =>
             {
-                // Libera edição e foca no campo
                 txtMensagem.ReadOnly = false;
                 txtMensagem.Focus();
+                EditClick?.Invoke(this, EventArgs.Empty);
             };
 
             // Salva ao pressionar Enter OU ao perder o foco

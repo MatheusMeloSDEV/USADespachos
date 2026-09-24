@@ -121,9 +121,7 @@
         private ToolStrip toolStrip1;
         private ToolStripButton btnAdicionar;
         private ToolStripButton btnEditar;
-        private ToolStripButton toolStripButton3;
         private ToolStripButton btnRemover;
-        private ToolStripButton toolStripButton5;
         private DataGridView DGVVencimentos;
         private ToolStripSeparator toolStripSeparator2;
         private ToolStripSeparator toolStripSeparator1;

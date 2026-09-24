@@ -52,7 +52,7 @@ namespace CLUSA.Services
             return caminhoPdf;
         }
 
-        private async Task<Processo> BuscarProcessoAsync(string refUsa)
+        private static async Task<Processo> BuscarProcessoAsync(string refUsa)
         {
             var db = ConfigDatabase.GetDatabase();
             var collection = db.GetCollection<Processo>(Colecao);
